@@ -1,0 +1,216 @@
+{
+  "program": {
+    "name": "Fixology Rewards™",
+    "version": "1.0",
+    "points_name": "Fix Points",
+    "currency_symbol": "FP"
+  },
+  "earning_rules": [
+    {
+      "id": "repair_purchase",
+      "name": "Repair Services",
+      "description": "Earn points on every repair",
+      "points_per_dollar": 10,
+      "icon": "🔧"
+    },
+    {
+      "id": "accessory_purchase",
+      "name": "Accessories",
+      "description": "Cases, chargers, cables & more",
+      "points_per_dollar": 5,
+      "icon": "🔌"
+    },
+    {
+      "id": "screen_protector",
+      "name": "Screen Protectors",
+      "description": "Bonus points on protection",
+      "points_per_dollar": 15,
+      "icon": "🛡️"
+    },
+    {
+      "id": "device_trade",
+      "name": "Device Trade-In",
+      "description": "Trade in old devices",
+      "points_per_dollar": 8,
+      "icon": "📱"
+    },
+    {
+      "id": "referral",
+      "name": "Referral Bonus",
+      "description": "Refer a friend who completes a repair",
+      "points_flat": 500,
+      "icon": "👥"
+    },
+    {
+      "id": "review",
+      "name": "Leave a Review",
+      "description": "Review us on Google or Yelp",
+      "points_flat": 100,
+      "max_per_year": 2,
+      "icon": "⭐"
+    },
+    {
+      "id": "birthday",
+      "name": "Birthday Bonus",
+      "description": "Special birthday points",
+      "points_flat": 200,
+      "icon": "🎂"
+    },
+    {
+      "id": "daily_visit",
+      "name": "Daily Check-In",
+      "description": "Visit our store or website",
+      "points_flat": 5,
+      "cooldown_hours": 24,
+      "icon": "📍"
+    }
+  ],
+  "tiers": [
+    {
+      "id": "bronze",
+      "name": "Bronze",
+      "min_points": 0,
+      "color": "#CD7F32",
+      "multiplier": 1.0,
+      "benefits": [
+        "Earn 10 FP per $1 on repairs",
+        "Member-only promotions",
+        "Birthday bonus points"
+      ]
+    },
+    {
+      "id": "silver",
+      "name": "Silver",
+      "min_points": 2500,
+      "color": "#C0C0C0",
+      "multiplier": 1.25,
+      "benefits": [
+        "1.25x points on all purchases",
+        "Priority service queue",
+        "Exclusive Silver deals",
+        "Free screen protector installation"
+      ]
+    },
+    {
+      "id": "gold",
+      "name": "Gold",
+      "min_points": 7500,
+      "color": "#FFD700",
+      "multiplier": 1.5,
+      "benefits": [
+        "1.5x points on all purchases",
+        "Free diagnostics",
+        "Extended warranty (+30 days)",
+        "Gold member lounge access",
+        "Priority phone support"
+      ]
+    },
+    {
+      "id": "platinum",
+      "name": "Platinum",
+      "min_points": 20000,
+      "color": "#E5E4E2",
+      "multiplier": 2.0,
+      "benefits": [
+        "2x points on all purchases",
+        "Free annual device cleaning",
+        "Lifetime warranty on repairs",
+        "VIP appointment booking",
+        "Exclusive Platinum events",
+        "Personal account manager"
+      ]
+    }
+  ],
+  "redemption_catalog": [
+    {
+      "id": "discount_5",
+      "name": "$5 Off",
+      "description": "Any repair or purchase",
+      "points_cost": 500,
+      "icon": "💵"
+    },
+    {
+      "id": "discount_10",
+      "name": "$10 Off",
+      "description": "Any repair or purchase",
+      "points_cost": 900,
+      "icon": "💵"
+    },
+    {
+      "id": "discount_25",
+      "name": "$25 Off",
+      "description": "Any repair or purchase",
+      "points_cost": 2000,
+      "icon": "💵"
+    },
+    {
+      "id": "discount_50",
+      "name": "$50 Off",
+      "description": "Repairs over $100",
+      "points_cost": 3500,
+      "icon": "💵"
+    },
+    {
+      "id": "free_screen_protector",
+      "name": "Free Screen Protector",
+      "description": "Standard tempered glass",
+      "points_cost": 750,
+      "icon": "🛡️"
+    },
+    {
+      "id": "free_case",
+      "name": "Free Phone Case",
+      "description": "Select styles",
+      "points_cost": 1200,
+      "icon": "📱"
+    },
+    {
+      "id": "free_cable",
+      "name": "Free Charging Cable",
+      "description": "Lightning, USB-C, or Micro USB",
+      "points_cost": 600,
+      "icon": "🔌"
+    },
+    {
+      "id": "free_diagnosis",
+      "name": "Free Full Diagnostic",
+      "description": "Complete device health check",
+      "points_cost": 1500,
+      "icon": "🔍"
+    },
+    {
+      "id": "priority_service",
+      "name": "Priority Service Pass",
+      "description": "Skip the line, one use",
+      "points_cost": 800,
+      "icon": "⚡"
+    },
+    {
+      "id": "extended_warranty",
+      "name": "Extended Warranty",
+      "description": "+90 days on your next repair",
+      "points_cost": 2500,
+      "icon": "🛡️"
+    }
+  ],
+  "special_events": [
+    {
+      "id": "double_points_weekend",
+      "name": "Double Points Weekend",
+      "multiplier": 2.0,
+      "description": "Earn 2x points all weekend"
+    },
+    {
+      "id": "triple_points_day",
+      "name": "Triple Points Day",
+      "multiplier": 3.0,
+      "description": "Special promotional days"
+    },
+    {
+      "id": "category_bonus",
+      "name": "Category Bonus",
+      "multiplier": 1.5,
+      "description": "Extra points on specific services"
+    }
+  ]
+}

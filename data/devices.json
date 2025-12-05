@@ -1,1 +1,497 @@
-
+{
+  "version": "3.0",
+  "total_models": 347,
+  "last_updated": "2024-12-05",
+  "categories": [
+    {
+      "id": "phones",
+      "name": "Phones",
+      "icon": "📱",
+      "brands": [
+        {
+          "id": "apple",
+          "name": "Apple",
+          "logo": "🍎",
+          "models": [
+            {"name": "iPhone 16 Pro Max", "year": 2024, "tier": "flagship"},
+            {"name": "iPhone 16 Pro", "year": 2024, "tier": "flagship"},
+            {"name": "iPhone 16 Plus", "year": 2024, "tier": "mid"},
+            {"name": "iPhone 16", "year": 2024, "tier": "mid"},
+            {"name": "iPhone 15 Pro Max", "year": 2023, "tier": "flagship"},
+            {"name": "iPhone 15 Pro", "year": 2023, "tier": "flagship"},
+            {"name": "iPhone 15 Plus", "year": 2023, "tier": "mid"},
+            {"name": "iPhone 15", "year": 2023, "tier": "mid"},
+            {"name": "iPhone 14 Pro Max", "year": 2022, "tier": "flagship"},
+            {"name": "iPhone 14 Pro", "year": 2022, "tier": "flagship"},
+            {"name": "iPhone 14 Plus", "year": 2022, "tier": "mid"},
+            {"name": "iPhone 14", "year": 2022, "tier": "mid"},
+            {"name": "iPhone 13 Pro Max", "year": 2021, "tier": "flagship"},
+            {"name": "iPhone 13 Pro", "year": 2021, "tier": "flagship"},
+            {"name": "iPhone 13", "year": 2021, "tier": "mid"},
+            {"name": "iPhone 13 mini", "year": 2021, "tier": "mid"},
+            {"name": "iPhone 12 Pro Max", "year": 2020, "tier": "flagship"},
+            {"name": "iPhone 12 Pro", "year": 2020, "tier": "flagship"},
+            {"name": "iPhone 12", "year": 2020, "tier": "mid"},
+            {"name": "iPhone 12 mini", "year": 2020, "tier": "mid"},
+            {"name": "iPhone 11 Pro Max", "year": 2019, "tier": "flagship"},
+            {"name": "iPhone 11 Pro", "year": 2019, "tier": "flagship"},
+            {"name": "iPhone 11", "year": 2019, "tier": "mid"},
+            {"name": "iPhone XS Max", "year": 2018, "tier": "flagship"},
+            {"name": "iPhone XS", "year": 2018, "tier": "flagship"},
+            {"name": "iPhone XR", "year": 2018, "tier": "mid"},
+            {"name": "iPhone X", "year": 2017, "tier": "flagship"},
+            {"name": "iPhone 8 Plus", "year": 2017, "tier": "mid"},
+            {"name": "iPhone 8", "year": 2017, "tier": "mid"},
+            {"name": "iPhone 7 Plus", "year": 2016, "tier": "mid"},
+            {"name": "iPhone 7", "year": 2016, "tier": "mid"},
+            {"name": "iPhone 6s Plus", "year": 2015, "tier": "legacy"},
+            {"name": "iPhone 6s", "year": 2015, "tier": "legacy"},
+            {"name": "iPhone SE (3rd Gen)", "year": 2022, "tier": "budget"},
+            {"name": "iPhone SE (2nd Gen)", "year": 2020, "tier": "budget"},
+            {"name": "iPhone SE (1st Gen)", "year": 2016, "tier": "legacy"}
+          ]
+        },
+        {
+          "id": "samsung",
+          "name": "Samsung",
+          "logo": "🔷",
+          "models": [
+            {"name": "Galaxy S24 Ultra", "year": 2024, "tier": "flagship"},
+            {"name": "Galaxy S24+", "year": 2024, "tier": "flagship"},
+            {"name": "Galaxy S24", "year": 2024, "tier": "mid"},
+            {"name": "Galaxy S23 Ultra", "year": 2023, "tier": "flagship"},
+            {"name": "Galaxy S23+", "year": 2023, "tier": "flagship"},
+            {"name": "Galaxy S23", "year": 2023, "tier": "mid"},
+            {"name": "Galaxy S23 FE", "year": 2023, "tier": "mid"},
+            {"name": "Galaxy S22 Ultra", "year": 2022, "tier": "flagship"},
+            {"name": "Galaxy S22+", "year": 2022, "tier": "flagship"},
+            {"name": "Galaxy S22", "year": 2022, "tier": "mid"},
+            {"name": "Galaxy S21 Ultra", "year": 2021, "tier": "flagship"},
+            {"name": "Galaxy S21+", "year": 2021, "tier": "flagship"},
+            {"name": "Galaxy S21", "year": 2021, "tier": "mid"},
+            {"name": "Galaxy S21 FE", "year": 2022, "tier": "mid"},
+            {"name": "Galaxy S20 Ultra", "year": 2020, "tier": "flagship"},
+            {"name": "Galaxy S20+", "year": 2020, "tier": "flagship"},
+            {"name": "Galaxy S20", "year": 2020, "tier": "mid"},
+            {"name": "Galaxy S20 FE", "year": 2020, "tier": "mid"},
+            {"name": "Galaxy Z Fold 6", "year": 2024, "tier": "flagship"},
+            {"name": "Galaxy Z Fold 5", "year": 2023, "tier": "flagship"},
+            {"name": "Galaxy Z Fold 4", "year": 2022, "tier": "flagship"},
+            {"name": "Galaxy Z Fold 3", "year": 2021, "tier": "flagship"},
+            {"name": "Galaxy Z Flip 6", "year": 2024, "tier": "flagship"},
+            {"name": "Galaxy Z Flip 5", "year": 2023, "tier": "flagship"},
+            {"name": "Galaxy Z Flip 4", "year": 2022, "tier": "flagship"},
+            {"name": "Galaxy Z Flip 3", "year": 2021, "tier": "flagship"},
+            {"name": "Galaxy Note 20 Ultra", "year": 2020, "tier": "flagship"},
+            {"name": "Galaxy Note 20", "year": 2020, "tier": "flagship"},
+            {"name": "Galaxy Note 10+", "year": 2019, "tier": "flagship"},
+            {"name": "Galaxy Note 10", "year": 2019, "tier": "flagship"},
+            {"name": "Galaxy A54 5G", "year": 2023, "tier": "mid"},
+            {"name": "Galaxy A53 5G", "year": 2022, "tier": "mid"},
+            {"name": "Galaxy A34 5G", "year": 2023, "tier": "budget"},
+            {"name": "Galaxy A14 5G", "year": 2023, "tier": "budget"}
+          ]
+        },
+        {
+          "id": "google",
+          "name": "Google",
+          "logo": "🔴",
+          "models": [
+            {"name": "Pixel 9 Pro XL", "year": 2024, "tier": "flagship"},
+            {"name": "Pixel 9 Pro", "year": 2024, "tier": "flagship"},
+            {"name": "Pixel 9 Pro Fold", "year": 2024, "tier": "flagship"},
+            {"name": "Pixel 9", "year": 2024, "tier": "mid"},
+            {"name": "Pixel 8 Pro", "year": 2023, "tier": "flagship"},
+            {"name": "Pixel 8", "year": 2023, "tier": "mid"},
+            {"name": "Pixel 8a", "year": 2024, "tier": "mid"},
+            {"name": "Pixel 7 Pro", "year": 2022, "tier": "flagship"},
+            {"name": "Pixel 7", "year": 2022, "tier": "mid"},
+            {"name": "Pixel 7a", "year": 2023, "tier": "mid"},
+            {"name": "Pixel Fold", "year": 2023, "tier": "flagship"},
+            {"name": "Pixel 6 Pro", "year": 2021, "tier": "flagship"},
+            {"name": "Pixel 6", "year": 2021, "tier": "mid"},
+            {"name": "Pixel 6a", "year": 2022, "tier": "budget"},
+            {"name": "Pixel 5a", "year": 2021, "tier": "budget"},
+            {"name": "Pixel 5", "year": 2020, "tier": "mid"},
+            {"name": "Pixel 4a", "year": 2020, "tier": "budget"},
+            {"name": "Pixel 4 XL", "year": 2019, "tier": "flagship"},
+            {"name": "Pixel 4", "year": 2019, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "oneplus",
+          "name": "OnePlus",
+          "logo": "🔻",
+          "models": [
+            {"name": "OnePlus 12", "year": 2024, "tier": "flagship"},
+            {"name": "OnePlus 12R", "year": 2024, "tier": "mid"},
+            {"name": "OnePlus Open", "year": 2023, "tier": "flagship"},
+            {"name": "OnePlus 11", "year": 2023, "tier": "flagship"},
+            {"name": "OnePlus 10 Pro", "year": 2022, "tier": "flagship"},
+            {"name": "OnePlus 10T", "year": 2022, "tier": "mid"},
+            {"name": "OnePlus 9 Pro", "year": 2021, "tier": "flagship"},
+            {"name": "OnePlus 9", "year": 2021, "tier": "mid"},
+            {"name": "OnePlus Nord 3", "year": 2023, "tier": "mid"},
+            {"name": "OnePlus Nord CE 3", "year": 2023, "tier": "budget"}
+          ]
+        },
+        {
+          "id": "motorola",
+          "name": "Motorola",
+          "logo": "Ⓜ️",
+          "models": [
+            {"name": "Motorola Razr+ (2024)", "year": 2024, "tier": "flagship"},
+            {"name": "Motorola Razr (2024)", "year": 2024, "tier": "mid"},
+            {"name": "Motorola Edge+ (2023)", "year": 2023, "tier": "flagship"},
+            {"name": "Motorola Edge 40 Pro", "year": 2023, "tier": "flagship"},
+            {"name": "Moto G Power (2024)", "year": 2024, "tier": "budget"},
+            {"name": "Moto G Stylus 5G (2024)", "year": 2024, "tier": "budget"},
+            {"name": "ThinkPhone", "year": 2023, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "nothing",
+          "name": "Nothing",
+          "logo": "⬜",
+          "models": [
+            {"name": "Nothing Phone (2a)", "year": 2024, "tier": "mid"},
+            {"name": "Nothing Phone (2)", "year": 2023, "tier": "mid"},
+            {"name": "Nothing Phone (1)", "year": 2022, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "xiaomi",
+          "name": "Xiaomi",
+          "logo": "🟠",
+          "models": [
+            {"name": "Xiaomi 14 Ultra", "year": 2024, "tier": "flagship"},
+            {"name": "Xiaomi 14 Pro", "year": 2024, "tier": "flagship"},
+            {"name": "Xiaomi 14", "year": 2024, "tier": "mid"},
+            {"name": "Xiaomi 13 Ultra", "year": 2023, "tier": "flagship"},
+            {"name": "Redmi Note 13 Pro+", "year": 2024, "tier": "mid"},
+            {"name": "POCO X6 Pro", "year": 2024, "tier": "mid"},
+            {"name": "POCO F5", "year": 2023, "tier": "mid"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tablets",
+      "name": "Tablets",
+      "icon": "📱",
+      "brands": [
+        {
+          "id": "apple_tablet",
+          "name": "Apple",
+          "logo": "🍎",
+          "models": [
+            {"name": "iPad Pro 13\" (M4)", "year": 2024, "tier": "flagship"},
+            {"name": "iPad Pro 11\" (M4)", "year": 2024, "tier": "flagship"},
+            {"name": "iPad Air 13\" (M2)", "year": 2024, "tier": "mid"},
+            {"name": "iPad Air 11\" (M2)", "year": 2024, "tier": "mid"},
+            {"name": "iPad Pro 12.9\" (M2)", "year": 2022, "tier": "flagship"},
+            {"name": "iPad Pro 11\" (M2)", "year": 2022, "tier": "flagship"},
+            {"name": "iPad Pro 12.9\" (M1)", "year": 2021, "tier": "flagship"},
+            {"name": "iPad Pro 11\" (M1)", "year": 2021, "tier": "flagship"},
+            {"name": "iPad Air (5th Gen)", "year": 2022, "tier": "mid"},
+            {"name": "iPad Air (4th Gen)", "year": 2020, "tier": "mid"},
+            {"name": "iPad (10th Gen)", "year": 2022, "tier": "budget"},
+            {"name": "iPad (9th Gen)", "year": 2021, "tier": "budget"},
+            {"name": "iPad (8th Gen)", "year": 2020, "tier": "budget"},
+            {"name": "iPad mini (6th Gen)", "year": 2021, "tier": "mid"},
+            {"name": "iPad mini (5th Gen)", "year": 2019, "tier": "legacy"}
+          ]
+        },
+        {
+          "id": "samsung_tablet",
+          "name": "Samsung",
+          "logo": "🔷",
+          "models": [
+            {"name": "Galaxy Tab S9 Ultra", "year": 2023, "tier": "flagship"},
+            {"name": "Galaxy Tab S9+", "year": 2023, "tier": "flagship"},
+            {"name": "Galaxy Tab S9", "year": 2023, "tier": "mid"},
+            {"name": "Galaxy Tab S9 FE+", "year": 2023, "tier": "mid"},
+            {"name": "Galaxy Tab S8 Ultra", "year": 2022, "tier": "flagship"},
+            {"name": "Galaxy Tab S8+", "year": 2022, "tier": "flagship"},
+            {"name": "Galaxy Tab S8", "year": 2022, "tier": "mid"},
+            {"name": "Galaxy Tab A9+", "year": 2023, "tier": "budget"},
+            {"name": "Galaxy Tab A8", "year": 2022, "tier": "budget"}
+          ]
+        },
+        {
+          "id": "microsoft_tablet",
+          "name": "Microsoft",
+          "logo": "🪟",
+          "models": [
+            {"name": "Surface Pro 10", "year": 2024, "tier": "flagship"},
+            {"name": "Surface Pro 9", "year": 2022, "tier": "flagship"},
+            {"name": "Surface Pro 8", "year": 2021, "tier": "mid"},
+            {"name": "Surface Go 4", "year": 2023, "tier": "budget"},
+            {"name": "Surface Go 3", "year": 2021, "tier": "budget"}
+          ]
+        },
+        {
+          "id": "amazon_tablet",
+          "name": "Amazon",
+          "logo": "📦",
+          "models": [
+            {"name": "Fire Max 11", "year": 2023, "tier": "mid"},
+            {"name": "Fire HD 10 (2023)", "year": 2023, "tier": "budget"},
+            {"name": "Fire HD 8 (2022)", "year": 2022, "tier": "budget"},
+            {"name": "Fire 7 (2022)", "year": 2022, "tier": "budget"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "laptops",
+      "name": "Laptops",
+      "icon": "💻",
+      "brands": [
+        {
+          "id": "apple_laptop",
+          "name": "Apple",
+          "logo": "🍎",
+          "models": [
+            {"name": "MacBook Pro 16\" (M3 Max)", "year": 2023, "tier": "flagship"},
+            {"name": "MacBook Pro 16\" (M3 Pro)", "year": 2023, "tier": "flagship"},
+            {"name": "MacBook Pro 14\" (M3 Max)", "year": 2023, "tier": "flagship"},
+            {"name": "MacBook Pro 14\" (M3 Pro)", "year": 2023, "tier": "flagship"},
+            {"name": "MacBook Pro 14\" (M3)", "year": 2023, "tier": "mid"},
+            {"name": "MacBook Pro 16\" (M2 Max)", "year": 2023, "tier": "flagship"},
+            {"name": "MacBook Pro 16\" (M2 Pro)", "year": 2023, "tier": "flagship"},
+            {"name": "MacBook Pro 14\" (M2 Pro)", "year": 2023, "tier": "flagship"},
+            {"name": "MacBook Pro 13\" (M2)", "year": 2022, "tier": "mid"},
+            {"name": "MacBook Pro 16\" (M1 Pro)", "year": 2021, "tier": "flagship"},
+            {"name": "MacBook Pro 14\" (M1 Pro)", "year": 2021, "tier": "flagship"},
+            {"name": "MacBook Pro 13\" (M1)", "year": 2020, "tier": "mid"},
+            {"name": "MacBook Air 15\" (M3)", "year": 2024, "tier": "mid"},
+            {"name": "MacBook Air 13\" (M3)", "year": 2024, "tier": "mid"},
+            {"name": "MacBook Air 15\" (M2)", "year": 2023, "tier": "mid"},
+            {"name": "MacBook Air 13\" (M2)", "year": 2022, "tier": "mid"},
+            {"name": "MacBook Air (M1)", "year": 2020, "tier": "mid"},
+            {"name": "MacBook Pro 16\" (Intel)", "year": 2019, "tier": "legacy"},
+            {"name": "MacBook Pro 13\" (Intel)", "year": 2020, "tier": "legacy"}
+          ]
+        },
+        {
+          "id": "dell_laptop",
+          "name": "Dell",
+          "logo": "🔵",
+          "models": [
+            {"name": "XPS 15 (2024)", "year": 2024, "tier": "flagship"},
+            {"name": "XPS 14 (2024)", "year": 2024, "tier": "flagship"},
+            {"name": "XPS 13 Plus (2024)", "year": 2024, "tier": "mid"},
+            {"name": "XPS 13 (2024)", "year": 2024, "tier": "mid"},
+            {"name": "Inspiron 16 Plus", "year": 2023, "tier": "mid"},
+            {"name": "Inspiron 15", "year": 2023, "tier": "budget"},
+            {"name": "Latitude 7440", "year": 2023, "tier": "mid"},
+            {"name": "Alienware m18", "year": 2023, "tier": "flagship"},
+            {"name": "Alienware x16", "year": 2023, "tier": "flagship"},
+            {"name": "G16 Gaming", "year": 2023, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "hp_laptop",
+          "name": "HP",
+          "logo": "🔷",
+          "models": [
+            {"name": "Spectre x360 16", "year": 2024, "tier": "flagship"},
+            {"name": "Spectre x360 14", "year": 2024, "tier": "flagship"},
+            {"name": "Envy x360 15", "year": 2023, "tier": "mid"},
+            {"name": "Envy x360 14", "year": 2023, "tier": "mid"},
+            {"name": "Pavilion Plus 14", "year": 2023, "tier": "mid"},
+            {"name": "Pavilion 15", "year": 2023, "tier": "budget"},
+            {"name": "EliteBook 860 G10", "year": 2023, "tier": "mid"},
+            {"name": "Omen 17", "year": 2023, "tier": "flagship"},
+            {"name": "Omen 16", "year": 2023, "tier": "mid"},
+            {"name": "Victus 16", "year": 2023, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "lenovo_laptop",
+          "name": "Lenovo",
+          "logo": "🔴",
+          "models": [
+            {"name": "ThinkPad X1 Carbon Gen 12", "year": 2024, "tier": "flagship"},
+            {"name": "ThinkPad X1 Carbon Gen 11", "year": 2023, "tier": "flagship"},
+            {"name": "ThinkPad X1 Yoga Gen 8", "year": 2023, "tier": "flagship"},
+            {"name": "ThinkPad T14s Gen 4", "year": 2023, "tier": "mid"},
+            {"name": "Yoga 9i Gen 8", "year": 2023, "tier": "flagship"},
+            {"name": "Yoga 7i Gen 8", "year": 2023, "tier": "mid"},
+            {"name": "IdeaPad Pro 5i", "year": 2023, "tier": "mid"},
+            {"name": "IdeaPad Slim 5", "year": 2023, "tier": "mid"},
+            {"name": "Legion Pro 7i Gen 8", "year": 2023, "tier": "flagship"},
+            {"name": "Legion Pro 5i Gen 8", "year": 2023, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "asus_laptop",
+          "name": "ASUS",
+          "logo": "🎮",
+          "models": [
+            {"name": "ROG Zephyrus G16 (2024)", "year": 2024, "tier": "flagship"},
+            {"name": "ROG Zephyrus G14 (2024)", "year": 2024, "tier": "flagship"},
+            {"name": "ROG Strix G18 (2024)", "year": 2024, "tier": "flagship"},
+            {"name": "Zenbook Pro 16X OLED", "year": 2023, "tier": "flagship"},
+            {"name": "Zenbook 14 OLED", "year": 2023, "tier": "mid"},
+            {"name": "VivoBook S 15 OLED", "year": 2023, "tier": "mid"},
+            {"name": "TUF Gaming A16", "year": 2023, "tier": "mid"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "desktops",
+      "name": "Desktops",
+      "icon": "🖥️",
+      "brands": [
+        {
+          "id": "apple_desktop",
+          "name": "Apple",
+          "logo": "🍎",
+          "models": [
+            {"name": "Mac Studio (M2 Ultra)", "year": 2023, "tier": "flagship"},
+            {"name": "Mac Studio (M2 Max)", "year": 2023, "tier": "flagship"},
+            {"name": "Mac Pro (M2 Ultra)", "year": 2023, "tier": "flagship"},
+            {"name": "Mac mini (M2 Pro)", "year": 2023, "tier": "mid"},
+            {"name": "Mac mini (M2)", "year": 2023, "tier": "mid"},
+            {"name": "Mac mini (M1)", "year": 2020, "tier": "budget"},
+            {"name": "iMac 24\" (M3)", "year": 2023, "tier": "mid"},
+            {"name": "iMac 24\" (M1)", "year": 2021, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "custom_desktop",
+          "name": "Custom PC",
+          "logo": "🔧",
+          "models": [
+            {"name": "Custom Gaming PC", "year": 2024, "tier": "mid"},
+            {"name": "Custom Workstation", "year": 2024, "tier": "mid"},
+            {"name": "Custom Budget Build", "year": 2024, "tier": "budget"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "consoles",
+      "name": "Gaming Consoles",
+      "icon": "🎮",
+      "brands": [
+        {
+          "id": "sony_console",
+          "name": "Sony",
+          "logo": "🎵",
+          "models": [
+            {"name": "PlayStation 5", "year": 2020, "tier": "flagship"},
+            {"name": "PlayStation 5 Digital", "year": 2020, "tier": "flagship"},
+            {"name": "PlayStation 5 Slim", "year": 2023, "tier": "flagship"},
+            {"name": "PlayStation 4 Pro", "year": 2016, "tier": "legacy"},
+            {"name": "PlayStation 4 Slim", "year": 2016, "tier": "legacy"},
+            {"name": "PlayStation VR2", "year": 2023, "tier": "mid"}
+          ]
+        },
+        {
+          "id": "microsoft_console",
+          "name": "Microsoft",
+          "logo": "🪟",
+          "models": [
+            {"name": "Xbox Series X", "year": 2020, "tier": "flagship"},
+            {"name": "Xbox Series S", "year": 2020, "tier": "mid"},
+            {"name": "Xbox One X", "year": 2017, "tier": "legacy"},
+            {"name": "Xbox One S", "year": 2016, "tier": "legacy"}
+          ]
+        },
+        {
+          "id": "nintendo_console",
+          "name": "Nintendo",
+          "logo": "🔴",
+          "models": [
+            {"name": "Nintendo Switch OLED", "year": 2021, "tier": "mid"},
+            {"name": "Nintendo Switch", "year": 2017, "tier": "mid"},
+            {"name": "Nintendo Switch Lite", "year": 2019, "tier": "budget"}
+          ]
+        },
+        {
+          "id": "valve_console",
+          "name": "Valve",
+          "logo": "🎮",
+          "models": [
+            {"name": "Steam Deck OLED", "year": 2023, "tier": "flagship"},
+            {"name": "Steam Deck (512GB)", "year": 2022, "tier": "mid"},
+            {"name": "Steam Deck (256GB)", "year": 2022, "tier": "mid"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wearables",
+      "name": "Wearables",
+      "icon": "⌚",
+      "brands": [
+        {
+          "id": "apple_wearable",
+          "name": "Apple",
+          "logo": "🍎",
+          "models": [
+            {"name": "Apple Watch Ultra 2", "year": 2023, "tier": "flagship"},
+            {"name": "Apple Watch Ultra", "year": 2022, "tier": "flagship"},
+            {"name": "Apple Watch Series 9", "year": 2023, "tier": "mid"},
+            {"name": "Apple Watch Series 8", "year": 2022, "tier": "mid"},
+            {"name": "Apple Watch Series 7", "year": 2021, "tier": "mid"},
+            {"name": "Apple Watch SE (2nd Gen)", "year": 2022, "tier": "budget"},
+            {"name": "Apple Watch SE", "year": 2020, "tier": "budget"},
+            {"name": "AirPods Pro (2nd Gen)", "year": 2022, "tier": "mid"},
+            {"name": "AirPods Pro", "year": 2019, "tier": "mid"},
+            {"name": "AirPods (3rd Gen)", "year": 2021, "tier": "mid"},
+            {"name": "AirPods (2nd Gen)", "year": 2019, "tier": "budget"},
+            {"name": "AirPods Max", "year": 2020, "tier": "flagship"}
+          ]
+        },
+        {
+          "id": "samsung_wearable",
+          "name": "Samsung",
+          "logo": "🔷",
+          "models": [
+            {"name": "Galaxy Watch Ultra", "year": 2024, "tier": "flagship"},
+            {"name": "Galaxy Watch 7", "year": 2024, "tier": "mid"},
+            {"name": "Galaxy Watch 6 Classic", "year": 2023, "tier": "flagship"},
+            {"name": "Galaxy Watch 6", "year": 2023, "tier": "mid"},
+            {"name": "Galaxy Watch 5 Pro", "year": 2022, "tier": "flagship"},
+            {"name": "Galaxy Watch 5", "year": 2022, "tier": "mid"},
+            {"name": "Galaxy Buds 3 Pro", "year": 2024, "tier": "flagship"},
+            {"name": "Galaxy Buds 3", "year": 2024, "tier": "mid"},
+            {"name": "Galaxy Buds 2 Pro", "year": 2022, "tier": "mid"},
+            {"name": "Galaxy Buds FE", "year": 2023, "tier": "budget"}
+          ]
+        },
+        {
+          "id": "google_wearable",
+          "name": "Google",
+          "logo": "🔴",
+          "models": [
+            {"name": "Pixel Watch 2", "year": 2023, "tier": "mid"},
+            {"name": "Pixel Watch", "year": 2022, "tier": "mid"},
+            {"name": "Pixel Buds Pro 2", "year": 2024, "tier": "mid"},
+            {"name": "Pixel Buds Pro", "year": 2022, "tier": "mid"},
+            {"name": "Pixel Buds A-Series", "year": 2021, "tier": "budget"}
+          ]
+        }
+      ]
+    }
+  ],
+  "repair_types": {
+    "screen": {"name": "Screen Repair", "icon": "📱", "common": true},
+    "battery": {"name": "Battery Replacement", "icon": "🔋", "common": true},
+    "charging_port": {"name": "Charging Port", "icon": "🔌", "common": true},
+    "back_glass": {"name": "Back Glass", "icon": "🪟", "common": true},
+    "camera": {"name": "Camera Repair", "icon": "📷", "common": true},
+    "speaker": {"name": "Speaker/Mic", "icon": "🔊", "common": false},
+    "button": {"name": "Button Repair", "icon": "🔘", "common": false},
+    "water_damage": {"name": "Water Damage", "icon": "💧", "common": false},
+    "logic_board": {"name": "Logic Board", "icon": "🔧", "common": false},
+    "data_recovery": {"name": "Data Recovery", "icon": "💾", "common": false},
+    "software": {"name": "Software Issues", "icon": "⚙️", "common": false},
+    "face_id": {"name": "Face ID/Touch ID", "icon": "👤", "common": false}
+  }
+}
