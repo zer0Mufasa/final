@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Roadmap — Fixology</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD,#A78BFA,#8B5CF6)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.7}a{color:inherit;text-decoration:none}.container{max-width:900px;margin:0 auto;padding:0 24px}
+    .nav{padding:20px 0;border-bottom:1px solid var(--border-subtle)}.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:900px;margin:0 auto;padding:0 24px}
+    .nav-logo{display:flex;align-items:center;gap:12px}.nav-logo img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(139,92,246,0.4))}.nav-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero{padding:80px 0 60px;text-align:center}
+    .hero h1{font-family:var(--font-tech);font-size:2.5rem;margin-bottom:12px}
+    .hero p{color:var(--text-secondary);font-size:1.125rem}
+    .roadmap{padding:40px 0}
+    .roadmap-quarter{margin-bottom:60px}
+    .quarter-header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+    .quarter-badge{padding:8px 16px;background:var(--lavender-500);border-radius:8px;font-size:14px;font-weight:600}
+    .quarter-badge.completed{background:var(--success)}
+    .quarter-badge.current{background:var(--lavender-500)}
+    .quarter-badge.upcoming{background:var(--surface-4);color:var(--text-secondary)}
+    .quarter-title{font-size:1.25rem;font-weight:600}
+    .roadmap-items{display:flex;flex-direction:column;gap:16px}
+    .roadmap-item{display:flex;gap:16px;padding:24px;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;transition:all 0.2s}
+    .roadmap-item:hover{border-color:var(--border-default)}
+    .roadmap-status{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .roadmap-status.done{background:var(--success)}
+    .roadmap-status.progress{background:var(--lavender-500);animation:pulse 2s infinite}
+    .roadmap-status.planned{background:var(--surface-4)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+    .roadmap-content{flex:1}
+    .roadmap-content h4{font-size:1rem;margin-bottom:6px}
+    .roadmap-content p{font-size:14px;color:var(--text-secondary)}
+    .roadmap-tags{display:flex;gap:8px;margin-top:12px}
+    .roadmap-tag{font-size:11px;padding:4px 10px;background:var(--surface-4);border-radius:6px;color:var(--text-muted)}
+    .suggest-box{background:var(--surface-2);border:1px solid var(--border-default);border-radius:20px;padding:40px;text-align:center;margin-top:60px}
+    .suggest-box h3{margin-bottom:12px}
+    .suggest-box p{color:var(--text-secondary);margin-bottom:20px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--gradient-lavender);color:white;font-weight:600;border-radius:10px}
+    .footer{padding:40px 0;text-align:center;font-size:13px;color:var(--text-muted);border-top:1px solid var(--border-subtle)}
+    </style>
+</head>
+<body>
+    <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology"><span>Fixology</span></a><a href="index.html" style="font-size:14px;color:var(--text-secondary)">← Back</a></div></nav>
+    <div class="container">
+        <div class="hero">
+            <h1>Product Roadmap</h1>
+            <p>See what we're building and what's coming next for Fixology</p>
+        </div>
+        <div class="roadmap">
+            <div class="roadmap-quarter">
+                <div class="quarter-header">
+                    <span class="quarter-badge completed">Q4 2024</span>
+                    <span class="quarter-title">Foundation</span>
+                </div>
+                <div class="roadmap-items">
+                    <div class="roadmap-item">
+                        <div class="roadmap-status done">✓</div>
+                        <div class="roadmap-content">
+                            <h4>AI Diagnostics Engine v2</h4>
+                            <p>1,200+ symptoms database with confidence scoring and probable cause mapping</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">AI</span><span class="roadmap-tag">Core</span></div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-status done">✓</div>
+                        <div class="roadmap-content">
+                            <h4>3-Column POS System</h4>
+                            <p>Ticket list, detail view, and checkout panel with keyboard shortcuts</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">Dashboard</span><span class="roadmap-tag">POS</span></div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-status done">✓</div>
+                        <div class="roadmap-content">
+                            <h4>Website Builder</h4>
+                            <p>4 templates with live preview and section toggles</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">Tools</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="roadmap-quarter">
+                <div class="quarter-header">
+                    <span class="quarter-badge current">Q1 2025</span>
+                    <span class="quarter-title">Intelligence</span>
+                </div>
+                <div class="roadmap-items">
+                    <div class="roadmap-item">
+                        <div class="roadmap-status progress">⋯</div>
+                        <div class="roadmap-content">
+                            <h4>Multi-Shop Management</h4>
+                            <p>Manage multiple locations from a single dashboard with unified reporting</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">Enterprise</span></div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-status progress">⋯</div>
+                        <div class="roadmap-content">
+                            <h4>Inventory Auto-Ordering</h4>
+                            <p>AI-powered stock predictions and automatic supplier orders</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">AI</span><span class="roadmap-tag">Inventory</span></div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-status planned"></div>
+                        <div class="roadmap-content">
+                            <h4>Insurance Integration</h4>
+                            <p>Direct claims submission to Asurion, AppleCare, and carrier programs</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">Integration</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="roadmap-quarter">
+                <div class="quarter-header">
+                    <span class="quarter-badge upcoming">Q2 2025</span>
+                    <span class="quarter-title">Scale</span>
+                </div>
+                <div class="roadmap-items">
+                    <div class="roadmap-item">
+                        <div class="roadmap-status planned"></div>
+                        <div class="roadmap-content">
+                            <h4>Mobile App</h4>
+                            <p>Native iOS and Android apps for on-the-go shop management</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">Mobile</span></div>
+                        </div>
+                    </div>
+                    <div class="roadmap-item">
+                        <div class="roadmap-status planned"></div>
+                        <div class="roadmap-content">
+                            <h4>AI Phone Answering v2</h4>
+                            <p>Voice AI that can schedule appointments and provide quotes</p>
+                            <div class="roadmap-tags"><span class="roadmap-tag">AI</span><span class="roadmap-tag">Voice</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="suggest-box">
+            <h3>Have a feature request?</h3>
+            <p>We build what our shops need. Tell us what would help your business.</p>
+            <a href="contact.html" class="btn">💡 Suggest a Feature</a>
+        </div>
+    </div>
+    <footer class="footer">© 2025 Fixology. <a href="changelog.html" style="color:var(--lavender-400)">Changelog</a></footer>
+</body>
+</html>

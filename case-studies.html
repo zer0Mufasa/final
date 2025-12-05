@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Studies — Fixology</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',-apple-system,system-ui,sans-serif;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--cyan-400:#22D3EE;--success:#22C55E;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD,#A78BFA,#8B5CF6)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.7}a{color:inherit;text-decoration:none}.container{max-width:1080px;margin:0 auto;padding:0 24px}
+    .nav{padding:20px 0;border-bottom:1px solid var(--border-subtle)}.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:1080px;margin:0 auto;padding:0 24px}
+    .nav-logo{display:flex;align-items:center;gap:12px}.nav-logo img{width:44px;height:44px;border-radius:0}.nav-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero{padding:80px 0 60px;text-align:center}
+    .hero h1{font-family:var(--font-tech);font-size:2.5rem;margin-bottom:12px}
+    .hero p{color:var(--text-secondary);font-size:1.125rem;max-width:600px;margin:0 auto}
+    .case-study{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:60px 0;border-bottom:1px solid var(--border-subtle);align-items:center}
+    .case-study:nth-child(even){direction:rtl}.case-study:nth-child(even)>*{direction:ltr}
+    .case-study:last-of-type{border-bottom:none}
+    .case-image{background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:20px;padding:40px;text-align:center}
+    .case-logo{font-size:48px;margin-bottom:16px}
+    .case-shop-name{font-family:var(--font-tech);font-size:1.25rem;font-weight:700}
+    .case-location{font-size:14px;color:var(--text-muted)}
+    .case-content h2{font-family:var(--font-tech);font-size:1.5rem;margin-bottom:16px}
+    .case-content .quote{font-size:1.125rem;color:var(--text-secondary);font-style:italic;margin-bottom:24px;padding-left:20px;border-left:3px solid var(--lavender-500)}
+    .case-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+    .case-stat{background:var(--surface-3);border-radius:0;padding:16px;text-align:center}
+    .case-stat-value{font-family:var(--font-tech);font-size:1.5rem;font-weight:700;color:var(--success)}
+    .case-stat-label{font-size:12px;color:var(--text-muted)}
+    .case-highlights{list-style:none}
+    .case-highlights li{padding:8px 0;padding-left:24px;position:relative;color:var(--text-secondary)}
+    .case-highlights li::before{content:'✓';position:absolute;left:0;color:var(--success);font-weight:bold}
+    .cta-section{background:var(--surface-2);border-radius:24px;padding:60px;text-align:center;margin:60px 0;border:1px solid var(--border-subtle)}
+    .cta-section h2{font-family:var(--font-tech);font-size:2rem;margin-bottom:12px}
+    .cta-section p{color:var(--text-secondary);margin-bottom:24px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--gradient-lavender);color:white;font-weight:600;border-radius:0}
+    .footer{padding:40px 0;text-align:center;font-size:13px;color:var(--text-muted);border-top:1px solid var(--border-subtle)}
+    @media(max-width:768px){.case-study{grid-template-columns:1fr}.case-study:nth-child(even){direction:ltr}.case-stats{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology"><span>Fixology</span></a><a href="index.html" style="font-size:14px;color:var(--text-secondary)">← Back</a></div></nav>
+    <div class="container">
+        <div class="hero">
+            <h1>Customer Success Stories</h1>
+            <p>See how repair shops are transforming their business with Fixology AI diagnostics and automation.</p>
+        </div>
+
+        <div class="case-study">
+            <div class="case-image">
+                <div class="case-logo">🔧</div>
+                <div class="case-shop-name">iCenter St. Louis</div>
+                <div class="case-location">St. Louis, MO</div>
+            </div>
+            <div class="case-content">
+                <h2>+27% Average Ticket Value in 60 Days</h2>
+                <p class="quote">"Fixology's AI diagnostics helped us identify additional repairs customers didn't even know they needed. Our techs spend less time diagnosing and more time fixing."</p>
+                <div class="case-stats">
+                    <div class="case-stat"><div class="case-stat-value">+27%</div><div class="case-stat-label">Ticket Value</div></div>
+                    <div class="case-stat"><div class="case-stat-value">-40%</div><div class="case-stat-label">Diagnosis Time</div></div>
+                    <div class="case-stat"><div class="case-stat-value">3x</div><div class="case-stat-label">Lead Response</div></div>
+                </div>
+                <ul class="case-highlights">
+                    <li>AI auto-reply captures leads 24/7 on Instagram and SMS</li>
+                    <li>Panic log analysis catches board-level issues early</li>
+                    <li>Website builder launched in under 30 minutes</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="case-study">
+            <div class="case-image">
+                <div class="case-logo">🎮</div>
+                <div class="case-shop-name">GameFix Pro</div>
+                <div class="case-location">Austin, TX</div>
+            </div>
+            <div class="case-content">
+                <h2>400+ Console Repairs/Month with 2 Techs</h2>
+                <p class="quote">"We specialize in PS5 and Xbox repairs. Fixology's HDMI diagnostics and IMEI checks save us hours every week. The AI knows exactly what questions to ask customers."</p>
+                <div class="case-stats">
+                    <div class="case-stat"><div class="case-stat-value">400+</div><div class="case-stat-label">Repairs/Month</div></div>
+                    <div class="case-stat"><div class="case-stat-value">95%</div><div class="case-stat-label">First-Fix Rate</div></div>
+                    <div class="case-stat"><div class="case-stat-value">4.9★</div><div class="case-stat-label">Google Rating</div></div>
+                </div>
+                <ul class="case-highlights">
+                    <li>Console-specific diagnostic playbooks</li>
+                    <li>Automated follow-up SMS for reviews</li>
+                    <li>Inventory alerts prevent stockouts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="case-study">
+            <div class="case-image">
+                <div class="case-logo">💻</div>
+                <div class="case-shop-name">TechMD Repair</div>
+                <div class="case-location">Miami, FL</div>
+            </div>
+            <div class="case-content">
+                <h2>Scaled from 1 to 3 Locations in 8 Months</h2>
+                <p class="quote">"Fixology gave us the systems to scale. Same diagnostic process, same customer experience, across all locations. Our techs onboard in days, not weeks."</p>
+                <div class="case-stats">
+                    <div class="case-stat"><div class="case-stat-value">3x</div><div class="case-stat-label">Locations</div></div>
+                    <div class="case-stat"><div class="case-stat-value">$1.2M</div><div class="case-stat-label">Annual Revenue</div></div>
+                    <div class="case-stat"><div class="case-stat-value">8</div><div class="case-stat-label">Team Members</div></div>
+                </div>
+                <ul class="case-highlights">
+                    <li>Multi-location dashboard with unified reporting</li>
+                    <li>Standardized pricing across all shops</li>
+                    <li>Insurance-ready audit trails</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <h2>Ready to grow your shop?</h2>
+            <p>Join 200+ repair shops using Fixology to diagnose faster and close more tickets.</p>
+            <a href="https://chatgpt.com/g/g-692e842d0dc48191989c1f877d00165d-fixology-repair-assistant" class="btn">Try Fixology AI Free →</a>
+        </div>
+    </div>
+    <footer class="footer">© 2025 Fixology. Built by certified repair technicians.</footer>
+</body>
+</html>

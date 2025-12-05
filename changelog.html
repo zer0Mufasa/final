@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog — Fixology</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',-apple-system,system-ui,sans-serif;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--cyan-400:#22D3EE;--success:#22C55E;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD,#A78BFA,#8B5CF6)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.7}a{color:var(--lavender-400);text-decoration:none}a:hover{text-decoration:underline}.container{max-width:720px;margin:0 auto;padding:0 24px}
+    .nav{padding:20px 0;border-bottom:1px solid var(--border-subtle)}.nav-inner{display:flex;align-items:center;justify-content:space-between;max-width:720px;margin:0 auto;padding:0 24px}
+    .nav-logo{display:flex;align-items:center;gap:12px}.nav-logo img{width:44px;height:44px;border-radius:0}.nav-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .hero{padding:80px 0 60px;text-align:center}
+    .hero h1{font-family:var(--font-tech);font-size:2.5rem;margin-bottom:12px}
+    .hero p{color:var(--text-secondary);font-size:1.125rem}
+    .release{padding:40px 0;border-bottom:1px solid var(--border-subtle)}
+    .release:last-child{border-bottom:none}
+    .release-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+    .release-version{font-family:var(--font-tech);font-size:1.5rem;font-weight:700;color:var(--lavender-400)}
+    .release-date{font-size:14px;color:var(--text-muted);padding:4px 12px;background:var(--surface-3);border-radius:6px}
+    .release-title{font-size:1.125rem;font-weight:600;margin-bottom:16px}
+    .release-section{margin-bottom:20px}
+    .release-section h4{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .release-section h4.new{color:var(--success)}
+    .release-section h4.improved{color:var(--cyan-400)}
+    .release-section h4.fixed{color:var(--lavender-400)}
+    .release-section ul{list-style:none;padding-left:0}
+    .release-section li{padding:8px 0;padding-left:24px;position:relative;color:var(--text-secondary)}
+    .release-section li::before{content:'→';position:absolute;left:0;color:var(--text-muted)}
+    .footer{padding:40px 0;text-align:center;font-size:13px;color:var(--text-muted)}
+    </style>
+</head>
+<body>
+    <nav class="nav"><div class="nav-inner"><a href="index.html" class="nav-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology"><span>Fixology</span></a><a href="index.html" style="font-size:14px;color:var(--text-secondary);text-decoration:none">← Back</a></div></nav>
+    <div class="container">
+        <div class="hero">
+            <h1>Changelog</h1>
+            <p>New features, improvements, and fixes for Fixology</p>
+        </div>
+
+        <div class="release">
+            <div class="release-header"><span class="release-version">v5.6</span><span class="release-date">Dec 4, 2024</span></div>
+            <div class="release-title">Website Builder, POS Improvements, Design Refresh</div>
+            <div class="release-section">
+                <h4 class="new">✨ New Features</h4>
+                <ul>
+                    <li>Website Builder — Create professional shop websites with templates, live preview, and one-click publish</li>
+                    <li>3-column POS layout — Ticket list, active ticket detail, and checkout panel side-by-side</li>
+                    <li>Keyboard shortcuts — N for new ticket, / to search, P for payment, D for diagnosis</li>
+                    <li>AI suggested line items — Automatic parts and labor recommendations based on diagnosis</li>
+                </ul>
+            </div>
+            <div class="release-section">
+                <h4 class="improved">🔧 Improvements</h4>
+                <ul>
+                    <li>Updated branding with Space Grotesk tech font for wordmark</li>
+                    <li>Removed cyan from logo — now pure lavender gradient</li>
+                    <li>Status pills across all tables (OPEN, IN DIAG, WAITING, READY, PAID)</li>
+                    <li>Better empty states with import prompts</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="release">
+            <div class="release-header"><span class="release-version">v5.5</span><span class="release-date">Nov 28, 2024</span></div>
+            <div class="release-title">Full Dashboard Suite</div>
+            <div class="release-section">
+                <h4 class="new">✨ New Features</h4>
+                <ul>
+                    <li>Complete dashboard with 9 pages: Overview, Repairs, Customers, Inventory, Invoices, Diagnostics, IMEI, Auto-Reply, Settings</li>
+                    <li>Customer CRM with cards, stats, and VIP tagging</li>
+                    <li>Inventory management with low-stock alerts</li>
+                    <li>Invoice tracking with Paid/Pending/Overdue statuses</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="release">
+            <div class="release-header"><span class="release-version">v5.0</span><span class="release-date">Nov 20, 2024</span></div>
+            <div class="release-title">Platform Launch</div>
+            <div class="release-section">
+                <h4 class="new">✨ New Features</h4>
+                <ul>
+                    <li>AI Diagnostics Engine — 500+ symptoms, 250+ causes, 98.7% accuracy</li>
+                    <li>IMEI Lookup — Carrier lock, Find My, warranty, blacklist check</li>
+                    <li>Auto-Reply — SMS, Instagram, Messenger, AI phone answering</li>
+                    <li>Fixology Rewards™ — Customer loyalty program with 4 tiers</li>
+                    <li>Floating chat widget for customer-facing diagnosis</li>
+                </ul>
+            </div>
+            <div class="release-section">
+                <h4 class="improved">🔧 Improvements</h4>
+                <ul>
+                    <li>Linear.app-inspired dark theme with lavender accents</li>
+                    <li>Mobile-responsive navigation with hamburger menu</li>
+                    <li>Urgency banner for promotions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <footer class="footer">© 2025 Fixology. <a href="status.html">System Status</a></footer>
+</body>
+</html>

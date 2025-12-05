@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Login — Fixology</title>
+    <meta name="description" content="Log in to your Fixology shop dashboard.">
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+    :root{--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-tertiary:#71717A;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#A78BFA,#8B5CF6,#7C3AED);--shadow-glow-sm:0 0 30px rgba(139,92,246,0.2)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:var(--surface-1);color:var(--text-primary);line-height:1.6;min-height:100vh;display:flex;flex-direction:column}a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;border:none;background:none}img{display:block;max-width:100%}.text-gradient{background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .login-container{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px}
+    .login-box{width:100%;max-width:420px}
+    .login-header{text-align:center;margin-bottom:40px}
+    .login-logo{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:24px}
+    .login-logo img{width:56px;height:56px;border-radius:16px;filter:drop-shadow(0 0 20px rgba(139,92,246,0.7));border:none}
+    .login-logo span{font-family:'Space Grotesk',system-ui,sans-serif;font-size:2rem;font-weight:700;background:linear-gradient(135deg,#C4B5FD,#A78BFA,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .login-header h1{font-size:1.5rem;margin-bottom:8px}
+    .login-header p{font-size:14px;color:var(--text-tertiary)}
+    .login-form{background:var(--surface-3);border:1px solid var(--border-default);border-radius:20px;padding:32px}
+    .form-group{margin-bottom:20px}
+    .form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text-secondary)}
+    .form-group input{width:100%;padding:14px 18px;background:var(--surface-4);border:1px solid var(--border-default);border-radius:0;color:var(--text-primary);font-size:15px}
+    .form-group input:focus{outline:none;border-color:var(--lavender-500)}
+    .form-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+    .form-row label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-tertiary);cursor:pointer}
+    .form-row label input{width:16px;height:16px}
+    .form-row a{font-size:13px;color:var(--lavender-400)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;font-size:15px;font-weight:600;border-radius:0;transition:all 0.2s;width:100%}
+    .btn-primary{background:var(--gradient-lavender);color:white;box-shadow:var(--shadow-glow-sm)}
+    .btn-primary:hover{transform:translateY(-2px)}
+    .login-footer{text-align:center;margin-top:24px;font-size:14px;color:var(--text-tertiary)}
+    .login-footer a{color:var(--lavender-400)}
+    .divider{display:flex;align-items:center;gap:16px;margin:24px 0;color:var(--text-muted);font-size:13px}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border-default)}
+    .social-login{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .social-btn{padding:12px;background:var(--surface-4);border:1px solid var(--border-default);border-radius:0;font-size:14px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.2s}
+    .social-btn:hover{border-color:var(--border-default);background:var(--surface-3)}
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <a href="/" class="login-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology logo"><span>Fixology</span></a>
+                <h1>Welcome back</h1>
+                <p>Log in to your shop dashboard</p>
+            </div>
+            <form class="login-form" id="loginForm">
+                <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="you@yourshop.com" required></div>
+                <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="••••••••" required></div>
+                <div class="form-row"><label><input type="checkbox"> Remember me</label><a href="#">Forgot password?</a></div>
+                <button type="submit" class="btn btn-primary" id="loginBtn">Sign In →</button>
+                <div class="divider">or continue with</div>
+                <div class="social-login">
+                    <button type="button" class="social-btn" onclick="socialLogin('google')">🔵 Google</button>
+                    <button type="button" class="social-btn" onclick="socialLogin('apple')">⚫ Apple</button>
+                </div>
+                <div id="loginMessage" style="margin-top:16px;padding:12px;border-radius:10px;font-size:13px;display:none"></div>
+            </form>
+            <div class="login-footer">Don't have an account? <a href="platform.html#apply">Apply for access</a></div>
+        </div>
+    </div>
+    <script>
+    // Demo credentials for testing
+    const DEMO_USERS = [
+        { email: 'demo@fixology.com', password: 'demo123', name: 'Demo Shop', role: 'owner' },
+        { email: 'admin@fixology.com', password: 'admin123', name: 'Admin', role: 'admin' }
+    ];
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('loginBtn');
+        const msg = document.getElementById('loginMessage');
+        
+        btn.innerHTML = '⏳ Signing in...';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+            const user = DEMO_USERS.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                // Success - store session and redirect
+                sessionStorage.setItem('fixology_user', JSON.stringify(user));
+                msg.style.display = 'block';
+                msg.style.background = 'rgba(34,197,94,0.1)';
+                msg.style.color = '#22C55E';
+                msg.textContent = '✓ Welcome back, ' + user.name + '! Redirecting...';
+                
+                setTimeout(() => {
+                    if (user.role === 'admin') {
+                        window.location.href = 'admin/index.html';
+                    } else {
+                        window.location.href = 'dashboard/preview.html';
+                    }
+                }, 1000);
+            } else {
+                // Failed
+                msg.style.display = 'block';
+                msg.style.background = 'rgba(239,68,68,0.1)';
+                msg.style.color = '#EF4444';
+                msg.textContent = '✗ Invalid email or password. Try demo@fixology.com / demo123';
+                btn.innerHTML = 'Sign In →';
+                btn.disabled = false;
+            }
+        }, 800);
+    });
+
+    function socialLogin(provider) {
+        const msg = document.getElementById('loginMessage');
+        msg.style.display = 'block';
+        msg.style.background = 'rgba(139,92,246,0.1)';
+        msg.style.color = '#A78BFA';
+        msg.textContent = '🔗 ' + provider.charAt(0).toUpperCase() + provider.slice(1) + ' SSO coming soon!';
+    }
+
+    // Check if already logged in
+    const existingUser = sessionStorage.getItem('fixology_user');
+    if (existingUser) {
+        const user = JSON.parse(existingUser);
+        if (user.role === 'admin') {
+            window.location.href = 'admin/index.html';
+        } else {
+            window.location.href = 'dashboard/preview.html';
+        }
+    }
+    </script>
+</body>
+</html>
