@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shops — Fixology Admin</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--surface-5:#232329;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.6;display:flex;min-height:100vh}
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);padding:24px 16px;display:flex;flex-direction:column;position:fixed;height:100vh;overflow-y:auto}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;padding:0 12px;margin-bottom:8px}
+    .sidebar-logo img{width:36px;height:36px;filter:drop-shadow(0 0 12px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:10px;padding:3px 8px;background:var(--lavender-600);border-radius:6px;margin-left:auto;font-weight:600;color:white}
+    .sidebar-section{margin-top:32px}
+    .sidebar-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:0 12px;margin-bottom:12px}
+    .sidebar-nav{list-style:none}
+    .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);border-radius:10px;transition:all 0.15s;margin-bottom:4px;text-decoration:none}
+    .sidebar-nav a:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-nav a.active{background:rgba(139,92,246,0.15);color:var(--lavender-400);font-weight:500}
+    .sidebar-nav-icon{font-size:18px;width:24px;text-align:center}
+    .sidebar-bottom{margin-top:auto;padding-top:24px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px}
+    .sidebar-avatar{width:36px;height:36px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+    .sidebar-user-info{flex:1}
+    .sidebar-user-name{font-size:14px;font-weight:500}
+    .sidebar-user-role{font-size:12px;color:var(--text-muted)}
+    .main{flex:1;margin-left:260px;padding:32px}
+    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:8px}
+    .breadcrumb a{color:var(--text-secondary);text-decoration:none}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .page-title{font-family:var(--font-tech);font-size:1.75rem;font-weight:700}
+    .page-actions{display:flex;gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;font-weight:500;border-radius:10px;border:none;cursor:pointer;transition:all 0.15s}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-secondary{background:var(--surface-3);color:var(--text-primary);border:1px solid var(--border-default)}
+
+    /* Filters */
+    .filters-bar{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+    .search-input{flex:1;min-width:200px;padding:12px 16px;background:var(--surface-3);border:1px solid var(--border-default);border-radius:10px;color:var(--text-primary);font-size:14px}
+    .search-input::placeholder{color:var(--text-muted)}
+    .filter-select{padding:12px 16px;background:var(--surface-3);border:1px solid var(--border-default);border-radius:10px;color:var(--text-primary);font-size:14px;cursor:pointer}
+
+    /* Table */
+    .table-card{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;overflow:hidden}
+    .data-table{width:100%;border-collapse:collapse}
+    .data-table th{text-align:left;padding:16px 20px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);background:var(--surface-3);border-bottom:1px solid var(--border-subtle)}
+    .data-table td{padding:16px 20px;font-size:14px;border-bottom:1px solid var(--border-subtle)}
+    .data-table tr:hover td{background:var(--surface-3)}
+    .data-table tr:last-child td{border-bottom:none}
+    .shop-name{font-weight:500;display:flex;align-items:center;gap:10px}
+    .shop-avatar{width:32px;height:32px;background:var(--surface-4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .status-pill{display:inline-flex;padding:4px 10px;font-size:12px;font-weight:500;border-radius:6px}
+    .status-pill.active{background:rgba(34,197,94,0.15);color:var(--success)}
+    .status-pill.trial{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .status-pill.suspended{background:rgba(239,68,68,0.15);color:var(--danger)}
+    .plan-badge{padding:4px 10px;font-size:12px;font-weight:500;border-radius:6px;background:var(--surface-4);color:var(--text-secondary)}
+    .plan-badge.pro{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .plan-badge.enterprise{background:rgba(34,197,94,0.15);color:var(--success)}
+    .table-actions{display:flex;gap:8px}
+    .table-actions button{padding:6px 12px;font-size:12px;background:var(--surface-4);border:1px solid var(--border-default);border-radius:6px;color:var(--text-secondary);cursor:pointer;transition:all 0.15s}
+    .table-actions button:hover{background:var(--surface-5);color:var(--text-primary)}
+    .mono{font-family:var(--font-mono);color:var(--text-secondary)}
+
+    /* Drawer */
+    .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);opacity:0;pointer-events:none;transition:opacity 0.2s;z-index:100}
+    .drawer-overlay.open{opacity:1;pointer-events:auto}
+    .drawer{position:fixed;top:0;right:-420px;width:420px;height:100vh;background:var(--surface-2);border-left:1px solid var(--border-subtle);padding:24px;transition:right 0.3s ease;z-index:101;overflow-y:auto}
+    .drawer.open{right:0}
+    .drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .drawer-title{font-size:18px;font-weight:600}
+    .drawer-close{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--surface-4);border-radius:10px;cursor:pointer;font-size:18px;border:none;color:var(--text-secondary)}
+    .drawer-section{margin-bottom:24px}
+    .drawer-section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:12px}
+    .drawer-stat{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border-subtle)}
+    .drawer-stat:last-child{border-bottom:none}
+    .drawer-stat-label{color:var(--text-secondary)}
+    .drawer-stat-value{font-family:var(--font-mono);font-weight:500}
+    .channel-tags{display:flex;gap:8px;flex-wrap:wrap}
+    .channel-tag{padding:6px 12px;background:var(--surface-4);border-radius:8px;font-size:13px}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology"><span>Fixology</span><span class="sidebar-badge">ADMIN</span></div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Overview</div>
+            <ul class="sidebar-nav">
+                <li><a href="index.html"><span class="sidebar-nav-icon">📊</span><span>Dashboard</span></a></li>
+                <li><a href="shops.html" class="active"><span class="sidebar-nav-icon">🏪</span><span>Shops</span></a></li>
+                <li><a href="users.html"><span class="sidebar-nav-icon">👥</span><span>Users</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Analytics</div>
+            <ul class="sidebar-nav">
+                <li><a href="usage.html"><span class="sidebar-nav-icon">📈</span><span>Usage</span></a></li>
+                <li><a href="billing.html"><span class="sidebar-nav-icon">💳</span><span>Billing</span></a></li>
+                <li><a href="events.html"><span class="sidebar-nav-icon">📋</span><span>Events</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Platform</div>
+            <ul class="sidebar-nav">
+                <li><a href="content.html"><span class="sidebar-nav-icon">📝</span><span>Content</span></a></li>
+                <li><a href="settings.html"><span class="sidebar-nav-icon">⚙️</span><span>Settings</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="../index.html" class="sidebar-nav" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);border-radius:10px;text-decoration:none"><span>←</span><span>Back to Site</span></a>
+            <div class="sidebar-user"><div class="sidebar-avatar">M</div><div class="sidebar-user-info"><div class="sidebar-user-name">Mufasa</div><div class="sidebar-user-role">Founder</div></div></div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <div class="breadcrumb"><a href="index.html">Admin</a><span>/</span><span>Shops</span></div>
+        <div class="page-header">
+            <h1 class="page-title">Shops <span style="font-size:14px;color:var(--text-muted);font-weight:400;margin-left:8px">247 total</span></h1>
+            <div class="page-actions">
+                <button class="btn btn-secondary">📤 Export</button>
+                <button class="btn btn-primary">+ Add Shop</button>
+            </div>
+        </div>
+
+        <div class="filters-bar">
+            <input type="text" class="search-input" placeholder="Search shops...">
+            <select class="filter-select">
+                <option>All Plans</option>
+                <option>Free</option>
+                <option>Pro</option>
+                <option>Enterprise</option>
+            </select>
+            <select class="filter-select">
+                <option>All Status</option>
+                <option>Active</option>
+                <option>Trial</option>
+                <option>Suspended</option>
+            </select>
+        </div>
+
+        <div class="table-card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Shop</th>
+                        <th>Location</th>
+                        <th>Plan</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Last Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="shopsTable"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Drawer -->
+    <div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="drawer">
+        <div class="drawer-header">
+            <span class="drawer-title" id="drawerTitle">Shop Details</span>
+            <button class="drawer-close" onclick="closeDrawer()">×</button>
+        </div>
+        <div class="drawer-section">
+            <div class="drawer-section-title">Usage (Last 30 Days)</div>
+            <div class="drawer-stat"><span class="drawer-stat-label">AI Diagnoses</span><span class="drawer-stat-value" id="drawerDiag">0</span></div>
+            <div class="drawer-stat"><span class="drawer-stat-label">Tickets Created</span><span class="drawer-stat-value" id="drawerTickets">0</span></div>
+            <div class="drawer-stat"><span class="drawer-stat-label">Revenue Processed</span><span class="drawer-stat-value" id="drawerRevenue">$0</span></div>
+        </div>
+        <div class="drawer-section">
+            <div class="drawer-section-title">Website</div>
+            <div class="drawer-stat"><span class="drawer-stat-label">Status</span><span class="drawer-stat-value" id="drawerWebsite">Not Published</span></div>
+        </div>
+        <div class="drawer-section">
+            <div class="drawer-section-title">Channels Enabled</div>
+            <div class="channel-tags" id="drawerChannels"></div>
+        </div>
+    </div>
+
+    <script>
+    const shops = [
+        {name:'iCenter STL',loc:'St. Louis, MO',plan:'pro',status:'active',created:'Dec 1, 2024',lastActive:'2 hours ago',diag:342,tickets:187,revenue:'$24,500',website:'Published',channels:['SMS','Instagram','Messenger']},
+        {name:'TechFix Pro',loc:'Chicago, IL',plan:'enterprise',status:'active',created:'Nov 15, 2024',lastActive:'1 hour ago',diag:891,tickets:445,revenue:'$67,200',website:'Published',channels:['SMS','Phone AI','Instagram']},
+        {name:'Mobile Masters',loc:'Denver, CO',plan:'pro',status:'active',created:'Nov 20, 2024',lastActive:'3 hours ago',diag:234,tickets:98,revenue:'$12,300',website:'Not Published',channels:['SMS']},
+        {name:'PhoneDoc NYC',loc:'New York, NY',plan:'enterprise',status:'active',created:'Oct 5, 2024',lastActive:'30 min ago',diag:1247,tickets:623,revenue:'$89,400',website:'Published',channels:['SMS','Instagram','Messenger','Phone AI']},
+        {name:'QuickFix Mobile',loc:'Austin, TX',plan:'free',status:'trial',created:'Dec 2, 2024',lastActive:'1 day ago',diag:12,tickets:5,revenue:'$450',website:'Not Published',channels:['SMS']},
+        {name:'CellSavers',loc:'Miami, FL',plan:'pro',status:'active',created:'Sep 12, 2024',lastActive:'5 hours ago',diag:567,tickets:289,revenue:'$34,100',website:'Published',channels:['SMS','Instagram']},
+        {name:'DeviceMD',loc:'Seattle, WA',plan:'free',status:'suspended',created:'Aug 1, 2024',lastActive:'45 days ago',diag:89,tickets:34,revenue:'$2,100',website:'Not Published',channels:[]},
+    ];
+    
+    const table = document.getElementById('shopsTable');
+    shops.forEach((shop, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><div class="shop-name"><div class="shop-avatar">${shop.name[0]}</div>${shop.name}</div></td>
+            <td>${shop.loc}</td>
+            <td><span class="plan-badge ${shop.plan}">${shop.plan.charAt(0).toUpperCase()+shop.plan.slice(1)}</span></td>
+            <td><span class="status-pill ${shop.status}">${shop.status.charAt(0).toUpperCase()+shop.status.slice(1)}</span></td>
+            <td class="mono">${shop.created}</td>
+            <td class="mono">${shop.lastActive}</td>
+            <td class="table-actions">
+                <button onclick="openDrawer(${i})">View</button>
+                <button>Impersonate</button>
+            </td>
+        `;
+        table.appendChild(row);
+    });
+
+    function openDrawer(i) {
+        const shop = shops[i];
+        document.getElementById('drawerTitle').textContent = shop.name;
+        document.getElementById('drawerDiag').textContent = shop.diag;
+        document.getElementById('drawerTickets').textContent = shop.tickets;
+        document.getElementById('drawerRevenue').textContent = shop.revenue;
+        document.getElementById('drawerWebsite').textContent = shop.website;
+        document.getElementById('drawerChannels').innerHTML = shop.channels.map(c => `<span class="channel-tag">${c}</span>`).join('');
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('drawerOverlay').classList.add('open');
+    }
+    function closeDrawer() {
+        document.getElementById('drawer').classList.remove('open');
+        document.getElementById('drawerOverlay').classList.remove('open');
+    }
+    </script>
+</body>
+</html>

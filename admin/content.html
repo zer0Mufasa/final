@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content — Fixology Admin</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--success:#22C55E;--warning:#F59E0B;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.6;display:flex;min-height:100vh}
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);padding:24px 16px;display:flex;flex-direction:column;position:fixed;height:100vh}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;padding:0 12px}
+    .sidebar-logo img{width:36px;height:36px;filter:drop-shadow(0 0 12px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:10px;padding:3px 8px;background:var(--lavender-600);border-radius:6px;margin-left:auto;font-weight:600;color:white}
+    .sidebar-section{margin-top:32px}
+    .sidebar-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:0 12px;margin-bottom:12px}
+    .sidebar-nav{list-style:none}
+    .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);border-radius:10px;transition:all 0.15s;margin-bottom:4px;text-decoration:none}
+    .sidebar-nav a:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-nav a.active{background:rgba(139,92,246,0.15);color:var(--lavender-400);font-weight:500}
+    .sidebar-bottom{margin-top:auto;padding-top:24px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px}
+    .sidebar-avatar{width:36px;height:36px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600}
+    .main{flex:1;margin-left:260px;padding:32px}
+    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:8px}
+    .breadcrumb a{color:var(--text-secondary);text-decoration:none}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .page-title{font-family:var(--font-tech);font-size:1.75rem;font-weight:700}
+    .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--surface-2);padding:4px;border-radius:12px;width:fit-content}
+    .tab{padding:10px 20px;font-size:14px;font-weight:500;border-radius:10px;cursor:pointer;color:var(--text-secondary);transition:all 0.15s}
+    .tab:hover{color:var(--text-primary)}
+    .tab.active{background:var(--surface-4);color:var(--text-primary)}
+    .content-grid{display:grid;grid-template-columns:1fr 400px;gap:24px}
+    .editor-card{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:24px}
+    .editor-title{font-size:16px;font-weight:600;margin-bottom:20px}
+    .form-group{margin-bottom:20px}
+    .form-label{display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px}
+    .form-input{width:100%;padding:12px 16px;background:var(--surface-3);border:1px solid var(--border-default);border-radius:10px;color:var(--text-primary);font-size:14px}
+    .form-input:focus{outline:none;border-color:var(--lavender-500)}
+    .form-textarea{min-height:120px;resize:vertical;font-family:var(--font-sans)}
+    .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath fill='%23a1a1aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;font-weight:500;border-radius:10px;border:none;cursor:pointer}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-secondary{background:var(--surface-4);color:var(--text-primary)}
+    .preview-card{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:24px}
+    .preview-title{font-size:14px;font-weight:600;color:var(--text-muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px}
+    .preview-item{background:var(--surface-3);border-radius:12px;padding:16px;margin-bottom:12px}
+    .preview-item-title{font-weight:500;margin-bottom:4px}
+    .preview-item-desc{font-size:13px;color:var(--text-secondary)}
+    .preview-item-meta{font-size:12px;color:var(--text-muted);margin-top:8px}
+    .status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+    .status-dot.operational{background:var(--success)}
+    .status-dot.degraded{background:var(--warning)}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology"><span>Fixology</span><span class="sidebar-badge">ADMIN</span></div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Overview</div><ul class="sidebar-nav"><li><a href="index.html"><span>📊</span><span>Dashboard</span></a></li><li><a href="shops.html"><span>🏪</span><span>Shops</span></a></li><li><a href="users.html"><span>👥</span><span>Users</span></a></li></ul></div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Analytics</div><ul class="sidebar-nav"><li><a href="usage.html"><span>📈</span><span>Usage</span></a></li><li><a href="billing.html"><span>💳</span><span>Billing</span></a></li><li><a href="events.html"><span>📋</span><span>Events</span></a></li></ul></div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Platform</div><ul class="sidebar-nav"><li><a href="content.html" class="active"><span>📝</span><span>Content</span></a></li><li><a href="settings.html"><span>⚙️</span><span>Settings</span></a></li></ul></div>
+        <div class="sidebar-bottom"><a href="../index.html" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);text-decoration:none"><span>←</span><span>Back to Site</span></a>
+            <a href="#" onclick="sessionStorage.removeItem('fixology_user');window.location.href='../login.html'" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--danger,#EF4444);text-decoration:none"><span>🚪</span><span>Logout</span></a><div class="sidebar-user"><div class="sidebar-avatar">M</div><div><div style="font-size:14px;font-weight:500">Mufasa</div><div style="font-size:12px;color:var(--text-muted)">Founder</div></div></div></div>
+    </aside>
+    <main class="main">
+        <div class="breadcrumb"><a href="index.html">Admin</a><span>/</span><span>Content</span></div>
+        <div class="page-header"><h1 class="page-title">Content Management</h1></div>
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('status')">Status</div>
+            <div class="tab" onclick="showTab('changelog')">Changelog</div>
+            <div class="tab" onclick="showTab('cases')">Case Studies</div>
+        </div>
+        <div class="content-grid">
+            <div class="editor-card">
+                <div class="editor-title">Add Status Update</div>
+                <div class="form-group">
+                    <label class="form-label">Service</label>
+                    <select class="form-input form-select">
+                        <option>All Services</option>
+                        <option>AI Diagnostics</option>
+                        <option>IMEI Lookup</option>
+                        <option>Website Builder</option>
+                        <option>Dashboard</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-input form-select">
+                        <option>Operational</option>
+                        <option>Degraded Performance</option>
+                        <option>Partial Outage</option>
+                        <option>Major Outage</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-input form-textarea" placeholder="Describe the current status..."></textarea>
+                </div>
+                <button class="btn btn-primary">Publish Status</button>
+            </div>
+            <div class="preview-card">
+                <div class="preview-title">Current Status</div>
+                <div class="preview-item">
+                    <div class="preview-item-title"><span class="status-dot operational"></span>AI Diagnostics</div>
+                    <div class="preview-item-desc">All systems operational</div>
+                    <div class="preview-item-meta">Updated 2 hours ago</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-item-title"><span class="status-dot operational"></span>IMEI Lookup</div>
+                    <div class="preview-item-desc">All systems operational</div>
+                    <div class="preview-item-meta">Updated 2 hours ago</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-item-title"><span class="status-dot degraded"></span>Website Builder</div>
+                    <div class="preview-item-desc">Increased publish times</div>
+                    <div class="preview-item-meta">Updated 30 min ago</div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+    function showTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events — Fixology Admin</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.6;display:flex;min-height:100vh}
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);padding:24px 16px;display:flex;flex-direction:column;position:fixed;height:100vh}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;padding:0 12px}
+    .sidebar-logo img{width:36px;height:36px;filter:drop-shadow(0 0 12px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:10px;padding:3px 8px;background:var(--lavender-600);border-radius:6px;margin-left:auto;font-weight:600;color:white}
+    .sidebar-section{margin-top:32px}
+    .sidebar-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:0 12px;margin-bottom:12px}
+    .sidebar-nav{list-style:none}
+    .sidebar-nav a{display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);border-radius:10px;transition:all 0.15s;margin-bottom:4px;text-decoration:none}
+    .sidebar-nav a:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-nav a.active{background:rgba(139,92,246,0.15);color:var(--lavender-400);font-weight:500}
+    .sidebar-bottom{margin-top:auto;padding-top:24px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px}
+    .sidebar-avatar{width:36px;height:36px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600}
+    .sidebar-user-name{font-size:14px;font-weight:500}
+    .sidebar-user-role{font-size:12px;color:var(--text-muted)}
+    .main{flex:1;margin-left:260px;padding:32px}
+    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-muted);margin-bottom:8px}
+    .breadcrumb a{color:var(--text-secondary);text-decoration:none}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .page-title{font-family:var(--font-tech);font-size:1.75rem;font-weight:700}
+    .filters-bar{display:flex;gap:12px;margin-bottom:24px}
+    .filter-select{padding:10px 16px;background:var(--surface-3);border:1px solid var(--border-default);border-radius:10px;color:var(--text-primary);font-size:14px}
+    .search-input{flex:1;padding:10px 16px;background:var(--surface-3);border:1px solid var(--border-default);border-radius:10px;color:var(--text-primary);font-size:14px}
+    .search-input::placeholder{color:var(--text-muted)}
+    .events-list{display:flex;flex-direction:column;gap:12px}
+    .event-card{display:flex;gap:16px;padding:20px;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:14px;transition:all 0.15s}
+    .event-card:hover{border-color:var(--border-default)}
+    .event-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .event-icon.signup{background:rgba(34,197,94,0.15)}
+    .event-icon.website{background:rgba(139,92,246,0.15)}
+    .event-icon.billing{background:rgba(245,158,11,0.15)}
+    .event-icon.ai{background:rgba(34,211,238,0.15)}
+    .event-icon.user{background:rgba(167,139,250,0.15)}
+    .event-icon.security{background:rgba(239,68,68,0.15)}
+    .event-content{flex:1}
+    .event-header{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+    .event-type{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;padding:3px 8px;background:var(--surface-4);border-radius:4px;color:var(--text-muted)}
+    .event-title{font-size:15px;font-weight:500}
+    .event-desc{font-size:14px;color:var(--text-secondary);margin-top:4px}
+    .event-meta{display:flex;align-items:center;gap:16px;margin-top:10px;font-size:13px;color:var(--text-muted)}
+    .event-meta span{display:flex;align-items:center;gap:6px}
+    .mono{font-family:var(--font-mono)}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology"><span>Fixology</span><span class="sidebar-badge">ADMIN</span></div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Overview</div><ul class="sidebar-nav"><li><a href="index.html"><span>📊</span><span>Dashboard</span></a></li><li><a href="shops.html"><span>🏪</span><span>Shops</span></a></li><li><a href="users.html"><span>👥</span><span>Users</span></a></li></ul></div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Analytics</div><ul class="sidebar-nav"><li><a href="usage.html"><span>📈</span><span>Usage</span></a></li><li><a href="billing.html"><span>💳</span><span>Billing</span></a></li><li><a href="events.html" class="active"><span>📋</span><span>Events</span></a></li></ul></div>
+        <div class="sidebar-section"><div class="sidebar-section-title">Platform</div><ul class="sidebar-nav"><li><a href="content.html"><span>📝</span><span>Content</span></a></li><li><a href="settings.html"><span>⚙️</span><span>Settings</span></a></li></ul></div>
+        <div class="sidebar-bottom"><a href="../index.html" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);text-decoration:none"><span>←</span><span>Back to Site</span></a>
+            <a href="#" onclick="sessionStorage.removeItem('fixology_user');window.location.href='../login.html'" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--danger,#EF4444);text-decoration:none"><span>🚪</span><span>Logout</span></a><div class="sidebar-user"><div class="sidebar-avatar">M</div><div><div class="sidebar-user-name">Mufasa</div><div class="sidebar-user-role">Founder</div></div></div></div>
+    </aside>
+    <main class="main">
+        <div class="breadcrumb"><a href="index.html">Admin</a><span>/</span><span>Events</span></div>
+        <div class="page-header"><h1 class="page-title">Event Log</h1></div>
+        <div class="filters-bar">
+            <input type="text" class="search-input" placeholder="Search events...">
+            <select class="filter-select"><option>All Types</option><option>Signup</option><option>Billing</option><option>Website</option><option>AI</option><option>Security</option></select>
+            <select class="filter-select"><option>Last 24 hours</option><option>Last 7 days</option><option>Last 30 days</option></select>
+        </div>
+        <div class="events-list">
+            <div class="event-card">
+                <div class="event-icon signup">🏪</div>
+                <div class="event-content">
+                    <div class="event-header"><span class="event-type">Signup</span></div>
+                    <div class="event-title">New shop registered: iCenter STL</div>
+                    <div class="event-desc">Marcus Johnson signed up for Pro plan from St. Louis, MO</div>
+                    <div class="event-meta"><span class="mono">Dec 4, 2024 2:34 PM</span><span>IP: 74.125.xxx.xxx</span></div>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-icon website">🌐</div>
+                <div class="event-content">
+                    <div class="event-header"><span class="event-type">Website</span></div>
+                    <div class="event-title">Website published: TechFix Pro</div>
+                    <div class="event-desc">Published to techfixpro.fixologyai.com using "Modern Lavender" template</div>
+                    <div class="event-meta"><span class="mono">Dec 4, 2024 2:15 PM</span><span>User: Sarah Chen</span></div>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-icon ai">🧠</div>
+                <div class="event-content">
+                    <div class="event-header"><span class="event-type">AI</span></div>
+                    <div class="event-title">AI milestone: 10,000 diagnoses this month</div>
+                    <div class="event-desc">Platform reached 10,000 AI-powered diagnoses for December 2024</div>
+                    <div class="event-meta"><span class="mono">Dec 4, 2024 1:00 PM</span><span>System</span></div>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-icon billing">💳</div>
+                <div class="event-content">
+                    <div class="event-header"><span class="event-type">Billing</span></div>
+                    <div class="event-title">Plan upgrade: Mobile Masters → Enterprise</div>
+                    <div class="event-desc">Upgraded from Pro ($79/mo) to Enterprise ($299/mo)</div>
+                    <div class="event-meta"><span class="mono">Dec 4, 2024 11:45 AM</span><span>User: Jessica Lee</span></div>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-icon user">👤</div>
+                <div class="event-content">
+                    <div class="event-header"><span class="event-type">User</span></div>
+                    <div class="event-title">New user added: John Smith</div>
+                    <div class="event-desc">Added as Technician role at PhoneDoc NYC</div>
+                    <div class="event-meta"><span class="mono">Dec 4, 2024 10:30 AM</span><span>User: James Wilson</span></div>
+                </div>
+            </div>
+            <div class="event-card">
+                <div class="event-icon security">🔒</div>
+                <div class="event-content">
+                    <div class="event-header"><span class="event-type">Security</span></div>
+                    <div class="event-title">Failed login attempt</div>
+                    <div class="event-desc">3 failed login attempts for admin@cellsavers.com</div>
+                    <div class="event-meta"><span class="mono">Dec 4, 2024 9:15 AM</span><span>IP: 192.168.xxx.xxx</span></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
