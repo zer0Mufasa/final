@@ -1,16 +1,3 @@
 {
   "version": 2
 }
-```
-
-**Step 3:** Commit changes
-
-**Step 4:** Wait for Vercel to redeploy (1-2 minutes)
-
----
-
-## 🧪 Then Test the API Directly
-
-After redeploy, open this in your browser:
-```
-https://final-oc9r.vercel.app/api/imei-check
