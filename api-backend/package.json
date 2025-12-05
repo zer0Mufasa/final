@@ -1,0 +1,15 @@
+{
+  "name": "fixology-imei-api",
+  "version": "3.0.0",
+  "description": "Fixology IMEI Intelligence API - Real IMEICheck.net Integration",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
