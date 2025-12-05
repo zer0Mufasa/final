@@ -1,20 +1,16 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Credentials", "value": "true" },
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,POST" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" }
-      ]
-    }
-  ]
+  "version": 2
 }
+```
+
+**Step 3:** Commit changes
+
+**Step 4:** Wait for Vercel to redeploy (1-2 minutes)
+
+---
+
+## 🧪 Then Test the API Directly
+
+After redeploy, open this in your browser:
+```
+https://final-oc9r.vercel.app/api/imei-check
