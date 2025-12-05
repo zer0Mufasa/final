@@ -5,7 +5,7 @@
 
 const CONFIG = {
     // Your Vercel API endpoint - UPDATE THIS after deploying!
-    apiEndpoint: 'https://fixology-imei-api.vercel.app/api/imei-check',
+    apiEndpoint: 'https://final-oc9r.vercel.app/api/imei-check',
     
     // Fallback to demo mode if API fails
     demoMode: false,
