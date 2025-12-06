@@ -21,6 +21,7 @@ module.exports = async function handler(req, res) {
   try {
     var body = req.body || {};
     var imei = body.imei;
+    var serviceId = body.serviceId || 1;
 
     if (!imei) {
       return res.status(400).json({ error: 'Missing imei' });
@@ -39,7 +40,7 @@ module.exports = async function handler(req, res) {
       },
       body: JSON.stringify({
         deviceId: imei.replace(/\D/g, ''),
-        serviceId: 12
+        serviceId: serviceId
       })
     });
 
