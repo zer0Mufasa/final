@@ -106,6 +106,108 @@ async function loadShops() {
   }
 }
 
+/**
+ * Fetch real shops from Google Places or Yelp API
+ */
+async function fetchRealShops(zipcode) {
+  const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+  const YELP_API_KEY = process.env.YELP_API_KEY;
+  
+  // First geocode the zipcode
+  let lat = 38.7892, lng = -90.3226; // Default Florissant
+  
+  if (GOOGLE_API_KEY) {
+    try {
+      const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${zipcode}&key=${GOOGLE_API_KEY}`;
+      const geoRes = await fetch(geoUrl);
+      const geoData = await geoRes.json();
+      if (geoData.results?.[0]?.geometry?.location) {
+        lat = geoData.results[0].geometry.location.lat;
+        lng = geoData.results[0].geometry.location.lng;
+      }
+    } catch (e) {
+      console.error('Geocoding error:', e);
+    }
+  }
+  
+  // Try Google Places
+  if (GOOGLE_API_KEY) {
+    try {
+      const searchUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=16093&keyword=cell%20phone%20repair&type=store&key=${GOOGLE_API_KEY}`;
+      const searchRes = await fetch(searchUrl);
+      const searchData = await searchRes.json();
+      
+      if (searchData.results && searchData.results.length > 0) {
+        // Get details for top 5 results
+        const shops = await Promise.all(
+          searchData.results.slice(0, 5).map(async (place) => {
+            try {
+              const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,rating,user_ratings_total,opening_hours&key=${GOOGLE_API_KEY}`;
+              const detailsRes = await fetch(detailsUrl);
+              const detailsData = await detailsRes.json();
+              const d = detailsData.result || {};
+              
+              const distance = calculateDistance(lat, lng, place.geometry.location.lat, place.geometry.location.lng);
+              
+              return {
+                name: d.name || place.name,
+                address: d.formatted_address || place.vicinity,
+                phone: d.formatted_phone_number || 'Call for info',
+                distance: Math.round(distance * 10) / 10,
+                rating: d.rating || place.rating || 4.0,
+                review_count: d.user_ratings_total || place.user_ratings_total || 0,
+                same_day: true,
+                warranty: 30,
+                features: ['Walk-ins Welcome'],
+                source: 'google_places'
+              };
+            } catch (e) {
+              return null;
+            }
+          })
+        );
+        
+        return shops.filter(s => s !== null);
+      }
+    } catch (e) {
+      console.error('Google Places error:', e);
+    }
+  }
+  
+  // Try Yelp as fallback
+  if (YELP_API_KEY) {
+    try {
+      const yelpUrl = `https://api.yelp.com/v3/businesses/search?latitude=${lat}&longitude=${lng}&radius=16000&categories=mobilephonerepair&sort_by=distance&limit=5`;
+      const yelpRes = await fetch(yelpUrl, {
+        headers: { 'Authorization': `Bearer ${YELP_API_KEY}` }
+      });
+      const yelpData = await yelpRes.json();
+      
+      if (yelpData.businesses && yelpData.businesses.length > 0) {
+        return yelpData.businesses.map(b => {
+          const distance = calculateDistance(lat, lng, b.coordinates.latitude, b.coordinates.longitude);
+          return {
+            name: b.name,
+            address: b.location.display_address.join(', '),
+            phone: b.display_phone || 'Call for info',
+            distance: Math.round(distance * 10) / 10,
+            rating: b.rating || 4.0,
+            review_count: b.review_count || 0,
+            same_day: !b.is_closed,
+            warranty: 30,
+            features: b.categories?.map(c => c.title) || [],
+            source: 'yelp'
+          };
+        });
+      }
+    } catch (e) {
+      console.error('Yelp error:', e);
+    }
+  }
+  
+  return null; // No real API available
+}
+
 async function loadRepairPrices() {
   if (cachedRepairPrices) return cachedRepairPrices;
   try {
@@ -804,11 +906,19 @@ module.exports = async function handler(req, res) {
       }
     }
     
-    // Handle shop finder
+    // Handle shop finder - try real API first, then fallback to static
     let shopsData = null;
     if (intent === 'shop_finder') {
       const zipcode = extractZipcode(lastUserMessage.content);
-      shopsData = getNearbyShops(shops, zipcode, 5);
+      
+      // Try real-time API first
+      const realShops = await fetchRealShops(zipcode);
+      if (realShops && realShops.length > 0) {
+        shopsData = realShops;
+      } else {
+        // Fallback to static data
+        shopsData = getNearbyShops(shops, zipcode, 5);
+      }
     }
     
     // Handle repair pricing
