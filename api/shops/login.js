@@ -30,14 +30,14 @@ module.exports = async function handler(req, res) {
 
     const { shop, token } = await authenticateShop(email, password);
 
-    // Log login
-    await appendToLog('auth-log.json', {
+    // Log login (non-blocking)
+    appendToLog('auth-log.json', {
       type: 'shop_login',
       email: shop.email,
       shopId: shop.id,
       shopName: shop.shopName,
       ip: req.headers['x-forwarded-for'] || 'unknown'
-    });
+    }).catch(err => console.error('Log error:', err));
 
     console.log(`Shop logged in: ${shop.shopName} (${email})`);
 
@@ -57,4 +57,3 @@ module.exports = async function handler(req, res) {
     return sendError(res, 'Login failed', 500);
   }
 };
-

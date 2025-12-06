@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Receipt | Fixology</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-muted: rgba(255, 255, 255, 0.5);
+      --accent-purple: #a78bfa;
+      --accent-cyan: #06b6d4;
+      --success: #10b981;
+      --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    
+    .receipt-container { width: 100%; max-width: 500px; }
+    
+    .success-icon { width: 80px; height: 80px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.5rem; animation: pulse 2s infinite; }
+    
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); }
+    }
+    
+    .receipt-header { text-align: center; margin-bottom: 2rem; }
+    .receipt-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .receipt-subtitle { color: var(--text-secondary); }
+    
+    .receipt-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 2rem; }
+    
+    .receipt-row { display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--border-color); }
+    .receipt-row:last-child { border-bottom: none; }
+    .receipt-label { color: var(--text-secondary); }
+    .receipt-value { font-weight: 600; text-align: right; }
+    
+    .receipt-total { background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(6, 182, 212, 0.1)); border-radius: 10px; padding: 1rem; margin-top: 1rem; }
+    .receipt-total .receipt-label { font-weight: 600; color: var(--text-primary); }
+    .receipt-total .receipt-value { font-size: 1.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    .btn { display: block; width: 100%; padding: 1rem; font-size: 1rem; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; margin-top: 1rem; }
+    .btn-primary { background: var(--gradient-primary); color: white; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(167, 139, 250, 0.3); }
+    .btn-secondary { background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); }
+    
+    .receipt-footer { text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.875rem; }
+    .receipt-footer a { color: var(--accent-purple); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="receipt-container">
+    <div class="success-icon">✓</div>
+    
+    <div class="receipt-header">
+      <h1 class="receipt-title">Payment Successful!</h1>
+      <p class="receipt-subtitle">Thank you for upgrading to <span id="plan-name">Pro</span></p>
+    </div>
+
+    <div class="receipt-card">
+      <div class="receipt-row">
+        <span class="receipt-label">Receipt Number</span>
+        <span class="receipt-value" id="receipt-number">FIX-000000</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-label">Date</span>
+        <span class="receipt-value" id="receipt-date">-</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-label">Plan</span>
+        <span class="receipt-value" id="plan-type">Pro Plan</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-label">Billing Period</span>
+        <span class="receipt-value" id="billing-period">Monthly</span>
+      </div>
+      <div class="receipt-row">
+        <span class="receipt-label">Payment Method</span>
+        <span class="receipt-value" id="payment-method">•••• 4242</span>
+      </div>
+      
+      <div class="receipt-total">
+        <div class="receipt-row" style="border: none; padding: 0;">
+          <span class="receipt-label">Total Paid</span>
+          <span class="receipt-value" id="total-amount">$79.00</span>
+        </div>
+      </div>
+    </div>
+
+    <a href="dashboard/repairs.html" class="btn btn-primary">Go to Dashboard</a>
+    <a href="billing.html" class="btn btn-secondary">View Billing History</a>
+
+    <div class="receipt-footer">
+      <p>A copy of this receipt has been sent to your email.</p>
+      <p style="margin-top: 0.5rem;">Questions? <a href="support.html">Contact Support</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Parse URL parameters for receipt details
+    const params = new URLSearchParams(window.location.search);
+    
+    const receiptId = params.get('receipt') || 'FIX-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    const plan = params.get('plan') || 'pro';
+    const amount = params.get('amount') || (plan === 'basic' ? '29' : plan === 'enterprise' ? '199' : '79');
+    
+    document.getElementById('receipt-number').textContent = receiptId;
+    document.getElementById('receipt-date').textContent = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', month: 'long', day: 'numeric' 
+    });
+    
+    const planNames = {
+      basic: 'Basic Plan',
+      pro: 'Pro Plan',
+      enterprise: 'Enterprise Plan'
+    };
+    
+    document.getElementById('plan-name').textContent = planNames[plan] || 'Pro';
+    document.getElementById('plan-type').textContent = planNames[plan] || 'Pro Plan';
+    document.getElementById('total-amount').textContent = '$' + amount + '.00';
+    
+    // Get last 4 digits of card if available
+    const last4 = params.get('last4') || '4242';
+    document.getElementById('payment-method').textContent = '•••• ' + last4;
+  </script>
+</body>
+</html>
+

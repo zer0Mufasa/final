@@ -1,10 +1,10 @@
 /**
- * GET /api/shops/profile - Get shop profile
- * POST /api/shops/profile - Update shop profile
+ * GET/POST /api/shops/profile
+ * Shop owner profile management
  */
 
 const { handleCors, sendSuccess, sendError, sanitizeInput } = require('../lib/utils');
-const { requireAuth, updateShop } = require('../lib/auth');
+const { requireAuth, updateShop, getShopById } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
@@ -20,33 +20,29 @@ module.exports = async function handler(req, res) {
       return sendError(res, 'This endpoint is for shop accounts only', 403);
     }
 
+    const shop = auth.user;
+
     // GET - Return profile
     if (req.method === 'GET') {
-      return sendSuccess(res, { shop: auth.shop });
+      return sendSuccess(res, { shop });
     }
 
-    // POST - Update profile
-    if (req.method === 'POST') {
+    // POST/PUT - Update profile
+    if (req.method === 'POST' || req.method === 'PUT') {
       const body = req.body || {};
       
       const updates = {};
       
-      const allowedFields = [
-        'shopName', 'ownerName', 'address', 'city', 'state', 'zipcode',
-        'phone', 'website', 'businessHours', 'services'
-      ];
-
+      // Allowed fields to update
+      const allowedFields = ['shopName', 'ownerName', 'address', 'city', 'state', 'zipcode', 'phone', 'website', 'description', 'services', 'hours'];
+      
       for (const field of allowedFields) {
         if (body[field] !== undefined) {
-          if (typeof body[field] === 'string') {
-            updates[field] = sanitizeInput(body[field]);
-          } else {
-            updates[field] = body[field];
-          }
+          updates[field] = sanitizeInput(body[field]);
         }
       }
 
-      const updatedShop = await updateShop(auth.shop.id, updates);
+      const updatedShop = await updateShop(shop.id, updates);
 
       return sendSuccess(res, {
         message: 'Profile updated successfully',
@@ -61,4 +57,3 @@ module.exports = async function handler(req, res) {
     return sendError(res, 'Failed to process request', 500);
   }
 };
-

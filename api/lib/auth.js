@@ -342,6 +342,161 @@ async function getShopById(shopId) {
   return safeShop;
 }
 
+/**
+ * Create shop (alias for createShopUser with extended fields)
+ */
+async function createShop({ email, password, shopName, ownerName, address, city, state, zipcode, phone, website }) {
+  const existingShop = await redis.get(`shop:${email.toLowerCase()}`);
+  if (existingShop) {
+    throw new Error('Email already registered');
+  }
+
+  const shopId = uuidv4();
+  const passwordHash = await hashPassword(password);
+  const now = new Date().toISOString();
+
+  const shop = {
+    id: shopId,
+    email: email.toLowerCase(),
+    passwordHash,
+    shopName: shopName || '',
+    ownerName: ownerName || '',
+    address: address || '',
+    city: city || '',
+    state: state || '',
+    zipcode: zipcode || '',
+    phone: phone || '',
+    website: website || '',
+    createdAt: now,
+    updatedAt: now,
+    subscriptionPlan: 'free',
+    renewalDate: null,
+    websiteEnabled: false,
+    imeiChecksUsed: 0,
+    verified: false,
+    role: 'shop'
+  };
+
+  await redis.set(`shop:${email.toLowerCase()}`, shop);
+  await redis.set(`shop:id:${shopId}`, email.toLowerCase());
+  await redis.sadd('shops', shopId);
+
+  const token = generateToken({ 
+    shopId: shop.id, 
+    email: shop.email,
+    role: shop.role 
+  });
+
+  const { passwordHash: _, ...safeShop } = shop;
+  return { ...safeShop, token };
+}
+
+/**
+ * Authenticate shop (alias for loginShopUser)
+ */
+async function authenticateShop(email, password) {
+  return loginShopUser(email, password);
+}
+
+/**
+ * Update shop
+ */
+async function updateShop(shopId, updates) {
+  const email = await redis.get(`shop:id:${shopId}`);
+  if (!email) throw new Error('Shop not found');
+  
+  const shop = await redis.get(`shop:${email}`);
+  if (!shop) throw new Error('Shop not found');
+
+  const updatedShop = {
+    ...shop,
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  // Don't allow updating sensitive fields
+  updatedShop.id = shop.id;
+  updatedShop.email = shop.email;
+
+  await redis.set(`shop:${email}`, updatedShop);
+
+  const { passwordHash: _, ...safeShop } = updatedShop;
+  return safeShop;
+}
+
+/**
+ * Require admin authentication
+ */
+async function requireAdmin(req, res) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { error: 'Authentication required', status: 401 };
+  }
+
+  const token = authHeader.substring(7);
+  const decoded = verifyToken(token);
+  
+  if (!decoded) {
+    return { error: 'Invalid or expired token', status: 401 };
+  }
+
+  // Check admin email - you can set this in environment variable
+  const adminEmails = (process.env.ADMIN_EMAILS || 'admin@fixologyai.com').split(',');
+  
+  if (!adminEmails.includes(decoded.email)) {
+    return { error: 'Admin access required', status: 403 };
+  }
+
+  if (decoded.userId) {
+    const user = await getUserById(decoded.userId);
+    return { user, type: 'admin' };
+  }
+  
+  if (decoded.shopId) {
+    const shop = await getShopById(decoded.shopId);
+    return { user: shop, type: 'admin' };
+  }
+
+  return { error: 'Invalid token', status: 401 };
+}
+
+/**
+ * Get all users (for admin)
+ */
+async function getAllUsers() {
+  const userIds = await redis.smembers('users') || [];
+  const users = [];
+  
+  for (const userId of userIds) {
+    const user = await getUserById(userId);
+    if (user) users.push(user);
+  }
+  
+  return users;
+}
+
+/**
+ * Get all shops (for admin)
+ */
+async function getAllShops() {
+  const shopIds = await redis.smembers('shops') || [];
+  const shops = [];
+  
+  for (const shopId of shopIds) {
+    const shop = await getShopById(shopId);
+    if (shop) shops.push(shop);
+  }
+  
+  return shops;
+}
+
+/**
+ * Export Redis client for other modules
+ */
+function getRedis() {
+  return redis;
+}
+
 module.exports = {
   hashPassword,
   comparePassword,
@@ -355,7 +510,14 @@ module.exports = {
   updateUserPassword,
   authenticateRequest,
   requireAuth,
+  requireAdmin,
   createShopUser,
+  createShop,
   loginShopUser,
-  getShopById
+  authenticateShop,
+  getShopById,
+  updateShop,
+  getAllUsers,
+  getAllShops,
+  getRedis
 };

@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
       return sendError(res, 'Password must be at least 8 characters', 400);
     }
 
-    const shop = await createShop({
+    const result = await createShop({
       email,
       password,
       shopName,
@@ -58,7 +58,8 @@ module.exports = async function handler(req, res) {
 
     return sendSuccess(res, {
       message: 'Shop account created successfully',
-      shop
+      shop: result,
+      token: result.token
     }, 201);
 
   } catch (err) {
@@ -71,4 +72,3 @@ module.exports = async function handler(req, res) {
     return sendError(res, 'Failed to create shop account', 500);
   }
 };
-

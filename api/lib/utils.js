@@ -3,9 +3,14 @@
  * Common functions for all API endpoints
  */
 
-const fs = require('fs').promises;
-const path = require('path');
 const crypto = require('crypto');
+const { Redis } = require('@upstash/redis');
+
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 
 // ═══════════════════════════════════════════════════════════════════
 // CORS CONFIGURATION
@@ -26,7 +31,7 @@ function setCorsHeaders(res, req) {
   
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Stripe-Signature');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
 }
@@ -41,58 +46,91 @@ function handleCors(req, res) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// DATABASE HELPERS (JSON File Based)
+// DATABASE HELPERS (Redis Based)
 // ═══════════════════════════════════════════════════════════════════
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
-
-async function readDatabase(filename) {
+async function readDatabase(key) {
   try {
-    const filePath = path.join(DATA_DIR, filename);
-    const data = await fs.readFile(filePath, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      // File doesn't exist, return empty structure
-      if (filename.endsWith('.json')) {
-        return filename.includes('log') ? [] : {};
-      }
-      return [];
+    // Map old filenames to Redis keys
+    const keyMap = {
+      'users.json': 'db:users',
+      'shop-users.json': 'db:shops',
+      'memory.json': 'db:memory',
+      'imei-log.json': 'db:imei-log',
+      'diagnostics-log.json': 'db:diagnostics-log',
+      'websites.json': 'db:websites',
+      'wiki.json': 'db:wiki',
+      'prices.json': 'db:prices',
+      'auth-log.json': 'db:auth-log',
+      'reset-tokens.json': 'db:reset-tokens'
+    };
+    
+    const redisKey = keyMap[key] || `db:${key.replace('.json', '')}`;
+    const data = await redis.get(redisKey);
+    
+    if (data === null) {
+      // Return appropriate empty structure
+      if (key.includes('log')) return [];
+      if (key === 'memory.json') return { conversations: {} };
+      if (key === 'users.json') return { users: [] };
+      if (key === 'shop-users.json') return { shops: [] };
+      if (key === 'wiki.json') return { articles: [] };
+      if (key === 'websites.json') return { websites: [] };
+      return {};
     }
-    console.error(`Error reading ${filename}:`, err);
-    throw err;
+    
+    return data;
+  } catch (err) {
+    console.error(`Error reading ${key}:`, err);
+    // Return empty structure on error
+    if (key.includes('log')) return [];
+    return {};
   }
 }
 
-async function writeDatabase(filename, data) {
+async function writeDatabase(key, data) {
   try {
-    const filePath = path.join(DATA_DIR, filename);
-    await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
+    const keyMap = {
+      'users.json': 'db:users',
+      'shop-users.json': 'db:shops',
+      'memory.json': 'db:memory',
+      'imei-log.json': 'db:imei-log',
+      'diagnostics-log.json': 'db:diagnostics-log',
+      'websites.json': 'db:websites',
+      'wiki.json': 'db:wiki',
+      'prices.json': 'db:prices',
+      'auth-log.json': 'db:auth-log',
+      'reset-tokens.json': 'db:reset-tokens'
+    };
+    
+    const redisKey = keyMap[key] || `db:${key.replace('.json', '')}`;
+    await redis.set(redisKey, data);
     return true;
   } catch (err) {
-    console.error(`Error writing ${filename}:`, err);
+    console.error(`Error writing ${key}:`, err);
     throw err;
   }
 }
 
-async function appendToLog(filename, entry) {
+async function appendToLog(key, entry) {
   try {
-    const logs = await readDatabase(filename);
-    if (!Array.isArray(logs)) {
-      throw new Error('Log file must be an array');
-    }
-    logs.push({
+    const logs = await readDatabase(key);
+    const logArray = Array.isArray(logs) ? logs : [];
+    
+    logArray.push({
       ...entry,
       timestamp: new Date().toISOString()
     });
-    // Keep only last 10000 entries
-    if (logs.length > 10000) {
-      logs.splice(0, logs.length - 10000);
+    
+    // Keep only last 1000 entries (reduced for Redis storage efficiency)
+    if (logArray.length > 1000) {
+      logArray.splice(0, logArray.length - 1000);
     }
-    await writeDatabase(filename, logs);
+    
+    await writeDatabase(key, logArray);
     return true;
   } catch (err) {
-    console.error(`Error appending to ${filename}:`, err);
+    console.error(`Error appending to ${key}:`, err);
     return false;
   }
 }

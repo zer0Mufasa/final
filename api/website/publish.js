@@ -1,6 +1,6 @@
 /**
  * POST /api/website/publish
- * Publish shop website
+ * Publish or unpublish a shop website
  */
 
 const { handleCors, sendSuccess, sendError, readDatabase, writeDatabase } = require('../lib/utils');
@@ -15,52 +15,69 @@ module.exports = async function handler(req, res) {
 
   try {
     const auth = await requireAuth(req, res);
-    
     if (auth.error) {
       return sendError(res, auth.error, auth.status);
     }
 
     if (auth.type !== 'shop') {
-      return sendError(res, 'Only shop accounts can publish websites', 403);
+      return sendError(res, 'Shop account required', 403);
     }
 
-    const plan = auth.shop.subscriptionPlan;
-    if (!['pro', 'enterprise'].includes(plan)) {
-      return sendError(res, 'Website publishing requires Pro or Enterprise plan', 403);
-    }
-
-    const shopId = auth.shop.id;
-    const body = req.body || {};
-    const action = body.action || 'publish'; // 'publish' or 'unpublish'
+    const shopId = auth.user?.id;
+    const { publish } = req.body || {};
 
     // Load websites database
     const websitesDb = await readDatabase('websites.json');
-    const websites = websitesDb.websites || {};
+    const websites = websitesDb.websites || [];
 
-    if (!websites[shopId]) {
-      return sendError(res, 'No website configuration found. Please save your website first.', 404);
+    const websiteIndex = websites.findIndex(w => w.shopId === shopId);
+
+    if (websiteIndex < 0) {
+      return sendError(res, 'No website found. Please save your website first.', 404);
     }
 
-    websites[shopId].published = action === 'publish';
-    websites[shopId].publishedAt = action === 'publish' ? new Date().toISOString() : null;
-    websites[shopId].updatedAt = new Date().toISOString();
+    const website = websites[websiteIndex];
 
+    // Validate website has required content before publishing
+    if (publish) {
+      if (!website.businessInfo?.name) {
+        return sendError(res, 'Business name is required to publish', 400);
+      }
+      if (!website.theme) {
+        return sendError(res, 'Please select a theme before publishing', 400);
+      }
+    }
+
+    // Update publish status
+    website.published = publish !== false;
+    website.publishedAt = publish ? new Date().toISOString() : null;
+    website.updatedAt = new Date().toISOString();
+
+    // Generate public URL
+    const slug = website.businessInfo?.name
+      ?.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '') || shopId;
+    
+    website.publicUrl = `https://fixologyai.com/shop/${slug}`;
+
+    // Update shop record
+    await updateShop(shopId, {
+      websiteEnabled: website.published,
+      websiteUrl: website.publicUrl
+    });
+
+    // Save back
+    websites[websiteIndex] = website;
     websitesDb.websites = websites;
     websitesDb.updatedAt = new Date().toISOString();
     await writeDatabase('websites.json', websitesDb);
 
-    // Update shop record
-    await updateShop(shopId, { websiteEnabled: action === 'publish' });
-
-    const slug = auth.shop.websiteSlug || shopId;
-    const liveUrl = `https://fixologyai.com/shop/${slug}`;
-
-    console.log(`Website ${action}ed for shop: ${auth.shop.shopName}`);
-
     return sendSuccess(res, {
-      message: action === 'publish' ? 'Website published successfully!' : 'Website unpublished',
-      published: action === 'publish',
-      liveUrl: action === 'publish' ? liveUrl : null
+      message: website.published ? 'Website published!' : 'Website unpublished',
+      published: website.published,
+      publicUrl: website.published ? website.publicUrl : null,
+      publishedAt: website.publishedAt
     });
 
   } catch (err) {
@@ -68,4 +85,3 @@ module.exports = async function handler(req, res) {
     return sendError(res, 'Failed to publish website', 500);
   }
 };
-
