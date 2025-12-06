@@ -204,6 +204,129 @@
       "features": ["Budget Friendly", "Quick Service", "Cash Discount"],
       "created_at": "2024-02-28",
       "updated_at": "2024-12-02"
+    },
+    {
+      "id": "shop_006",
+      "name": "iCenter",
+      "slug": "icenter-florissant",
+      "address": {
+        "street": "500 N New Florissant Rd",
+        "city": "Florissant",
+        "state": "MO",
+        "zipcode": "63031",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.8045,
+        "lng": -90.3298
+      },
+      "phone": "(314) 555-1001",
+      "email": null,
+      "website": null,
+      "hours": {
+        "monday": "10:00-19:00",
+        "tuesday": "10:00-19:00",
+        "wednesday": "10:00-19:00",
+        "thursday": "10:00-19:00",
+        "friday": "10:00-19:00",
+        "saturday": "10:00-18:00",
+        "sunday": "12:00-17:00"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass", "camera"],
+      "brands_serviced": ["Apple", "Samsung", "Google", "LG"],
+      "rating": 4.5,
+      "review_count": 95,
+      "verified": false,
+      "certified": false,
+      "warranty_days": 60,
+      "same_day_service": true,
+      "mail_in_service": false,
+      "walk_in_welcome": true,
+      "features": ["Apple Specialist", "Walk-Ins Welcome", "Quick Turnaround"],
+      "created_at": "2024-12-06",
+      "updated_at": "2024-12-06"
+    },
+    {
+      "id": "shop_007",
+      "name": "Cellphone Genius",
+      "slug": "cellphone-genius",
+      "address": {
+        "street": "1025 Graham Rd",
+        "city": "Florissant",
+        "state": "MO",
+        "zipcode": "63031",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.8102,
+        "lng": -90.3156
+      },
+      "phone": "(314) 555-1002",
+      "email": null,
+      "website": null,
+      "hours": {
+        "monday": "10:00-19:00",
+        "tuesday": "10:00-19:00",
+        "wednesday": "10:00-19:00",
+        "thursday": "10:00-19:00",
+        "friday": "10:00-19:00",
+        "saturday": "10:00-17:00",
+        "sunday": "closed"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass", "camera", "water_damage"],
+      "brands_serviced": ["Apple", "Samsung", "Google", "LG", "Motorola"],
+      "rating": 4.4,
+      "review_count": 78,
+      "verified": false,
+      "certified": false,
+      "warranty_days": 60,
+      "same_day_service": true,
+      "mail_in_service": false,
+      "walk_in_welcome": true,
+      "features": ["Competitive Pricing", "Expert Technicians", "Fast Service"],
+      "created_at": "2024-12-06",
+      "updated_at": "2024-12-06"
+    },
+    {
+      "id": "shop_008",
+      "name": "C&C Cell Phone Repair",
+      "slug": "cc-cell-phone-repair",
+      "address": {
+        "street": "2100 N Hwy 67",
+        "city": "Florissant",
+        "state": "MO",
+        "zipcode": "63033",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.7956,
+        "lng": -90.3312
+      },
+      "phone": "(314) 555-1003",
+      "email": null,
+      "website": null,
+      "hours": {
+        "monday": "09:00-19:00",
+        "tuesday": "09:00-19:00",
+        "wednesday": "09:00-19:00",
+        "thursday": "09:00-19:00",
+        "friday": "09:00-19:00",
+        "saturday": "10:00-17:00",
+        "sunday": "closed"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass"],
+      "brands_serviced": ["Apple", "Samsung", "LG", "Motorola"],
+      "rating": 4.2,
+      "review_count": 52,
+      "verified": false,
+      "certified": false,
+      "warranty_days": 30,
+      "same_day_service": true,
+      "mail_in_service": false,
+      "walk_in_welcome": true,
+      "features": ["Affordable Prices", "Quick Repairs", "Local Business"],
+      "created_at": "2024-12-06",
+      "updated_at": "2024-12-06"
     }
   ],
   "zipcode_coordinates": {
