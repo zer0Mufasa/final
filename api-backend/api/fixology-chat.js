@@ -108,26 +108,45 @@ async function loadShops() {
 
 /**
  * Fetch real shops from Google Places or Yelp API
+ * @param {string} location - Any location: zipcode, city, address, "city, state", etc.
  */
-async function fetchRealShops(zipcode) {
+async function fetchRealShops(location) {
   const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
   const YELP_API_KEY = process.env.YELP_API_KEY;
   
-  // First geocode the zipcode
-  let lat = 38.7892, lng = -90.3226; // Default Florissant
+  if (!location) {
+    console.log('No location provided for shop search');
+    return null;
+  }
+  
+  // Geocode the location (works with ANY address, city, zipcode, etc.)
+  let lat = null, lng = null;
+  let locationName = location;
   
   if (GOOGLE_API_KEY) {
     try {
-      const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${zipcode}&key=${GOOGLE_API_KEY}`;
+      // Google Geocoding API handles ANY location format
+      const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
       const geoRes = await fetch(geoUrl);
       const geoData = await geoRes.json();
-      if (geoData.results?.[0]?.geometry?.location) {
+      
+      if (geoData.status === 'OK' && geoData.results?.[0]?.geometry?.location) {
         lat = geoData.results[0].geometry.location.lat;
         lng = geoData.results[0].geometry.location.lng;
+        locationName = geoData.results[0].formatted_address || location;
+        console.log(`Geocoded "${location}" to: ${lat}, ${lng} (${locationName})`);
+      } else {
+        console.log(`Geocoding failed for "${location}": ${geoData.status}`);
       }
     } catch (e) {
       console.error('Geocoding error:', e);
     }
+  }
+  
+  // If no API key or geocoding failed, we cannot find real shops
+  if (lat === null || lng === null) {
+    console.log('Cannot geocode location - no API key or geocoding failed');
+    return null;
   }
   
   // Try Google Places
@@ -348,10 +367,95 @@ function extractIMEI(message) {
   return match ? match[1] : null;
 }
 
+function extractLocation(message) {
+  // Try to extract the most specific location from the message
+  const lower = message.toLowerCase();
+  
+  // 1. Look for full addresses (number + street)
+  const addressMatch = message.match(/\d+\s+[\w\s]+(?:street|st|avenue|ave|road|rd|drive|dr|boulevard|blvd|way|lane|ln|court|ct|place|pl|circle|cir)[\s,]*(?:[\w\s,]+)?(?:\d{5})?/i);
+  if (addressMatch) {
+    return addressMatch[0].trim();
+  }
+  
+  // 2. Look for "in/near/around [location]" patterns
+  const locationPatterns = [
+    /(?:in|near|around|close to|by|at)\s+([^,.\n]+(?:,\s*[A-Z]{2})?(?:\s+\d{5})?)/i,
+    /shops?\s+(?:in|near|around)\s+([^,.\n]+)/i,
+    /(?:my\s+)?(?:address|location)\s+(?:is|:)?\s*([^,.\n]+)/i
+  ];
+  
+  for (const pattern of locationPatterns) {
+    const match = message.match(pattern);
+    if (match && match[1]) {
+      const loc = match[1].trim();
+      // Skip if it's just common words
+      if (!['me', 'my', 'here', 'this'].includes(loc.toLowerCase())) {
+        return loc;
+      }
+    }
+  }
+  
+  // 3. Look for city, state patterns
+  const cityStateMatch = message.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*),?\s*([A-Z]{2})\b/);
+  if (cityStateMatch) {
+    return `${cityStateMatch[1]}, ${cityStateMatch[2]}`;
+  }
+  
+  // 4. Look for US zipcode
+  const zipcodeMatch = message.match(/\b(\d{5}(?:-\d{4})?)\b/);
+  if (zipcodeMatch) {
+    return zipcodeMatch[1];
+  }
+  
+  // 5. Look for city names (common ones)
+  const cityPatterns = [
+    /\b(new york|nyc|manhattan|brooklyn|queens|bronx)\b/i,
+    /\b(los angeles|la|hollywood)\b/i,
+    /\b(chicago)\b/i,
+    /\b(houston)\b/i,
+    /\b(phoenix)\b/i,
+    /\b(philadelphia|philly)\b/i,
+    /\b(san antonio|san diego|san jose|san francisco)\b/i,
+    /\b(dallas|austin)\b/i,
+    /\b(seattle)\b/i,
+    /\b(denver)\b/i,
+    /\b(boston)\b/i,
+    /\b(atlanta)\b/i,
+    /\b(miami)\b/i,
+    /\b(st\.?\s*louis|saint louis)\b/i,
+    /\b(ballwin|florissant|chesterfield|manchester|kirkwood|clayton|ladue|creve coeur|maryland heights|hazelwood|bridgeton|ferguson|university city)\b/i
+  ];
+  
+  for (const pattern of cityPatterns) {
+    const match = message.match(pattern);
+    if (match) {
+      return match[1];
+    }
+  }
+  
+  // 6. Check for any capitalized words that might be a city
+  const capitalizedWords = message.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g);
+  if (capitalizedWords) {
+    // Filter out common non-location words
+    const excludeWords = ['I', 'The', 'My', 'What', 'Where', 'How', 'Can', 'Please', 'Help', 'Find', 'Shop', 'Repair', 'Phone', 'Screen', 'Battery', 'iPhone', 'Samsung', 'Android'];
+    for (const word of capitalizedWords) {
+      if (!excludeWords.includes(word) && word.length > 2) {
+        return word;
+      }
+    }
+  }
+  
+  return null; // No location found - let API handle it
+}
+
+// Keep old function for backward compatibility
 function extractZipcode(message) {
-  // Look for 5-digit US zipcode
-  const match = message.match(/\b(\d{5})\b/);
-  return match ? match[1] : '63033'; // Default to Florissant, MO
+  const location = extractLocation(message);
+  // If it's a 5-digit number, return it, otherwise return the full location
+  if (location && /^\d{5}$/.test(location)) {
+    return location;
+  }
+  return location || '63033'; // Default to Florissant, MO only if nothing found
 }
 
 function extractDeviceAndRepair(message) {
@@ -714,10 +818,13 @@ ROLE CONTEXT: ${role === 'shop' ? 'User is a repair shop technician/owner using 
   switch (intent) {
     case 'shop_finder':
       intentGuidelines += `
-- USE THE REAL SHOP DATA PROVIDED ABOVE - do NOT say you cannot access location
+- USE THE REAL SHOP DATA PROVIDED ABOVE - these are REAL shops from Google Places
+- You can find repair shops ANYWHERE in the world - just use the location the user provided
 - List the shops with their actual names, addresses, phone numbers, and distances
 - Highlight the closest shop first
 - Mention key features like same-day service, warranty, and ratings
+- If no shops were found, ask the user for their location (city, address, or zipcode)
+- NEVER say you only have Missouri data or can't access their location
 - Recommend calling ahead to confirm availability
 - Format as a clean, numbered list`;
       break;
@@ -906,17 +1013,26 @@ module.exports = async function handler(req, res) {
       }
     }
     
-    // Handle shop finder - try real API first, then fallback to static
+    // Handle shop finder - use Google Places API for ANY location worldwide
     let shopsData = null;
+    let searchLocation = null;
     if (intent === 'shop_finder') {
-      const zipcode = extractZipcode(lastUserMessage.content);
+      // Extract any location from the message (city, address, zipcode, etc.)
+      searchLocation = extractLocation(lastUserMessage.content);
       
-      // Try real-time API first
-      const realShops = await fetchRealShops(zipcode);
-      if (realShops && realShops.length > 0) {
-        shopsData = realShops;
-      } else {
-        // Fallback to static data
+      if (searchLocation) {
+        console.log(`Shop finder: Searching for shops near "${searchLocation}"`);
+        // Try real-time API - works for ANY location worldwide
+        const realShops = await fetchRealShops(searchLocation);
+        if (realShops && realShops.length > 0) {
+          shopsData = realShops;
+          console.log(`Found ${realShops.length} real shops near ${searchLocation}`);
+        }
+      }
+      
+      // Only use static data if no location was provided at all
+      if (!shopsData && !searchLocation) {
+        const zipcode = extractZipcode(lastUserMessage.content);
         shopsData = getNearbyShops(shops, zipcode, 5);
       }
     }
