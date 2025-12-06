@@ -600,23 +600,65 @@ function getRepairPricing(pricesData, device, repair, zipcode) {
   };
 }
 
-async function checkIMEI(imei) {
+/**
+ * Check IMEI with specified mode
+ * @param {string} imei - The IMEI number to check
+ * @param {string} mode - 'basic' (free, limited info) or 'deep' (full info)
+ */
+async function checkIMEI(imei, mode = 'basic') {
   try {
+    console.log(`Checking IMEI ${imei} with mode: ${mode}`);
+    
     const response = await fetch('https://final-bice-phi.vercel.app/api/imei-check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imei: imei, mode: 'full' })
+      body: JSON.stringify({ imei: imei, mode: mode })
     });
     
     if (!response.ok) {
       throw new Error(`IMEI API returned ${response.status}`);
     }
     
-    return await response.json();
+    const data = await response.json();
+    data.checkMode = mode; // Track which mode was used
+    return data;
   } catch (err) {
     console.error('IMEI check failed:', err.message);
     return { success: false, error: err.message };
   }
+}
+
+/**
+ * Determine if user wants a deep check based on their message
+ */
+function wantsDeepCheck(message) {
+  const lower = message.toLowerCase();
+  const deepPatterns = [
+    /deep\s*check/i,
+    /full\s*check/i,
+    /detailed/i,
+    /complete/i,
+    /thorough/i,
+    /all\s*info/i,
+    /everything/i,
+    /blacklist/i,
+    /carrier/i,
+    /warranty/i,
+    /find\s*my/i,
+    /icloud/i,
+    /lock\s*status/i,
+    /mdm/i,
+    /is\s*(it|this)\s*(stolen|safe|clean)/i,
+    /should\s*i\s*buy/i,
+    /safe\s*to\s*(buy|purchase)/i
+  ];
+  
+  for (const pattern of deepPatterns) {
+    if (pattern.test(message)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -851,11 +893,14 @@ ROLE CONTEXT: ${role === 'shop' ? 'User is a repair shop technician/owner using 
     
     case 'imei_check':
       intentGuidelines += `
-- If IMEI data is provided, summarize it in clean bullet points
-- Highlight critical issues: blacklist status, Find My, MDM lock, Lost Mode
-- Provide a clear recommendation: SAFE TO PURCHASE, CAUTION, or DO NOT BUY
+- TWO CHECK TYPES: Basic (free, device model only) vs Deep (full security analysis)
+- If BASIC check was done (limitedInfo=true): Show device model, mention they can run a DEEP check for full details
+- If DEEP check was done: Show complete analysis with all security flags, trust score, and clear recommendation
+- Highlight critical issues: blacklist status, Find My iPhone, iCloud Lock, MDM, Lost Mode
+- Provide clear recommendation: ✅ SAFE TO PURCHASE, ⚠️ CAUTION, or 🚫 DO NOT BUY
 - If no IMEI provided, ask for the 15-digit IMEI number
-- Explain how to find IMEI: dial *#06# or check Settings > General > About`;
+- Explain how to find IMEI: dial *#06# or check Settings > General > About
+- To trigger deep check, user can say: "deep check", "full check", "is it safe to buy", "check blacklist"`;
       break;
       
     case 'diagnosis':
@@ -919,15 +964,28 @@ function generateSuggestedActions(intent, imeiData, shopsData, repairPricing) {
     
     case 'imei_check':
       if (imeiData?.success) {
-        if (imeiData.analysis?.overallStatus === 'flagged') {
+        // If basic check was done, offer deep check
+        if (imeiData.limitedInfo || imeiData.mode === 'basic') {
+          actions.push('Run deep check for full details');
+          actions.push('Check another IMEI');
+        }
+        // If deep check found issues
+        else if (imeiData.analysis?.overallStatus === 'high_risk' || imeiData.analysis?.overallStatus === 'flagged') {
           actions.push('Contact seller about device status');
           actions.push('Request proof of purchase');
-        } else if (imeiData.analysis?.overallStatus === 'warning') {
+          actions.push('Check another device');
+        } 
+        // If deep check found warnings
+        else if (imeiData.analysis?.overallStatus === 'caution' || imeiData.analysis?.overallStatus === 'warning') {
           actions.push('Ask seller about Find My status');
           actions.push('Verify device ownership');
-        } else {
+          actions.push('Check another device');
+        } 
+        // Clean device
+        else {
           actions.push('Proceed with purchase');
-          actions.push('Run full diagnostic check');
+          actions.push('Run diagnostic check');
+          actions.push('Find repair shops nearby');
         }
       } else {
         actions.push('Enter IMEI to check device');
@@ -1024,7 +1082,12 @@ module.exports = async function handler(req, res) {
     if (intent === 'imei_check') {
       const imeiCandidate = extractIMEI(lastUserMessage.content);
       if (imeiCandidate) {
-        imeiData = await checkIMEI(imeiCandidate);
+        // Determine check mode based on user's message
+        const useDeepCheck = wantsDeepCheck(lastUserMessage.content);
+        const checkMode = useDeepCheck ? 'deep' : 'basic';
+        
+        console.log(`IMEI check requested: ${imeiCandidate}, mode: ${checkMode}`);
+        imeiData = await checkIMEI(imeiCandidate, checkMode);
       }
     }
     
