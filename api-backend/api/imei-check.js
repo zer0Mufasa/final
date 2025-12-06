@@ -5,15 +5,121 @@
  * 
  * Modes:
  * - "basic" (default) - Free tier: Device model, IMEI validation, basic status (20% info)
- * - "deep" - Premium tier: Full device history, carrier, warranty, locks, blacklist (100% info)
+ * - "deep" - PRO ONLY: Full device history, carrier, warranty, locks, blacklist (100% info)
  * - "blacklist" - Blacklist-only check
  */
+
+const fs = require('fs').promises;
+const path = require('path');
+
+// Helper to append to log
+async function logImeiCheck(entry) {
+  try {
+    const logPath = path.join(__dirname, '..', 'data', 'imei-log.json');
+    let logs = [];
+    try {
+      const data = await fs.readFile(logPath, 'utf8');
+      logs = JSON.parse(data);
+    } catch (e) {}
+    logs.push({ ...entry, timestamp: new Date().toISOString() });
+    if (logs.length > 10000) logs = logs.slice(-10000);
+    await fs.writeFile(logPath, JSON.stringify(logs, null, 2));
+  } catch (e) {
+    console.error('Failed to log IMEI check:', e.message);
+  }
+}
+
+// Helper to verify JWT token
+function verifyAuthToken(req) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null;
+    }
+    const token = authHeader.substring(7);
+    const jwt = require('jsonwebtoken');
+    const secret = process.env.JWT_SECRET || 'fixology-super-secret-key-change-in-production';
+    return jwt.verify(token, secret);
+  } catch (e) {
+    return null;
+  }
+}
+
+// Helper to get user/shop subscription
+async function getSubscription(decoded) {
+  if (!decoded) return { plan: 'free', checksRemaining: 5 };
+  
+  try {
+    const dataPath = path.join(__dirname, '..', 'data');
+    
+    if (decoded.type === 'shop') {
+      const data = await fs.readFile(path.join(dataPath, 'shop-users.json'), 'utf8');
+      const { shops } = JSON.parse(data);
+      const shop = shops.find(s => s.id === decoded.id);
+      if (shop) {
+        const limit = shop.imeiChecksLimit || 10;
+        const used = shop.imeiChecksUsed || 0;
+        return { 
+          plan: shop.subscriptionPlan, 
+          checksRemaining: limit === -1 ? 999999 : Math.max(0, limit - used),
+          shopId: shop.id
+        };
+      }
+    } else {
+      const data = await fs.readFile(path.join(dataPath, 'users.json'), 'utf8');
+      const { users } = JSON.parse(data);
+      const user = users.find(u => u.id === decoded.id);
+      if (user) {
+        return { 
+          plan: user.plan || 'free', 
+          checksRemaining: user.imeiCredits || 5,
+          userId: user.id
+        };
+      }
+    }
+  } catch (e) {
+    console.error('Error getting subscription:', e.message);
+  }
+  
+  return { plan: 'free', checksRemaining: 0 };
+}
+
+// Helper to decrement check count
+async function decrementCheckCount(decoded, checkType) {
+  if (!decoded) return;
+  
+  try {
+    const dataPath = path.join(__dirname, '..', 'data');
+    
+    if (decoded.type === 'shop') {
+      const filePath = path.join(dataPath, 'shop-users.json');
+      const data = await fs.readFile(filePath, 'utf8');
+      const db = JSON.parse(data);
+      const idx = db.shops.findIndex(s => s.id === decoded.id);
+      if (idx !== -1) {
+        db.shops[idx].imeiChecksUsed = (db.shops[idx].imeiChecksUsed || 0) + 1;
+        await fs.writeFile(filePath, JSON.stringify(db, null, 2));
+      }
+    } else {
+      const filePath = path.join(dataPath, 'users.json');
+      const data = await fs.readFile(filePath, 'utf8');
+      const db = JSON.parse(data);
+      const idx = db.users.findIndex(u => u.id === decoded.id);
+      if (idx !== -1 && checkType === 'deep') {
+        db.users[idx].imeiCredits = Math.max(0, (db.users[idx].imeiCredits || 5) - 1);
+        await fs.writeFile(filePath, JSON.stringify(db, null, 2));
+      }
+    }
+  } catch (e) {
+    console.error('Error decrementing check count:', e.message);
+  }
+}
 
 module.exports = async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -23,10 +129,10 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ 
       status: 'ok', 
       message: 'Fixology IMEI Intelligence API',
-      version: '2.0',
+      version: '3.0',
       modes: {
         basic: 'Free - Device model, IMEI validation, basic specs',
-        deep: 'Premium - Full history, carrier, warranty, all locks, blacklist status',
+        deep: 'PRO ONLY - Full history, carrier, warranty, all locks, blacklist status',
         blacklist: 'Blacklist-only quick check'
       }
     });
@@ -39,21 +145,13 @@ module.exports = async function handler(req, res) {
   try {
     const body = req.body || {};
     const imei = body.imei;
-    const mode = body.mode || 'basic'; // 'basic', 'deep', or 'blacklist'
+    let mode = body.mode || 'basic'; // 'basic', 'deep', or 'blacklist'
 
     if (!imei) {
       return res.status(400).json({ 
         success: false, 
         error: 'Missing IMEI number',
         hint: 'Dial *#06# on your device to find the IMEI'
-      });
-    }
-
-    const apiKey = process.env.IMEICHECK_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ 
-        success: false, 
-        error: 'IMEI service not configured' 
       });
     }
 
@@ -66,6 +164,72 @@ module.exports = async function handler(req, res) {
         success: false,
         error: 'Invalid IMEI format',
         hint: 'IMEI should be 15 digits. Dial *#06# to find it.'
+      });
+    }
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PRO CHECK AUTHENTICATION
+    // Deep checks require Pro/Enterprise subscription
+    // ═══════════════════════════════════════════════════════════════════
+    
+    const decoded = verifyAuthToken(req);
+    const subscription = await getSubscription(decoded);
+    
+    // Check if deep check is allowed
+    if (mode === 'deep') {
+      // Must be logged in
+      if (!decoded) {
+        return res.status(401).json({
+          success: false,
+          error: 'Authentication required for Deep Check',
+          hint: 'Please log in to your Fixology account to access Pro features.',
+          upgradeUrl: '/signup.html'
+        });
+      }
+      
+      // Must have Pro or Enterprise plan (for shops) or credits (for users)
+      const isPro = ['pro', 'enterprise'].includes(subscription.plan);
+      const hasCredits = subscription.checksRemaining > 0;
+      
+      if (!isPro && !hasCredits) {
+        return res.status(403).json({
+          success: false,
+          error: 'Pro subscription required for Deep Check',
+          hint: 'Upgrade to Pro to unlock full IMEI intelligence with blacklist, carrier, warranty, and security analysis.',
+          currentPlan: subscription.plan,
+          upgradeUrl: '/upgrade.html',
+          availableInDeepCheck: [
+            'Blacklist Status (Lost/Stolen)',
+            'Find My iPhone Status',
+            'iCloud Lock Status',
+            'Carrier Lock Info',
+            'Warranty Coverage',
+            'Purchase Date',
+            'MDM Lock Status',
+            'Replacement History',
+            'Full Security Analysis',
+            'Trust Score'
+          ]
+        });
+      }
+      
+      // Check remaining quota
+      if (subscription.checksRemaining <= 0) {
+        return res.status(403).json({
+          success: false,
+          error: 'IMEI check limit reached',
+          hint: 'You have used all your IMEI checks for this billing period. Upgrade your plan for more checks.',
+          currentPlan: subscription.plan,
+          upgradeUrl: '/upgrade.html'
+        });
+      }
+    }
+
+    const apiKey = process.env.IMEICHECK_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'IMEI service not configured' 
       });
     }
 
@@ -91,7 +255,7 @@ module.exports = async function handler(req, res) {
         break;
     }
 
-    console.log(`IMEI Check: ${cleanImei} | Mode: ${mode} | Service: ${serviceId}`);
+    console.log(`IMEI Check: ${cleanImei} | Mode: ${mode} | Service: ${serviceId} | User: ${decoded?.email || 'anonymous'}`);
 
     // Initiate check with imeicheck.net API
     const checkResponse = await fetch('https://api.imeicheck.net/v1/checks', {
@@ -524,6 +688,21 @@ module.exports = async function handler(req, res) {
       recommendation = 'Device is generally safe to purchase. Be aware of the minor issues noted above.';
     } else {
       recommendation = 'This device appears safe to purchase. All security checks passed.';
+    }
+
+    // Log the check and decrement count
+    await logImeiCheck({
+      imei: cleanImei,
+      mode: mode,
+      device: fullSummary.model,
+      status: overallStatus,
+      userId: subscription.userId || null,
+      shopId: subscription.shopId || null
+    });
+    
+    // Decrement check count for authenticated users
+    if (decoded) {
+      await decrementCheckCount(decoded, mode);
     }
 
     return res.status(200).json({

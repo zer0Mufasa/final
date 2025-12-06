@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Founder Dashboard | Fixology Admin</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: rgba(255, 255, 255, 0.03);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-muted: rgba(255, 255, 255, 0.5);
+      --accent-purple: #a78bfa;
+      --accent-cyan: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(10, 10, 15, 0.95); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
+    .logo { display: flex; align-items: center; gap: 0.75rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-decoration: none; }
+    .logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .admin-badge { background: linear-gradient(135deg, #f59e0b, #ef4444); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-title { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .page-subtitle { color: var(--text-secondary); }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; }
+    .stat-card.highlight { background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(6, 182, 212, 0.1)); border-color: rgba(167, 139, 250, 0.3); }
+    .stat-label { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-change { font-size: 0.875rem; color: var(--success); margin-top: 0.5rem; }
+    .stat-change.negative { color: var(--danger); }
+    .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+    .chart-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; }
+    .chart-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th, .data-table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .data-table th { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .data-table td { font-size: 0.9375rem; }
+    .revenue-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+    .revenue-item:last-child { border-bottom: none; }
+    .revenue-label { color: var(--text-secondary); }
+    .revenue-value { font-weight: 600; }
+    .revenue-value.total { font-size: 1.25rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .badge { padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+    .badge.success { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .badge.warning { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .badge.danger { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .loading { text-align: center; padding: 4rem; color: var(--text-muted); }
+    .error { text-align: center; padding: 4rem; color: var(--danger); }
+    .refresh-btn { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.875rem; }
+    .refresh-btn:hover { border-color: var(--accent-purple); }
+    @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .charts-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .stats-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="logo"><span class="logo-icon">🔧</span><span>Fixology</span></a>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span class="admin-badge">🔒 Founder Access</span>
+      <button class="refresh-btn" onclick="loadStats()">↻ Refresh</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">📊 Founder Dashboard</h1>
+      <p class="page-subtitle">Real-time analytics and platform metrics</p>
+    </div>
+
+    <div id="loading" class="loading">Loading dashboard data...</div>
+    <div id="error" class="error" style="display: none;"></div>
+
+    <div id="dashboard-content" style="display: none;">
+      <!-- Key Metrics -->
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="stat-users">0</div>
+          <div class="stat-change" id="stat-users-change">+0 today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Shops</div>
+          <div class="stat-value" id="stat-shops">0</div>
+          <div class="stat-change" id="stat-shops-change">+0 today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">IMEI Checks</div>
+          <div class="stat-value" id="stat-imei">0</div>
+          <div class="stat-change" id="stat-imei-change">+0 today</div>
+        </div>
+        <div class="stat-card highlight">
+          <div class="stat-label">Monthly Revenue</div>
+          <div class="stat-value" id="stat-revenue">$0</div>
+          <div class="stat-change">Estimated MRR</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-grid">
+        <!-- Top Devices -->
+        <div class="chart-card">
+          <h3 class="chart-title">📱 Top Devices Diagnosed</h3>
+          <table class="data-table">
+            <thead>
+              <tr><th>Device</th><th>Count</th><th>Share</th></tr>
+            </thead>
+            <tbody id="top-devices">
+              <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No data yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Revenue Breakdown -->
+        <div class="chart-card">
+          <h3 class="chart-title">💰 Revenue by Plan</h3>
+          <div id="revenue-breakdown">
+            <div class="revenue-item">
+              <span class="revenue-label">Basic ($29/mo)</span>
+              <span class="revenue-value" id="rev-basic">$0</span>
+            </div>
+            <div class="revenue-item">
+              <span class="revenue-label">Pro ($79/mo)</span>
+              <span class="revenue-value" id="rev-pro">$0</span>
+            </div>
+            <div class="revenue-item">
+              <span class="revenue-label">Enterprise ($199/mo)</span>
+              <span class="revenue-value" id="rev-enterprise">$0</span>
+            </div>
+            <div class="revenue-item" style="margin-top: 0.5rem; padding-top: 0.75rem; border-top: 2px solid var(--border-color);">
+              <span class="revenue-label">Total MRR</span>
+              <span class="revenue-value total" id="rev-total">$0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row -->
+      <div class="charts-grid">
+        <!-- Top Cities -->
+        <div class="chart-card">
+          <h3 class="chart-title">📍 Top Cities</h3>
+          <table class="data-table">
+            <thead>
+              <tr><th>City</th><th>Users</th></tr>
+            </thead>
+            <tbody id="top-cities">
+              <tr><td colspan="2" style="text-align: center; color: var(--text-muted);">No data yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Subscription Stats -->
+        <div class="chart-card">
+          <h3 class="chart-title">📊 Shop Subscriptions</h3>
+          <div id="subscription-stats">
+            <div class="revenue-item">
+              <span class="revenue-label">Free Tier</span>
+              <span class="revenue-value" id="sub-free">0</span>
+            </div>
+            <div class="revenue-item">
+              <span class="revenue-label">Basic</span>
+              <span class="revenue-value" id="sub-basic">0</span>
+            </div>
+            <div class="revenue-item">
+              <span class="revenue-label">Pro</span>
+              <span class="revenue-value" id="sub-pro">0</span>
+            </div>
+            <div class="revenue-item">
+              <span class="revenue-label">Enterprise</span>
+              <span class="revenue-value" id="sub-enterprise">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://final-bice-phi.vercel.app';
+    const token = localStorage.getItem('fixology_token') || localStorage.getItem('fixology_shop_token');
+
+    async function loadStats() {
+      try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('dashboard-content').style.display = 'none';
+        document.getElementById('error').style.display = 'none';
+
+        const response = await fetch(`${API_BASE}/api/admin/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+          throw new Error(data.error || 'Failed to load stats');
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard-content').style.display = 'block';
+
+        // Populate stats
+        document.getElementById('stat-users').textContent = data.overview.totalUsers;
+        document.getElementById('stat-users-change').textContent = `+${data.users.today} today`;
+        document.getElementById('stat-shops').textContent = data.overview.totalShops;
+        document.getElementById('stat-shops-change').textContent = `+${data.shops.today} today`;
+        document.getElementById('stat-imei').textContent = data.overview.totalImeiChecks;
+        document.getElementById('stat-imei-change').textContent = `+${data.imei.today} today`;
+        document.getElementById('stat-revenue').textContent = `$${data.revenue.total}`;
+
+        // Revenue breakdown
+        document.getElementById('rev-basic').textContent = `$${data.revenue.basic}`;
+        document.getElementById('rev-pro').textContent = `$${data.revenue.pro}`;
+        document.getElementById('rev-enterprise').textContent = `$${data.revenue.enterprise}`;
+        document.getElementById('rev-total').textContent = `$${data.revenue.total}`;
+
+        // Subscription stats
+        document.getElementById('sub-free').textContent = data.shops.subscriptions.free;
+        document.getElementById('sub-basic').textContent = data.shops.subscriptions.basic;
+        document.getElementById('sub-pro').textContent = data.shops.subscriptions.pro;
+        document.getElementById('sub-enterprise').textContent = data.shops.subscriptions.enterprise;
+
+        // Top devices
+        const devicesBody = document.getElementById('top-devices');
+        if (data.diagnostics.topDevices.length > 0) {
+          const total = data.diagnostics.topDevices.reduce((sum, d) => sum + d.count, 0);
+          devicesBody.innerHTML = data.diagnostics.topDevices.slice(0, 5).map(d => `
+            <tr>
+              <td>${d.device}</td>
+              <td>${d.count}</td>
+              <td>${Math.round(d.count / total * 100)}%</td>
+            </tr>
+          `).join('');
+        }
+
+        // Top cities
+        const citiesBody = document.getElementById('top-cities');
+        if (data.locations.topCities.length > 0) {
+          citiesBody.innerHTML = data.locations.topCities.slice(0, 5).map(c => `
+            <tr><td>${c.city}</td><td>${c.count}</td></tr>
+          `).join('');
+        }
+
+      } catch (err) {
+        console.error('Error loading stats:', err);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').innerHTML = `
+          <h3>⚠️ Access Denied</h3>
+          <p>${err.message}</p>
+          <p style="margin-top: 1rem; color: var(--text-muted);">This dashboard is only accessible to Fixology founders.</p>
+        `;
+      }
+    }
+
+    // Check if logged in
+    if (!token) {
+      window.location.href = 'login.html';
+    } else {
+      loadStats();
+    }
+  </script>
+</body>
+</html>
+
