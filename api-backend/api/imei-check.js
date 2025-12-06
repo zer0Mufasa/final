@@ -70,13 +70,14 @@ module.exports = async function handler(req, res) {
     }
 
     // Select service ID based on mode
-    // Service IDs from imeicheck.net
+    // Service IDs from imeicheck.net API
+    // See: https://imeicheck.net/services for available services
     let serviceId;
     let serviceName;
     
     switch (mode) {
       case 'deep':
-        serviceId = 12; // Apple Full Info with FMI + Carrier + Blacklist
+        serviceId = 3; // Apple Full Info (comprehensive check)
         serviceName = 'Deep Analysis';
         break;
       case 'blacklist':
