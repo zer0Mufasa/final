@@ -818,13 +818,15 @@ ROLE CONTEXT: ${role === 'shop' ? 'User is a repair shop technician/owner using 
   switch (intent) {
     case 'shop_finder':
       intentGuidelines += `
-- USE THE REAL SHOP DATA PROVIDED ABOVE - these are REAL shops from Google Places
-- You can find repair shops ANYWHERE in the world - just use the location the user provided
+- USE THE REAL SHOP DATA PROVIDED ABOVE - these are REAL shops from Google Places API
+- You can find repair shops ANYWHERE in the world using real-time Google Places data
 - List the shops with their actual names, addresses, phone numbers, and distances
 - Highlight the closest shop first
-- Mention key features like same-day service, warranty, and ratings
-- If no shops were found, ask the user for their location (city, address, or zipcode)
-- NEVER say you only have Missouri data or can't access their location
+- Mention ratings and review counts from Google
+- If NO SHOP DATA is provided above, politely ask the user for their location (city, address, or zipcode)
+- NEVER make up fake shop names, addresses, or phone numbers
+- NEVER use sample data or placeholder information
+- Only show shops that appear in the REAL SHOP DATA section above
 - Recommend calling ahead to confirm availability
 - Format as a clean, numbered list`;
       break;
@@ -1014,6 +1016,7 @@ module.exports = async function handler(req, res) {
     }
     
     // Handle shop finder - use Google Places API for ANY location worldwide
+    // NO STATIC/SAMPLE DATA - only real results from Google Places
     let shopsData = null;
     let searchLocation = null;
     if (intent === 'shop_finder') {
@@ -1022,19 +1025,19 @@ module.exports = async function handler(req, res) {
       
       if (searchLocation) {
         console.log(`Shop finder: Searching for shops near "${searchLocation}"`);
-        // Try real-time API - works for ANY location worldwide
+        // Use Google Places API - returns REAL shops with REAL addresses
         const realShops = await fetchRealShops(searchLocation);
         if (realShops && realShops.length > 0) {
           shopsData = realShops;
           console.log(`Found ${realShops.length} real shops near ${searchLocation}`);
+        } else {
+          console.log(`No shops found or API error for "${searchLocation}"`);
         }
+      } else {
+        console.log('Shop finder: No location extracted from message');
       }
       
-      // Only use static data if no location was provided at all
-      if (!shopsData && !searchLocation) {
-        const zipcode = extractZipcode(lastUserMessage.content);
-        shopsData = getNearbyShops(shops, zipcode, 5);
-      }
+      // NEVER use static data - if no results, the AI will ask for location
     }
     
     // Handle repair pricing
