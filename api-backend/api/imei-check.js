@@ -141,30 +141,138 @@ module.exports = async function handler(req, res) {
     }
 
     const props = result.properties || {};
+    
+    // Log raw properties for debugging
+    console.log('Raw API properties:', JSON.stringify(props, null, 2));
 
+    // ═══════════════════════════════════════════════════════════════════
+    // UNIVERSAL PROPERTY EXTRACTOR
+    // Handles all known property name variations from imeicheck.net
+    // ═══════════════════════════════════════════════════════════════════
+    const extract = (...keys) => {
+      for (const key of keys) {
+        if (props[key] !== undefined && props[key] !== null && props[key] !== '') {
+          return props[key];
+        }
+      }
+      return null;
+    };
+
+    // Device Identification
+    const deviceModel = extract(
+      'deviceName', 'modelName', 'model', 'apple/modelName', 'apple/deviceName',
+      'name', 'product', 'productName', 'device', 'marketingName'
+    );
+    
+    const deviceImage = extract('image', 'imageUrl', 'imageURL', 'deviceImage', 'photo');
+    
+    const deviceSerial = extract(
+      'serial', 'serialNumber', 'sn', 'apple/serial', 'apple/serialNumber'
+    );
+    
+    const deviceImei2 = extract('imei2', 'IMEI2', 'secondImei');
+    const deviceMeid = extract('meid', 'MEID');
+    
+    // Specifications
+    const deviceColor = extract(
+      'color', 'colour', 'deviceColor', 'apple/color', 'apple/colour',
+      'colorName', 'colourName'
+    );
+    
+    const deviceStorage = extract(
+      'capacity', 'storage', 'storageCapacity', 'memorySize', 'size',
+      'apple/capacity', 'apple/storage', 'internalMemory', 'rom'
+    );
+    
+    const modelNumber = extract(
+      'modelNumber', 'model_number', 'apple/modelNumber', 'modelNum', 'partNumber'
+    );
+    
+    // Network & Carrier
+    const carrierName = extract(
+      'network', 'carrier', 'simLockCarrier', 'carrierName', 'operator',
+      'lockCarrier', 'lockedCarrier', 'apple/carrier', 'mobileNetwork'
+    );
+    
+    const simLockStatus = extract(
+      'simLock', 'simLocked', 'carrierLock', 'networkLock', 'simLockStatus',
+      'locked', 'unlocked', 'apple/simLock'
+    );
+    
+    const countryInfo = extract(
+      'purchaseCountry', 'saleCountry', 'country', 'region', 'soldIn',
+      'initialCarrierCountry', 'apple/country'
+    );
+    
+    // Security Status
+    const fmiStatus = extract(
+      'fmiOn', 'findMyiPhone', 'findMyIphone', 'findMy', 'fmi',
+      'apple/fmi', 'apple/findMyIphone', 'findMyiPhoneOn'
+    );
+    
+    const icloudStatus = extract(
+      'icloudLock', 'iCloudLock', 'icloud', 'activationLock',
+      'apple/icloud', 'apple/activationLock', 'iCloudStatus'
+    );
+    
+    const lostModeStatus = extract(
+      'lostMode', 'lostModeEnabled', 'lost', 'apple/lostMode', 'lostModeStatus'
+    );
+    
+    const mdmStatus = extract(
+      'mdmLocked', 'mdm', 'mdmLock', 'mdmStatus', 'remoteLock',
+      'apple/mdm', 'deviceManagement'
+    );
+    
+    // Blacklist
+    const blacklistInfo = extract(
+      'usaBlockStatus', 'blacklistStatus', 'blacklisted', 'blocked',
+      'gsmaBlacklist', 'blockStatus', 'blacklist', 'stolen', 'lost'
+    );
+    
+    const blacklistCountryInfo = extract('blacklistCountry', 'blockedCountry');
+    const blacklistReasonInfo = extract('blacklistReason', 'blockReason', 'reason');
+    
+    // Warranty
+    const warrantyInfo = extract(
+      'warrantyStatus', 'coverageStatus', 'warranty', 'warrantyCoverage',
+      'apple/warranty', 'warrantyType', 'coverage'
+    );
+    
+    const warrantyExpiry = extract(
+      'warrantyExpiry', 'coverageExpiry', 'warrantyEndDate', 'warrantyEnd',
+      'coverageEndDate', 'apple/warrantyExpiry', 'expirationDate'
+    );
+    
+    const appleCareInfo = extract(
+      'appleCare', 'appleCarePlus', 'appleCareStatus', 'apple/appleCare',
+      'acPlusStatus'
+    );
+    
+    // Purchase Info
+    const purchaseDateRaw = extract(
+      'estPurchaseDate', 'purchaseDate', 'activationDate', 'soldDate',
+      'initialActivation', 'firstActivation', 'apple/purchaseDate'
+    );
+    
+    const purchaseDate = purchaseDateRaw 
+      ? (typeof purchaseDateRaw === 'number' 
+          ? new Date(purchaseDateRaw * 1000).toLocaleDateString()
+          : purchaseDateRaw)
+      : null;
+    
+    // Device History
+    const replacedStatus = extract('replaced', 'replacement', 'isReplacement');
+    const refurbishedStatus = extract('refurbished', 'isRefurbished', 'refurb');
+    const demoStatus = extract('demoUnit', 'isDemo', 'demo', 'displayUnit');
+    
     // ═══════════════════════════════════════════════════════════════════
     // BASIC CHECK RESPONSE (Free Tier - ~20% of info)
     // ═══════════════════════════════════════════════════════════════════
     if (mode === 'basic') {
-      const basicSummary = {
-        // Device Identification (always shown)
-        imei: cleanImei,
-        imeiValid: cleanImei.length === 15,
-        model: props.deviceName || props['apple/modelName'] || props.modelName || 'Unknown Device',
-        brand: detectBrand(props.deviceName || props['apple/modelName'] || ''),
-        image: props.image || null,
-        
-        // Basic Status (limited)
-        status: 'Basic check complete',
-        
-        // Teaser info (to encourage upgrade)
-        quickStatus: getQuickStatus(props),
-      };
-
-      // Basic risk assessment (simplified)
-      const hasIssues = props.usaBlockStatus === 'Blacklisted' || 
-                        props.lostMode === true || 
-                        props.fmiOn === true;
+      const hasIssues = blacklistInfo === 'Blacklisted' || 
+                        lostModeStatus === true || 
+                        fmiStatus === true;
 
       return res.status(200).json({
         success: true,
@@ -175,14 +283,14 @@ module.exports = async function handler(req, res) {
         
         // Basic info only
         device: {
-          model: basicSummary.model,
-          brand: basicSummary.brand,
-          image: basicSummary.image,
-          imeiValid: basicSummary.imeiValid
+          model: deviceModel || 'Unknown Device',
+          brand: detectBrand(deviceModel || ''),
+          image: deviceImage,
+          imeiValid: cleanImei.length === 15
         },
         
         // Simplified status
-        quickStatus: basicSummary.quickStatus,
+        quickStatus: getQuickStatus(props),
         
         // Upgrade prompt
         limitedInfo: true,
@@ -202,57 +310,64 @@ module.exports = async function handler(req, res) {
           'Replacement History',
           'Full Security Analysis',
           'Trust Score'
-        ]
+        ],
+        
+        // Include raw for debugging
+        _debug: { propsReceived: Object.keys(props).length }
       });
     }
 
     // ═══════════════════════════════════════════════════════════════════
     // DEEP CHECK RESPONSE (Premium Tier - 100% of info)
     // ═══════════════════════════════════════════════════════════════════
+    
+    // Format boolean/status values for display
+    const formatBool = (val, onTrue, onFalse, unknown = 'Unknown') => {
+      if (val === true || val === 'true' || val === 1 || val === '1' || val === 'ON' || val === 'Yes') return onTrue;
+      if (val === false || val === 'false' || val === 0 || val === '0' || val === 'OFF' || val === 'No') return onFalse;
+      if (typeof val === 'string' && val.length > 0) return val;
+      return unknown;
+    };
+    
     const fullSummary = {
       // Device Identification
-      model: props.deviceName || props['apple/modelName'] || props.modelName || 'Unknown',
-      brand: detectBrand(props.deviceName || props['apple/modelName'] || ''),
-      image: props.image || null,
-      imei: props.imei || cleanImei,
-      imei2: props.imei2 || null,
-      serial: props.serial || props.serialNumber || null,
-      meid: props.meid || null,
+      model: deviceModel || 'Unknown Device',
+      brand: detectBrand(deviceModel || ''),
+      image: deviceImage,
+      imei: cleanImei,
+      imei2: deviceImei2,
+      serial: deviceSerial,
+      meid: deviceMeid,
       
       // Specifications
-      color: props.color || props.deviceColor || null,
-      storage: props.capacity || props.storage || null,
-      model_number: props.modelNumber || props['apple/modelNumber'] || null,
+      color: deviceColor,
+      storage: deviceStorage,
+      model_number: modelNumber,
       
       // Security Status
-      simLock: props.simLock === true ? 'Locked' : props.simLock === false ? 'Unlocked' : (props.carrierLock || 'Unknown'),
-      carrier: props.network || props.carrier || props.simLockCarrier || 'Unknown',
-      findMy: props.fmiOn === true ? 'ON' : props.fmiOn === false ? 'OFF' : 'Unknown',
-      iCloudLock: props.icloudLock === true ? 'Locked' : props.icloudLock === false ? 'Unlocked' : 'Unknown',
-      lostMode: props.lostMode === true ? 'ENABLED' : props.lostMode === false ? 'OFF' : 'Unknown',
-      mdmLock: props.mdmLocked === true ? 'ENROLLED' : props.mdmLocked === false ? 'Not Enrolled' : 'Unknown',
+      simLock: formatBool(simLockStatus, 'Locked', 'Unlocked'),
+      carrier: carrierName || 'Unknown',
+      findMy: formatBool(fmiStatus, 'ON', 'OFF'),
+      iCloudLock: formatBool(icloudStatus, 'Locked', 'Unlocked'),
+      lostMode: formatBool(lostModeStatus, 'ENABLED', 'OFF'),
+      mdmLock: formatBool(mdmStatus, 'ENROLLED', 'Not Enrolled'),
       
       // Blacklist Status
-      blacklistStatus: props.usaBlockStatus || props.blacklistStatus || 'Unknown',
-      blacklistCountry: props.blacklistCountry || null,
-      blacklistReason: props.blacklistReason || null,
-      gsmaBlacklist: props.gsmaBlacklist || null,
+      blacklistStatus: blacklistInfo || 'Clean',
+      blacklistCountry: blacklistCountryInfo,
+      blacklistReason: blacklistReasonInfo,
       
       // Warranty & Purchase
-      warrantyStatus: props.warrantyStatus || props.coverageStatus || 'Unknown',
-      warrantyExpiry: props.warrantyExpiry || props.coverageExpiry || null,
-      purchaseDate: props.estPurchaseDate ? new Date(props.estPurchaseDate * 1000).toLocaleDateString() : (props.purchaseDate || null),
-      purchaseCountry: props.purchaseCountry || props.saleCountry || null,
-      appleCarePlus: props.appleCare === true ? 'Active' : props.appleCare === false ? 'Not Active' : 'Unknown',
+      warrantyStatus: warrantyInfo || 'Unknown',
+      warrantyExpiry: warrantyExpiry,
+      purchaseDate: purchaseDate,
+      purchaseCountry: countryInfo,
+      appleCarePlus: formatBool(appleCareInfo, 'Active', 'Not Active'),
       
       // Device History
-      replaced: props.replaced === true ? 'Yes (Replacement Device)' : props.replaced === false ? 'No (Original)' : 'Unknown',
-      refurbished: props.refurbished === true ? 'Yes' : props.refurbished === false ? 'No' : 'Unknown',
-      demoUnit: props.demoUnit === true ? 'Yes (Demo Device)' : props.demoUnit === false ? 'No' : 'Unknown',
-      
-      // Technical
-      activationStatus: props.activationStatus || null,
-      nextTetheredActivation: props.nextTetheredActivation || null
+      replaced: formatBool(replacedStatus, 'Yes (Replacement)', 'No (Original)'),
+      refurbished: formatBool(refurbishedStatus, 'Yes', 'No'),
+      demoUnit: formatBool(demoStatus, 'Yes (Demo)', 'No')
     };
 
     // ═══════════════════════════════════════════════════════════════════

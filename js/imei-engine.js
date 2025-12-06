@@ -275,65 +275,112 @@ function displayDeepResults(data) {
   const security = data.security || {};
   const warranty = data.warranty || {};
   const purchase = data.purchase || {};
+  const history = data.history || {};
   const analysis = data.analysis || {};
   
-  // Device info
+  console.log('Displaying deep results:', { device, identifiers, security, warranty, purchase, history, analysis });
+  
+  // Device Header info
   setElementText('result-model', device.model || 'Unknown Device');
   setElementText('result-brand', device.brand || 'Unknown');
   setElementText('result-storage', device.storage || 'N/A');
   setElementText('result-color', device.color || 'N/A');
-  setElementText('result-serial', identifiers.serial || 'N/A');
+  
+  // Device card details
   setElementText('result-imei', identifiers.imei || data.imei || 'N/A');
+  setElementText('result-serial', identifiers.serial || 'N/A');
+  setElementText('result-model-number', device.modelNumber || 'N/A');
+  setElementText('result-storage-detail', device.storage || 'N/A');
+  setElementText('result-color-detail', device.color || 'N/A');
+  
+  // Set device image if available
+  const deviceIcon = document.getElementById('result-device-icon');
+  if (deviceIcon && device.image) {
+    deviceIcon.innerHTML = `<img src="${device.image}" alt="${device.model}" style="width:60px;height:60px;object-fit:contain;border-radius:8px;">`;
+  }
   
   // Network info
   setElementText('result-carrier', security.carrier || 'Unknown');
   setElementText('result-country', purchase.country || 'N/A');
   setStatusBadge('result-simlock', security.carrierLock, {
     'Unlocked': 'success',
-    'Locked': 'warning'
+    'Locked': 'warning',
+    'Unknown': 'neutral'
   });
   
   // Security info
   setStatusBadge('result-blacklist', security.blacklistStatus, {
     'Clean': 'success',
-    'Not Blacklisted': 'success',
+    'Not Blacklisted': 'success', 
     'Blacklisted': 'danger',
     'Lost': 'danger',
-    'Stolen': 'danger'
+    'Stolen': 'danger',
+    'Unknown': 'neutral'
   });
   setStatusBadge('result-findmy', security.findMyiPhone, {
     'OFF': 'success',
-    'ON': 'warning'
+    'ON': 'warning',
+    'Unknown': 'neutral'
   });
   setStatusBadge('result-activation', security.iCloudLock, {
     'Unlocked': 'success',
-    'Locked': 'danger'
+    'Locked': 'danger',
+    'Unknown': 'neutral'
   });
   setStatusBadge('result-mdm', security.mdmLock, {
     'Not Enrolled': 'success',
-    'ENROLLED': 'danger'
+    'ENROLLED': 'danger',
+    'Unknown': 'neutral'
   });
   
   // Warranty
   setStatusBadge('result-warranty', warranty.status, {
     'Active': 'success',
     'AppleCare+': 'success',
+    'Limited Warranty': 'success',
     'Expired': 'neutral',
-    'Out of Warranty': 'neutral'
+    'Out of Warranty': 'neutral',
+    'Unknown': 'neutral'
   });
   setElementText('result-warranty-expiry', warranty.expiry || 'N/A');
   
+  // Purchase & AppleCare
+  setElementText('result-purchase-date', purchase.date || 'N/A');
+  setStatusBadge('result-applecare', warranty.appleCare, {
+    'Active': 'success',
+    'Not Active': 'neutral',
+    'Unknown': 'neutral'
+  });
+  
+  // Device History
+  setStatusBadge('result-replaced', history.replaced, {
+    'No (Original)': 'success',
+    'Yes (Replacement)': 'warning',
+    'Unknown': 'neutral'
+  });
+  setStatusBadge('result-refurbished', history.refurbished, {
+    'No': 'success',
+    'Yes': 'warning',
+    'Unknown': 'neutral'
+  });
+  setStatusBadge('result-demo', history.demoUnit, {
+    'No': 'success',
+    'Yes (Demo)': 'warning',
+    'Unknown': 'neutral'
+  });
+  
   // Analysis
-  setElementText('result-fraud-score', analysis.riskScore ?? '—');
-  setElementText('result-trust-score', analysis.trustScore ? `${analysis.trustScore}%` : '—');
+  setElementText('result-fraud-score', analysis.riskScore ?? 0);
+  setElementText('result-trust-score', analysis.trustScore ? `${analysis.trustScore}%` : '100%');
   
   const overallBadge = document.getElementById('result-overall-status');
   if (overallBadge) {
     const statusClass = analysis.overallStatus === 'clean' ? 'success' :
                         analysis.overallStatus === 'high_risk' ? 'danger' :
-                        analysis.overallStatus === 'caution' ? 'warning' : 'neutral';
+                        analysis.overallStatus === 'caution' ? 'warning' : 
+                        analysis.overallStatus === 'minor_issues' ? 'warning' : 'neutral';
     overallBadge.className = `status-badge ${statusClass}`;
-    overallBadge.innerHTML = `${analysis.statusEmoji || ''} ${analysis.statusMessage || 'Check Complete'}`;
+    overallBadge.innerHTML = `${analysis.statusEmoji || '✓'} ${analysis.statusMessage || 'Check Complete'}`;
   }
   
   const flagsContainer = document.getElementById('result-flags');
