@@ -164,35 +164,35 @@
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-header">
-                    <div class="kpi-icon">🏪</div>
-                    <span class="kpi-trend up">+12%</span>
+                    <div class="kpi-icon">👥</div>
+                    <span class="kpi-trend up" id="users-trend">+0</span>
                 </div>
-                <div class="kpi-value">247</div>
+                <div class="kpi-value" id="kpi-users">0</div>
+                <div class="kpi-label">Total Users</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-icon">🏪</div>
+                    <span class="kpi-trend up" id="shops-trend">+0</span>
+                </div>
+                <div class="kpi-value" id="kpi-shops">0</div>
                 <div class="kpi-label">Total Shops</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-header">
-                    <div class="kpi-icon">✨</div>
-                    <span class="kpi-trend up">+8%</span>
+                    <div class="kpi-icon">🔍</div>
+                    <span class="kpi-trend up" id="imei-trend">+0</span>
                 </div>
-                <div class="kpi-value">189</div>
-                <div class="kpi-label">Active (30 days)</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-header">
-                    <div class="kpi-icon">🧠</div>
-                    <span class="kpi-trend up">+23%</span>
-                </div>
-                <div class="kpi-value">12,847</div>
-                <div class="kpi-label">AI Diagnoses (MTD)</div>
+                <div class="kpi-value" id="kpi-imei">0</div>
+                <div class="kpi-label">IMEI Checks</div>
             </div>
             <div class="kpi-card">
                 <div class="kpi-header">
                     <div class="kpi-icon">💰</div>
-                    <span class="kpi-trend up">+15%</span>
+                    <span class="kpi-trend up">MRR</span>
                 </div>
-                <div class="kpi-value">$18.4K</div>
-                <div class="kpi-label">MRR</div>
+                <div class="kpi-value" id="kpi-revenue">$0</div>
+                <div class="kpi-label">Monthly Revenue</div>
             </div>
         </div>
 
@@ -274,25 +274,85 @@
     </main>
 
     <script>
-    // Generate signup chart
-    const signupData = [3,5,4,7,6,8,5,9,11,8,12,10,14,9];
-    const labels = ['Nov 21','22','23','24','25','26','27','28','29','30','Dec 1','2','3','4'];
-    const maxVal = Math.max(...signupData);
-    const chartArea = document.getElementById('signupChart');
-    const labelsArea = document.getElementById('signupLabels');
+    const API_BASE = 'https://final-bice-phi.vercel.app';
     
-    signupData.forEach((val, i) => {
-        const bar = document.createElement('div');
-        bar.className = 'chart-bar';
-        bar.style.height = (val / maxVal * 100) + '%';
-        bar.setAttribute('data-value', val);
-        chartArea.appendChild(bar);
+    // Load real stats from API
+    async function loadStats() {
+        try {
+            const response = await fetch(`${API_BASE}/api/admin/stats`);
+            const data = await response.json();
+            
+            if (data.success) {
+                // Update KPIs
+                document.getElementById('kpi-users').textContent = data.overview?.totalUsers || 0;
+                document.getElementById('kpi-shops').textContent = data.overview?.totalShops || 0;
+                document.getElementById('kpi-imei').textContent = data.overview?.totalImeiChecks || 0;
+                document.getElementById('kpi-revenue').textContent = '$' + (data.revenue?.total || 0);
+                
+                // Update trends
+                document.getElementById('users-trend').textContent = '+' + (data.users?.today || 0) + ' today';
+                document.getElementById('shops-trend').textContent = '+' + (data.shops?.today || 0) + ' today';
+                document.getElementById('imei-trend').textContent = '+' + (data.imei?.today || 0) + ' today';
+                
+                // Update chart if we have daily data
+                if (data.dailyVolume && data.dailyVolume.length > 0) {
+                    renderChart(data.dailyVolume);
+                } else {
+                    renderDefaultChart();
+                }
+            }
+        } catch (err) {
+            console.error('Error loading stats:', err);
+            renderDefaultChart();
+        }
+    }
+    
+    function renderChart(dailyData) {
+        const chartArea = document.getElementById('signupChart');
+        const labelsArea = document.getElementById('signupLabels');
+        chartArea.innerHTML = '';
+        labelsArea.innerHTML = '';
         
-        const label = document.createElement('div');
-        label.className = 'chart-label';
-        label.textContent = labels[i];
-        labelsArea.appendChild(label);
-    });
+        const values = dailyData.map(d => d.users || 0);
+        const maxVal = Math.max(...values, 1);
+        
+        dailyData.forEach((day, i) => {
+            const bar = document.createElement('div');
+            bar.className = 'chart-bar';
+            bar.style.height = ((day.users || 0) / maxVal * 100) + '%';
+            bar.setAttribute('data-value', day.users || 0);
+            chartArea.appendChild(bar);
+            
+            const label = document.createElement('div');
+            label.className = 'chart-label';
+            label.textContent = day.date ? day.date.slice(5) : '';
+            labelsArea.appendChild(label);
+        });
+    }
+    
+    function renderDefaultChart() {
+        const signupData = [1,2,1,3,2,4,3];
+        const labels = ['Day 1','2','3','4','5','6','7'];
+        const maxVal = Math.max(...signupData, 1);
+        const chartArea = document.getElementById('signupChart');
+        const labelsArea = document.getElementById('signupLabels');
+        
+        signupData.forEach((val, i) => {
+            const bar = document.createElement('div');
+            bar.className = 'chart-bar';
+            bar.style.height = (val / maxVal * 100) + '%';
+            bar.setAttribute('data-value', val);
+            chartArea.appendChild(bar);
+            
+            const label = document.createElement('div');
+            label.className = 'chart-label';
+            label.textContent = labels[i];
+            labelsArea.appendChild(label);
+        });
+    }
+    
+    // Load stats on page load
+    loadStats();
     </script>
 </body>
 </html>
