@@ -760,6 +760,41 @@
       color: var(--success);
     }
 
+    .flag-item.danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-left-color: var(--danger);
+      color: #f87171;
+    }
+
+    .flag-item.warning {
+      background: rgba(245, 158, 11, 0.15);
+      border-left-color: var(--warning);
+      color: #fbbf24;
+    }
+
+    .flag-item.info {
+      background: rgba(6, 182, 212, 0.1);
+      border-left-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .flag-item.upgrade {
+      background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(6, 182, 212, 0.1));
+      border-left-color: var(--accent-purple);
+      color: var(--text-secondary);
+    }
+
+    .flag-item.upgrade ul {
+      color: var(--text-muted);
+    }
+
+    .flag-item.recommendation {
+      background: rgba(255, 255, 255, 0.05);
+      border-left-color: var(--accent-purple);
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
     /* Action Buttons */
     .result-actions {
       display: flex;
@@ -906,25 +941,25 @@
 
       <!-- Check Mode Selection -->
       <div class="check-modes">
-        <label class="check-mode" data-mode="basic">
-          <input type="radio" name="check-mode" value="basic">
+        <label class="check-mode selected" data-mode="basic">
+          <input type="radio" name="check-mode" id="mode-basic" value="basic" checked>
           <div class="mode-header">
             <span class="mode-icon">⚡</span>
             <span class="mode-badge free">Free</span>
           </div>
           <div class="mode-title">Basic Check</div>
-          <div class="mode-desc">Model, brand, carrier, SIM lock status</div>
+          <div class="mode-desc">Model, brand, IMEI validation</div>
           <div class="mode-check">✓</div>
         </label>
         
-        <label class="check-mode selected" data-mode="full">
-          <input type="radio" name="check-mode" value="full" checked>
+        <label class="check-mode" data-mode="deep">
+          <input type="radio" name="check-mode" id="mode-deep" value="deep">
           <div class="mode-header">
             <span class="mode-icon">🛡️</span>
             <span class="mode-badge pro">Pro</span>
           </div>
           <div class="mode-title">Full Deep Check</div>
-          <div class="mode-desc">Everything + FMI, blacklist, warranty, MDM, AI fraud detection</div>
+          <div class="mode-desc">Everything + FMI, blacklist, warranty, MDM, carrier, AI fraud detection</div>
           <div class="mode-check">✓</div>
         </label>
       </div>
