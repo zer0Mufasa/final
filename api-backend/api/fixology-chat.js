@@ -16,7 +16,7 @@ const path = require('path');
 const ALLOWED_ORIGINS = [
   'https://fixologyai.com',
   'https://www.fixologyai.com',
-  'https://final-oc9r.vercel.app',
+  'https://final-bice-phi.vercel.app',
   'http://localhost:3000',
   'http://localhost:5500',
   'http://127.0.0.1:5500'
@@ -38,6 +38,8 @@ let cachedDevices = null;
 let cachedSymptoms = null;
 let cachedRewards = null;
 let cachedPricing = null;
+let cachedShops = null;
+let cachedRepairPrices = null;
 
 async function loadDevices() {
   if (cachedDevices) return cachedDevices;
@@ -91,12 +93,75 @@ async function loadPricing() {
   }
 }
 
+async function loadShops() {
+  if (cachedShops) return cachedShops;
+  try {
+    const filePath = path.join(__dirname, '..', 'data', 'shops.json');
+    const data = await fs.readFile(filePath, 'utf-8');
+    cachedShops = JSON.parse(data);
+    return cachedShops;
+  } catch (err) {
+    console.error('Failed to load shops.json:', err.message);
+    return null;
+  }
+}
+
+async function loadRepairPrices() {
+  if (cachedRepairPrices) return cachedRepairPrices;
+  try {
+    const filePath = path.join(__dirname, '..', 'data', 'prices.json');
+    const data = await fs.readFile(filePath, 'utf-8');
+    cachedRepairPrices = JSON.parse(data);
+    return cachedRepairPrices;
+  } catch (err) {
+    console.error('Failed to load prices.json:', err.message);
+    return null;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // INTENT DETECTION
 // ═══════════════════════════════════════════════════════════════════
 
 function detectIntent(message) {
   const lower = message.toLowerCase();
+  
+  // Check for shop finder queries (HIGHEST PRIORITY)
+  const shopPatterns = [
+    /near(by|est)?\s*(shop|store|repair|me)/i,
+    /shop(s)?\s*(near|close|around)/i,
+    /find.*(shop|store|repair|technician)/i,
+    /where.*(repair|fix|shop)/i,
+    /local\s*(shop|repair|store)/i,
+    /repair\s*shop/i,
+    /(in|around|near)\s*\d{5}/i,  // zipcode mention
+    /location/i,
+    /\b63\d{3}\b/,  // Missouri zipcodes
+    /closest/i,
+    /recommendation/i
+  ];
+  
+  for (const pattern of shopPatterns) {
+    if (pattern.test(message)) {
+      return 'shop_finder';
+    }
+  }
+  
+  // Check for repair pricing queries (not subscription pricing)
+  const repairPricingPatterns = [
+    /how much.*(screen|battery|repair|fix|replace)/i,
+    /(screen|battery|port|glass|camera)\s*(repair|replace).*(cost|price)/i,
+    /(cost|price).*(screen|battery|repair|fix|replace)/i,
+    /repair\s*(cost|price|estimate)/i,
+    /quote/i,
+    /estimate/i
+  ];
+  
+  for (const pattern of repairPricingPatterns) {
+    if (pattern.test(message)) {
+      return 'repair_pricing';
+    }
+  }
   
   // Check for IMEI-related queries
   const imeiPatterns = [
@@ -119,18 +184,15 @@ function detectIntent(message) {
     }
   }
   
-  // Check for pricing-related queries
+  // Check for subscription pricing queries
   const pricingPatterns = [
-    /pric(e|ing)/i,
-    /\b(cost|costs)\b/i,
-    /how much/i,
     /subscription/i,
     /\b(plan|plans)\b/i,
     /\b(basic|pro|enterprise)\b.*plan/i,
     /per month/i,
     /monthly/i,
     /free trial/i,
-    /discount/i
+    /fixology.*(pric|cost)/i
   ];
   
   for (const pattern of pricingPatterns) {
@@ -161,7 +223,6 @@ function detectIntent(message) {
     /wifi/i,
     /bluetooth/i,
     /charging/i,
-    /repair/i,
     /fix/i,
     /symptom/i
   ];
@@ -183,6 +244,146 @@ function extractIMEI(message) {
   // Look for 14-17 digit sequences (IMEI is typically 15 digits)
   const match = message.match(/\b(\d{14,17})\b/);
   return match ? match[1] : null;
+}
+
+function extractZipcode(message) {
+  // Look for 5-digit US zipcode
+  const match = message.match(/\b(\d{5})\b/);
+  return match ? match[1] : '63033'; // Default to Florissant, MO
+}
+
+function extractDeviceAndRepair(message) {
+  const lower = message.toLowerCase();
+  
+  // Device detection
+  let device = null;
+  const devicePatterns = [
+    { pattern: /iphone\s*14\s*pro\s*max/i, name: 'iPhone 14 Pro Max' },
+    { pattern: /iphone\s*14\s*pro/i, name: 'iPhone 14 Pro' },
+    { pattern: /iphone\s*14/i, name: 'iPhone 14' },
+    { pattern: /iphone\s*13\s*pro\s*max/i, name: 'iPhone 13 Pro Max' },
+    { pattern: /iphone\s*13\s*pro/i, name: 'iPhone 13 Pro' },
+    { pattern: /iphone\s*13/i, name: 'iPhone 13' },
+    { pattern: /iphone\s*12/i, name: 'iPhone 12' },
+    { pattern: /iphone/i, name: 'iPhone' },
+    { pattern: /samsung\s*(galaxy\s*)?s24\s*ultra/i, name: 'Samsung Galaxy S24 Ultra' },
+    { pattern: /samsung\s*(galaxy\s*)?s24/i, name: 'Samsung Galaxy S24' },
+    { pattern: /samsung\s*(galaxy\s*)?s23/i, name: 'Samsung Galaxy S23' },
+    { pattern: /samsung/i, name: 'Samsung' },
+    { pattern: /ps5|playstation\s*5/i, name: 'PlayStation 5' },
+    { pattern: /xbox/i, name: 'Xbox Series X' },
+    { pattern: /switch/i, name: 'Nintendo Switch' },
+    { pattern: /macbook/i, name: 'MacBook' },
+    { pattern: /ipad/i, name: 'iPad' }
+  ];
+  
+  for (const { pattern, name } of devicePatterns) {
+    if (pattern.test(message)) {
+      device = name;
+      break;
+    }
+  }
+  
+  // Repair type detection
+  let repair = null;
+  const repairPatterns = [
+    { pattern: /screen/i, name: 'screen' },
+    { pattern: /battery/i, name: 'battery' },
+    { pattern: /charg(ing|er)\s*(port)?/i, name: 'charging_port' },
+    { pattern: /back\s*glass/i, name: 'back_glass' },
+    { pattern: /camera/i, name: 'camera' },
+    { pattern: /hdmi/i, name: 'hdmi_port' },
+    { pattern: /joy.?con/i, name: 'joycon' }
+  ];
+  
+  for (const { pattern, name } of repairPatterns) {
+    if (pattern.test(message)) {
+      repair = name;
+      break;
+    }
+  }
+  
+  return { device, repair };
+}
+
+/**
+ * Calculate distance between two coordinates using Haversine formula
+ */
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 3959;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Get nearby shops sorted by distance
+ */
+function getNearbyShops(shopsData, zipcode, limit = 5) {
+  if (!shopsData || !shopsData.shops) return [];
+  
+  const coords = shopsData.zipcode_coordinates?.[zipcode] || { lat: 38.7892, lng: -90.3226 };
+  
+  const shopsWithDistance = shopsData.shops.map(shop => ({
+    ...shop,
+    distance: calculateDistance(coords.lat, coords.lng, shop.coordinates.lat, shop.coordinates.lng)
+  }));
+  
+  shopsWithDistance.sort((a, b) => a.distance - b.distance);
+  
+  return shopsWithDistance.slice(0, limit).map(shop => ({
+    name: shop.name,
+    address: `${shop.address.street}, ${shop.address.city}, ${shop.address.state} ${shop.address.zipcode}`,
+    phone: shop.phone,
+    distance: Math.round(shop.distance * 10) / 10,
+    rating: shop.rating,
+    review_count: shop.review_count,
+    services: shop.services,
+    same_day: shop.same_day_service,
+    warranty: shop.warranty_days,
+    features: shop.features
+  }));
+}
+
+/**
+ * Get repair pricing for a device
+ */
+function getRepairPricing(pricesData, device, repair, zipcode) {
+  if (!pricesData || !pricesData.prices) return null;
+  
+  const matchingPrices = pricesData.prices.filter(p => {
+    const deviceMatch = device ? p.device.toLowerCase().includes(device.toLowerCase()) : true;
+    const repairMatch = repair ? p.repair === repair : true;
+    const zipcodeMatch = zipcode ? p.zipcode === zipcode : true;
+    return deviceMatch && repairMatch && zipcodeMatch;
+  });
+  
+  if (matchingPrices.length === 0) return null;
+  
+  // Calculate averages
+  const gradeAPrices = matchingPrices.filter(p => p.grade_a_price).map(p => p.grade_a_price);
+  const gradeBPrices = matchingPrices.filter(p => p.grade_b_price).map(p => p.grade_b_price);
+  const times = matchingPrices.map(p => p.time_mins);
+  
+  return {
+    prices: matchingPrices.map(p => ({
+      shop: p.shop,
+      grade_a: p.grade_a_price,
+      grade_b: p.grade_b_price,
+      time_mins: p.time_mins
+    })),
+    avg_grade_a: gradeAPrices.length > 0 ? Math.round(gradeAPrices.reduce((a, b) => a + b, 0) / gradeAPrices.length) : null,
+    avg_grade_b: gradeBPrices.length > 0 ? Math.round(gradeBPrices.reduce((a, b) => a + b, 0) / gradeBPrices.length) : null,
+    avg_time: times.length > 0 ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null,
+    cheapest: matchingPrices.reduce((min, p) => {
+      const price = p.grade_b_price || p.grade_a_price;
+      return price < (min?.price || Infinity) ? { shop: p.shop, price } : min;
+    }, null)
+  };
 }
 
 async function checkIMEI(imei) {
@@ -313,7 +514,7 @@ async function callAnthropic({ systemPrompt, messages, apiKey }) {
 // SYSTEM PROMPT BUILDER
 // ═══════════════════════════════════════════════════════════════════
 
-function buildSystemPrompt({ intent, devices, symptoms, rewards, pricing, imeiData, role }) {
+function buildSystemPrompt({ intent, devices, symptoms, rewards, pricing, imeiData, shopsData, repairPricing, role }) {
   const basePrompt = `You are Fixology AI, the official diagnostic assistant for Fixology (fixologyai.com).
 
 IDENTITY:
@@ -325,8 +526,9 @@ IDENTITY:
 CAPABILITIES:
 - Device diagnostics for phones, tablets, laptops, gaming consoles, smartwatches, and earbuds
 - IMEI/serial number checks for device status, blacklist, Find My, carrier lock
+- Find nearby repair shops with real-time pricing
+- Repair cost estimates from local shops
 - Pricing and plan information for Fixology's services
-- Repair guidance and troubleshooting
 
 TONE & STYLE:
 - Be confident, clear, and professional
@@ -374,10 +576,60 @@ ROLE CONTEXT: ${role === 'shop' ? 'User is a repair shop technician/owner using 
   if (imeiData && imeiData.success) {
     contextSection += `\n\n[IMEI CHECK RESULTS]\n${JSON.stringify(imeiData, null, 2)}`;
   }
+  
+  // Add nearby shops data if present
+  if (shopsData && shopsData.length > 0) {
+    contextSection += `\n\n[NEARBY REPAIR SHOPS - REAL DATA]\n`;
+    shopsData.forEach((shop, i) => {
+      contextSection += `\n${i + 1}. ${shop.name}`;
+      contextSection += `\n   Address: ${shop.address}`;
+      contextSection += `\n   Phone: ${shop.phone}`;
+      contextSection += `\n   Distance: ${shop.distance} miles`;
+      contextSection += `\n   Rating: ${shop.rating}/5 (${shop.review_count} reviews)`;
+      contextSection += `\n   Same-day service: ${shop.same_day ? 'Yes' : 'No'}`;
+      contextSection += `\n   Warranty: ${shop.warranty} days`;
+      contextSection += `\n   Features: ${shop.features?.join(', ') || 'N/A'}\n`;
+    });
+  }
+  
+  // Add repair pricing data if present
+  if (repairPricing && repairPricing.prices) {
+    contextSection += `\n\n[REPAIR PRICING - REAL DATA]\n`;
+    contextSection += `Average Grade A (OEM): $${repairPricing.avg_grade_a || 'N/A'}\n`;
+    contextSection += `Average Grade B (Aftermarket): $${repairPricing.avg_grade_b || 'N/A'}\n`;
+    contextSection += `Average repair time: ${repairPricing.avg_time || 'N/A'} minutes\n`;
+    if (repairPricing.cheapest) {
+      contextSection += `Cheapest option: ${repairPricing.cheapest.shop} at $${repairPricing.cheapest.price}\n`;
+    }
+    contextSection += `\nPricing by shop:\n`;
+    repairPricing.prices.forEach(p => {
+      contextSection += `- ${p.shop}: Grade A $${p.grade_a || 'N/A'}, Grade B $${p.grade_b || 'N/A'}, ~${p.time_mins} mins\n`;
+    });
+  }
 
   let intentGuidelines = '\n\nRESPONSE GUIDELINES:';
   
   switch (intent) {
+    case 'shop_finder':
+      intentGuidelines += `
+- USE THE REAL SHOP DATA PROVIDED ABOVE - do NOT say you cannot access location
+- List the shops with their actual names, addresses, phone numbers, and distances
+- Highlight the closest shop first
+- Mention key features like same-day service, warranty, and ratings
+- Recommend calling ahead to confirm availability
+- Format as a clean, numbered list`;
+      break;
+      
+    case 'repair_pricing':
+      intentGuidelines += `
+- USE THE REAL PRICING DATA PROVIDED ABOVE - do NOT make up prices
+- Explain the difference between Grade A (OEM) and Grade B (Aftermarket) parts
+- Mention the cheapest option and the shop offering it
+- Provide the average price range
+- Note typical repair time
+- Suggest asking about warranty when visiting`;
+      break;
+    
     case 'imei_check':
       intentGuidelines += `
 - If IMEI data is provided, summarize it in clean bullet points
@@ -420,10 +672,32 @@ ROLE CONTEXT: ${role === 'shop' ? 'User is a repair shop technician/owner using 
 // SUGGESTED ACTIONS GENERATOR
 // ═══════════════════════════════════════════════════════════════════
 
-function generateSuggestedActions(intent, imeiData) {
+function generateSuggestedActions(intent, imeiData, shopsData, repairPricing) {
   const actions = [];
   
   switch (intent) {
+    case 'shop_finder':
+      if (shopsData && shopsData.length > 0) {
+        actions.push(`Call ${shopsData[0].name}`);
+        actions.push('Get directions');
+        actions.push('Compare repair prices');
+      } else {
+        actions.push('Enter your zipcode');
+        actions.push('Search by city name');
+      }
+      break;
+      
+    case 'repair_pricing':
+      if (repairPricing) {
+        actions.push('Find nearest shop');
+        actions.push('Compare all prices');
+        actions.push('Book appointment');
+      } else {
+        actions.push('Tell me your device model');
+        actions.push('What needs repair?');
+      }
+      break;
+    
     case 'imei_check':
       if (imeiData?.success) {
         if (imeiData.analysis?.overallStatus === 'flagged') {
@@ -457,7 +731,7 @@ function generateSuggestedActions(intent, imeiData) {
     default:
       actions.push('Diagnose a device');
       actions.push('Check an IMEI');
-      actions.push('View pricing plans');
+      actions.push('Find repair shops near me');
   }
   
   return actions;
@@ -512,11 +786,13 @@ module.exports = async function handler(req, res) {
     const intent = detectIntent(lastUserMessage.content);
     
     // Load relevant data
-    const [devices, symptoms, rewards, pricing] = await Promise.all([
+    const [devices, symptoms, rewards, pricing, shops, repairPricesData] = await Promise.all([
       loadDevices(),
       loadSymptoms(),
       loadRewards(),
-      loadPricing()
+      loadPricing(),
+      loadShops(),
+      loadRepairPrices()
     ]);
     
     // Handle IMEI check if applicable
@@ -528,6 +804,23 @@ module.exports = async function handler(req, res) {
       }
     }
     
+    // Handle shop finder
+    let shopsData = null;
+    if (intent === 'shop_finder') {
+      const zipcode = extractZipcode(lastUserMessage.content);
+      shopsData = getNearbyShops(shops, zipcode, 5);
+    }
+    
+    // Handle repair pricing
+    let repairPricing = null;
+    if (intent === 'repair_pricing' || intent === 'shop_finder') {
+      const { device, repair } = extractDeviceAndRepair(lastUserMessage.content);
+      const zipcode = extractZipcode(lastUserMessage.content);
+      if (device || repair) {
+        repairPricing = getRepairPricing(repairPricesData, device, repair, zipcode);
+      }
+    }
+    
     // Build system prompt
     const systemPrompt = buildSystemPrompt({
       intent,
@@ -536,6 +829,8 @@ module.exports = async function handler(req, res) {
       rewards,
       pricing,
       imeiData,
+      shopsData,
+      repairPricing,
       role
     });
     
@@ -553,6 +848,12 @@ module.exports = async function handler(req, res) {
     if (imeiData) {
       context.imeiResult = imeiData;
     }
+    if (shopsData) {
+      context.nearbyShops = shopsData;
+    }
+    if (repairPricing) {
+      context.repairPricing = repairPricing;
+    }
     
     // Call LLM
     const llmResponse = await callLLM({
@@ -562,7 +863,7 @@ module.exports = async function handler(req, res) {
     });
     
     // Generate suggested actions
-    const suggestedActions = generateSuggestedActions(intent, imeiData);
+    const suggestedActions = generateSuggestedActions(intent, imeiData, shopsData, repairPricing);
     
     // Build response
     const response = {
@@ -581,6 +882,22 @@ module.exports = async function handler(req, res) {
         status: imeiData.success ? imeiData.analysis?.overallStatus : 'error',
         summary: imeiData.success ? imeiData.summary : null,
         analysis: imeiData.success ? imeiData.analysis : null
+      };
+    }
+    
+    // Add shops data to meta if present
+    if (shopsData && shopsData.length > 0) {
+      response.meta.shops = shopsData;
+    }
+    
+    // Add repair pricing to meta if present
+    if (repairPricing) {
+      response.meta.pricing = {
+        avg_grade_a: repairPricing.avg_grade_a,
+        avg_grade_b: repairPricing.avg_grade_b,
+        avg_time: repairPricing.avg_time,
+        cheapest: repairPricing.cheapest,
+        shop_count: repairPricing.prices?.length || 0
       };
     }
     
