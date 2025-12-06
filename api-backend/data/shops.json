@@ -1,0 +1,219 @@
+{
+  "shops": [
+    {
+      "id": "shop_001",
+      "name": "Fixology STL",
+      "slug": "fixology-stl",
+      "address": {
+        "street": "1234 N Highway 67",
+        "city": "Florissant",
+        "state": "MO",
+        "zipcode": "63033",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.7892,
+        "lng": -90.3226
+      },
+      "phone": "(314) 555-0123",
+      "email": "hello@fixologystl.com",
+      "website": "https://fixologyai.com",
+      "hours": {
+        "monday": "10:00-19:00",
+        "tuesday": "10:00-19:00",
+        "wednesday": "10:00-19:00",
+        "thursday": "10:00-19:00",
+        "friday": "10:00-19:00",
+        "saturday": "10:00-17:00",
+        "sunday": "closed"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass", "camera", "hdmi_port", "joycon", "water_damage", "data_recovery"],
+      "brands_serviced": ["Apple", "Samsung", "Google", "Sony", "Microsoft", "Nintendo"],
+      "rating": 4.9,
+      "review_count": 127,
+      "verified": true,
+      "certified": true,
+      "warranty_days": 90,
+      "same_day_service": true,
+      "mail_in_service": true,
+      "walk_in_welcome": true,
+      "features": ["Free Diagnostics", "OEM Parts Available", "Price Match Guarantee", "Student Discount"],
+      "created_at": "2024-01-15",
+      "updated_at": "2024-12-06"
+    },
+    {
+      "id": "shop_002",
+      "name": "Phone Medic STL",
+      "slug": "phone-medic-stl",
+      "address": {
+        "street": "567 W Florissant Ave",
+        "city": "Ferguson",
+        "state": "MO",
+        "zipcode": "63135",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.7442,
+        "lng": -90.2954
+      },
+      "phone": "(314) 555-0456",
+      "email": "info@phonemedicstl.com",
+      "website": null,
+      "hours": {
+        "monday": "09:00-18:00",
+        "tuesday": "09:00-18:00",
+        "wednesday": "09:00-18:00",
+        "thursday": "09:00-18:00",
+        "friday": "09:00-18:00",
+        "saturday": "10:00-16:00",
+        "sunday": "closed"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass", "camera", "water_damage"],
+      "brands_serviced": ["Apple", "Samsung", "Google", "LG", "Motorola"],
+      "rating": 4.6,
+      "review_count": 89,
+      "verified": true,
+      "certified": false,
+      "warranty_days": 60,
+      "same_day_service": true,
+      "mail_in_service": false,
+      "walk_in_welcome": true,
+      "features": ["Free Estimates", "Aftermarket Parts", "Quick Turnaround"],
+      "created_at": "2024-03-20",
+      "updated_at": "2024-12-05"
+    },
+    {
+      "id": "shop_003",
+      "name": "Gateway Phone Repair",
+      "slug": "gateway-phone-repair",
+      "address": {
+        "street": "8901 Natural Bridge Rd",
+        "city": "Bel-Nor",
+        "state": "MO",
+        "zipcode": "63121",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.7012,
+        "lng": -90.3098
+      },
+      "phone": "(314) 555-0789",
+      "email": "support@gatewayphonerepair.com",
+      "website": "https://gatewayphonerepair.com",
+      "hours": {
+        "monday": "10:00-20:00",
+        "tuesday": "10:00-20:00",
+        "wednesday": "10:00-20:00",
+        "thursday": "10:00-20:00",
+        "friday": "10:00-20:00",
+        "saturday": "11:00-18:00",
+        "sunday": "12:00-17:00"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass", "camera", "logic_board"],
+      "brands_serviced": ["Apple", "Samsung", "Google", "OnePlus"],
+      "rating": 4.4,
+      "review_count": 156,
+      "verified": true,
+      "certified": true,
+      "warranty_days": 90,
+      "same_day_service": true,
+      "mail_in_service": true,
+      "walk_in_welcome": true,
+      "features": ["Microsoldering", "Board-Level Repair", "Data Recovery"],
+      "created_at": "2023-08-10",
+      "updated_at": "2024-12-04"
+    },
+    {
+      "id": "shop_004",
+      "name": "uBreakiFix Florissant",
+      "slug": "ubreakifix-florissant",
+      "address": {
+        "street": "1100 N US Highway 67",
+        "city": "Florissant",
+        "state": "MO",
+        "zipcode": "63031",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.8012,
+        "lng": -90.3412
+      },
+      "phone": "(314) 555-0321",
+      "email": "florissant@ubreakifix.com",
+      "website": "https://ubreakifix.com/locations/florissant",
+      "hours": {
+        "monday": "10:00-19:00",
+        "tuesday": "10:00-19:00",
+        "wednesday": "10:00-19:00",
+        "thursday": "10:00-19:00",
+        "friday": "10:00-19:00",
+        "saturday": "10:00-18:00",
+        "sunday": "12:00-17:00"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass", "camera", "water_damage"],
+      "brands_serviced": ["Apple", "Samsung", "Google", "LG", "Motorola", "OnePlus"],
+      "rating": 4.3,
+      "review_count": 234,
+      "verified": true,
+      "certified": true,
+      "warranty_days": 90,
+      "same_day_service": true,
+      "mail_in_service": false,
+      "walk_in_welcome": true,
+      "features": ["Samsung Authorized", "Google Authorized", "Walk-In Welcome"],
+      "created_at": "2022-05-15",
+      "updated_at": "2024-12-03"
+    },
+    {
+      "id": "shop_005",
+      "name": "Cell Phone City",
+      "slug": "cell-phone-city",
+      "address": {
+        "street": "3456 Lindbergh Blvd",
+        "city": "Hazelwood",
+        "state": "MO",
+        "zipcode": "63042",
+        "country": "US"
+      },
+      "coordinates": {
+        "lat": 38.7698,
+        "lng": -90.3789
+      },
+      "phone": "(314) 555-0654",
+      "email": "service@cellphonecity.com",
+      "website": null,
+      "hours": {
+        "monday": "09:00-19:00",
+        "tuesday": "09:00-19:00",
+        "wednesday": "09:00-19:00",
+        "thursday": "09:00-19:00",
+        "friday": "09:00-19:00",
+        "saturday": "10:00-17:00",
+        "sunday": "closed"
+      },
+      "services": ["screen", "battery", "charging_port", "back_glass"],
+      "brands_serviced": ["Apple", "Samsung", "LG", "Motorola"],
+      "rating": 4.1,
+      "review_count": 67,
+      "verified": false,
+      "certified": false,
+      "warranty_days": 30,
+      "same_day_service": true,
+      "mail_in_service": false,
+      "walk_in_welcome": true,
+      "features": ["Budget Friendly", "Quick Service", "Cash Discount"],
+      "created_at": "2024-02-28",
+      "updated_at": "2024-12-02"
+    }
+  ],
+  "zipcode_coordinates": {
+    "63033": { "lat": 38.7892, "lng": -90.3226 },
+    "63031": { "lat": 38.8012, "lng": -90.3412 },
+    "63042": { "lat": 38.7698, "lng": -90.3789 },
+    "63121": { "lat": 38.7012, "lng": -90.3098 },
+    "63135": { "lat": 38.7442, "lng": -90.2954 },
+    "63101": { "lat": 38.6270, "lng": -90.1994 },
+    "63102": { "lat": 38.6318, "lng": -90.1887 }
+  }
+}
+
