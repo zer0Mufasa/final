@@ -1,10 +1,12 @@
 {
-  "name": "fixology-imei-backend",
-  "version": "1.0.0",
+  "name": "fixology-api-backend",
+  "version": "2.0.0",
+  "description": "Fixology API Backend - IMEI Check & AI Chat",
   "private": true,
   "scripts": {
     "dev": "vercel dev",
-    "start": "vercel dev"
+    "start": "vercel dev",
+    "deploy": "vercel --prod"
   },
   "engines": {
     "node": "20.x"
