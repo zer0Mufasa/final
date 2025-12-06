@@ -19,9 +19,33 @@
       ]
     }
   ],
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" }
+  ],
   "functions": {
     "api/**/*.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/api/auth/signup", "destination": "/api/auth/signup" },
+    { "source": "/api/auth/login", "destination": "/api/auth/login" },
+    { "source": "/api/auth/profile", "destination": "/api/auth/profile" },
+    { "source": "/api/auth/reset-request", "destination": "/api/auth/reset-request" },
+    { "source": "/api/auth/reset-submit", "destination": "/api/auth/reset-submit" },
+    { "source": "/api/shops/register", "destination": "/api/shops/register" },
+    { "source": "/api/shops/login", "destination": "/api/shops/login" },
+    { "source": "/api/shops/profile", "destination": "/api/shops/profile" },
+    { "source": "/api/memory/save", "destination": "/api/memory/save" },
+    { "source": "/api/memory/get", "destination": "/api/memory/get" },
+    { "source": "/api/memory/clear", "destination": "/api/memory/clear" },
+    { "source": "/api/admin/stats", "destination": "/api/admin/stats" },
+    { "source": "/api/billing/create-session", "destination": "/api/billing/create-session" },
+    { "source": "/api/billing/webhook", "destination": "/api/billing/webhook" },
+    { "source": "/api/wiki/search", "destination": "/api/wiki/search" },
+    { "source": "/api/wiki/article", "destination": "/api/wiki/article" },
+    { "source": "/api/website/save", "destination": "/api/website/save" },
+    { "source": "/api/website/publish", "destination": "/api/website/publish" },
+    { "source": "/api/autopilot/generate", "destination": "/api/autopilot/generate" }
+  ]
 }
