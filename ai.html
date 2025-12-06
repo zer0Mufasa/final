@@ -770,6 +770,9 @@
                         <p>Your intelligent repair assistant. I can diagnose device issues, check IMEI status, provide repair estimates, and answer any questions about device repair.</p>
                         
                         <div class="quick-actions">
+                            <button class="quick-action" onclick="sendQuickAction('shops')">
+                                <span>📍</span> Find shops near me
+                            </button>
                             <button class="quick-action" onclick="sendQuickAction('diagnose')">
                                 <span>🔬</span> Diagnose my device
                             </button>
@@ -778,9 +781,6 @@
                             </button>
                             <button class="quick-action" onclick="sendQuickAction('pricing')">
                                 <span>💰</span> Repair pricing
-                            </button>
-                            <button class="quick-action" onclick="sendQuickAction('support')">
-                                <span>💬</span> Get help
                             </button>
                         </div>
                     </div>
@@ -835,6 +835,59 @@
         
         let messages = [];
         let isLoading = false;
+        let userLocation = null; // { lat, lng, city, source }
+
+        // ═══════════════════════════════════════════════════════════════
+        // AUTOMATIC LOCATION DETECTION
+        // ═══════════════════════════════════════════════════════════════
+        
+        async function detectUserLocation() {
+            // Try browser geolocation first (most accurate)
+            if (navigator.geolocation) {
+                try {
+                    const position = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: false,
+                            timeout: 5000,
+                            maximumAge: 300000 // Cache for 5 minutes
+                        });
+                    });
+                    
+                    userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                        source: 'gps'
+                    };
+                    console.log('📍 Location detected via GPS:', userLocation);
+                    return;
+                } catch (e) {
+                    console.log('GPS location denied or failed, trying IP geolocation...');
+                }
+            }
+            
+            // Fallback to IP geolocation (less accurate but automatic)
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                
+                if (data.latitude && data.longitude) {
+                    userLocation = {
+                        lat: data.latitude,
+                        lng: data.longitude,
+                        city: data.city,
+                        region: data.region,
+                        country: data.country_name,
+                        source: 'ip'
+                    };
+                    console.log('📍 Location detected via IP:', userLocation);
+                }
+            } catch (e) {
+                console.log('IP geolocation failed:', e);
+            }
+        }
+        
+        // Detect location on page load
+        detectUserLocation();
 
         // ═══════════════════════════════════════════════════════════════
         // DOM ELEMENTS
@@ -850,6 +903,7 @@
         
         window.sendQuickAction = function(action) {
             const actions = {
+                'shops': "Find the nearest phone repair shops near me",
                 'diagnose': "I need help diagnosing an issue with my device. Can you help me figure out what's wrong?",
                 'imei': "I'd like to check the IMEI status of my device. What information do you need?",
                 'pricing': "What are your repair prices? I'd like to know the cost for common repairs.",
@@ -932,7 +986,9 @@
                     body: JSON.stringify({
                         sessionId: CONFIG.sessionId,
                         role: CONFIG.role,
-                        messages: messages
+                        messages: messages,
+                        // Include user location if available
+                        userLocation: userLocation
                     })
                 });
 

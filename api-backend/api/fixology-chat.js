@@ -108,7 +108,7 @@ async function loadShops() {
 
 /**
  * Fetch real shops from Google Places or Yelp API
- * @param {string} location - Any location: zipcode, city, address, "city, state", etc.
+ * @param {string} location - Any location: "lat,lng", zipcode, city, address, etc.
  */
 async function fetchRealShops(location) {
   const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
@@ -119,11 +119,19 @@ async function fetchRealShops(location) {
     return null;
   }
   
-  // Geocode the location (works with ANY address, city, zipcode, etc.)
   let lat = null, lng = null;
   let locationName = location;
   
-  if (GOOGLE_API_KEY) {
+  // Check if location is already coordinates (lat,lng format)
+  const coordMatch = location.match(/^(-?\d+\.?\d*),\s*(-?\d+\.?\d*)$/);
+  if (coordMatch) {
+    lat = parseFloat(coordMatch[1]);
+    lng = parseFloat(coordMatch[2]);
+    locationName = `Coordinates: ${lat}, ${lng}`;
+    console.log(`Using provided coordinates: ${lat}, ${lng}`);
+  }
+  // Otherwise, geocode the location
+  else if (GOOGLE_API_KEY) {
     try {
       // Google Geocoding API handles ANY location format
       const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${GOOGLE_API_KEY}`;
@@ -972,7 +980,12 @@ module.exports = async function handler(req, res) {
   
   try {
     const body = req.body || {};
-    const { sessionId, role = 'customer', messages } = body;
+    const { sessionId, role = 'customer', messages, userLocation } = body;
+    
+    // Log user location if available
+    if (userLocation) {
+      console.log(`User location available: ${userLocation.source} - ${userLocation.lat}, ${userLocation.lng}${userLocation.city ? ` (${userLocation.city})` : ''}`);
+    }
     
     // Validate messages
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -1019,12 +1032,25 @@ module.exports = async function handler(req, res) {
     // NO STATIC/SAMPLE DATA - only real results from Google Places
     let shopsData = null;
     let searchLocation = null;
+    let locationSource = null;
+    
     if (intent === 'shop_finder') {
-      // Extract any location from the message (city, address, zipcode, etc.)
+      // First try to extract location from the message
       searchLocation = extractLocation(lastUserMessage.content);
       
       if (searchLocation) {
-        console.log(`Shop finder: Searching for shops near "${searchLocation}"`);
+        locationSource = 'message';
+        console.log(`Shop finder: Using location from message "${searchLocation}"`);
+      }
+      // If no location in message, use automatic location (GPS or IP)
+      else if (userLocation && userLocation.lat && userLocation.lng) {
+        // Use coordinates directly - most accurate
+        searchLocation = `${userLocation.lat},${userLocation.lng}`;
+        locationSource = userLocation.source || 'auto';
+        console.log(`Shop finder: Using automatic ${locationSource} location: ${searchLocation}${userLocation.city ? ` (${userLocation.city})` : ''}`);
+      }
+      
+      if (searchLocation) {
         // Use Google Places API - returns REAL shops with REAL addresses
         const realShops = await fetchRealShops(searchLocation);
         if (realShops && realShops.length > 0) {
@@ -1034,7 +1060,7 @@ module.exports = async function handler(req, res) {
           console.log(`No shops found or API error for "${searchLocation}"`);
         }
       } else {
-        console.log('Shop finder: No location extracted from message');
+        console.log('Shop finder: No location available - will ask user');
       }
       
       // NEVER use static data - if no results, the AI will ask for location
