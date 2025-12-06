@@ -14,7 +14,7 @@
     // ═══════════════════════════════════════════════════════════════
     
     const CONFIG = {
-        apiEndpoint: 'https://final-oc9r.vercel.app/api/fixology-chat',
+        apiEndpoint: 'https://final-bice-phi.vercel.app/api/fixology-chat',
         // For local development, use:
         // apiEndpoint: 'http://localhost:3000/api/fixology-chat',
         

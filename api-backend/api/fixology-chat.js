@@ -187,7 +187,7 @@ function extractIMEI(message) {
 
 async function checkIMEI(imei) {
   try {
-    const response = await fetch('https://final-oc9r.vercel.app/api/imei-check', {
+    const response = await fetch('https://final-bice-phi.vercel.app/api/imei-check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ imei: imei, mode: 'full' })
