@@ -11,18 +11,3 @@
   },
   "dependencies": {}
 }
-```
-
-(Use `20.x` — it's the current LTS and stable. `24.x` is too new and may have issues.)
-
----
-
-## 2️⃣ Environment Variable Value
-
-In Vercel → Settings → Environment Variables:
-
-**Key:** `IMEICHECK_API_KEY`
-
-**Value:** 
-```
-kNDOALombJnxrfKJZ0bkSu60xS80STI2BxBNFqA1db4e2d2f
