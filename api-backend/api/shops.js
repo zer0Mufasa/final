@@ -39,16 +39,98 @@ function setCorsHeaders(res, origin) {
 async function geocodeZipcode(zipcode) {
   const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
   
+  // Expanded fallback coordinates for Missouri zipcodes
+  const fallbackCoords = {
+    // Florissant / North County
+    '63033': { lat: 38.7892, lng: -90.3226 },
+    '63031': { lat: 38.8012, lng: -90.3412 },
+    '63042': { lat: 38.7698, lng: -90.3789 },
+    '63121': { lat: 38.7012, lng: -90.3098 },
+    '63135': { lat: 38.7442, lng: -90.2954 },
+    '63034': { lat: 38.8231, lng: -90.2879 },
+    
+    // Ballwin / West County
+    '63021': { lat: 38.5950, lng: -90.5463 },
+    '63011': { lat: 38.5955, lng: -90.5256 },
+    '63017': { lat: 38.6478, lng: -90.5379 },
+    '63005': { lat: 38.6609, lng: -90.6609 },
+    '63026': { lat: 38.5012, lng: -90.4101 },
+    
+    // St. Louis City/County
+    '63101': { lat: 38.6270, lng: -90.1994 },
+    '63102': { lat: 38.6318, lng: -90.1887 },
+    '63103': { lat: 38.6309, lng: -90.2139 },
+    '63104': { lat: 38.6148, lng: -90.2151 },
+    '63105': { lat: 38.6420, lng: -90.3304 },
+    '63108': { lat: 38.6453, lng: -90.2613 },
+    '63109': { lat: 38.5847, lng: -90.2904 },
+    '63110': { lat: 38.6187, lng: -90.2475 },
+    '63116': { lat: 38.5781, lng: -90.2665 },
+    '63117': { lat: 38.6298, lng: -90.3159 },
+    '63119': { lat: 38.5922, lng: -90.3440 },
+    '63122': { lat: 38.5881, lng: -90.3716 },
+    '63123': { lat: 38.5425, lng: -90.3226 },
+    '63124': { lat: 38.6411, lng: -90.3763 },
+    '63125': { lat: 38.5172, lng: -90.2954 },
+    '63126': { lat: 38.5397, lng: -90.3723 },
+    '63127': { lat: 38.5231, lng: -90.3726 },
+    '63128': { lat: 38.4881, lng: -90.3726 },
+    '63129': { lat: 38.4692, lng: -90.3223 },
+    '63130': { lat: 38.6670, lng: -90.3245 },
+    '63131': { lat: 38.6278, lng: -90.4401 },
+    '63132': { lat: 38.6820, lng: -90.3404 },
+    '63133': { lat: 38.6748, lng: -90.2709 },
+    '63134': { lat: 38.7398, lng: -90.3231 },
+    '63136': { lat: 38.7231, lng: -90.2523 },
+    '63137': { lat: 38.7470, lng: -90.2104 },
+    '63138': { lat: 38.7892, lng: -90.1823 },
+    '63139': { lat: 38.6048, lng: -90.2904 },
+    '63140': { lat: 38.7298, lng: -90.3445 },
+    '63141': { lat: 38.6620, lng: -90.4445 },
+    '63143': { lat: 38.6098, lng: -90.3159 },
+    '63144': { lat: 38.6170, lng: -90.3404 },
+    '63146': { lat: 38.6942, lng: -90.4401 },
+    
+    // South County / Jefferson County
+    '63010': { lat: 38.4342, lng: -90.3773 },
+    '63012': { lat: 38.3947, lng: -90.3726 },
+    '63048': { lat: 38.3598, lng: -90.3723 },
+    '63049': { lat: 38.4942, lng: -90.4901 },
+    '63050': { lat: 38.3142, lng: -90.4545 },
+    '63051': { lat: 38.3498, lng: -90.5012 },
+    '63052': { lat: 38.4098, lng: -90.4445 },
+    
+    // St. Charles County
+    '63301': { lat: 38.7812, lng: -90.4823 },
+    '63303': { lat: 38.7612, lng: -90.5123 },
+    '63304': { lat: 38.7412, lng: -90.5523 },
+    '63366': { lat: 38.7898, lng: -90.6523 },
+    '63367': { lat: 38.7998, lng: -90.7123 },
+    '63368': { lat: 38.7698, lng: -90.7523 },
+    '63376': { lat: 38.7598, lng: -90.6123 },
+    '63385': { lat: 38.8012, lng: -90.8523 },
+    '63386': { lat: 38.8312, lng: -90.7823 },
+    
+    // Chesterfield / Manchester
+    '63006': { lat: 38.5842, lng: -90.5779 },
+    '63088': { lat: 38.5898, lng: -90.5045 },
+    
+    // O'Fallon area
+    '63366': { lat: 38.7998, lng: -90.7123 },
+    '63368': { lat: 38.7698, lng: -90.7523 }
+  };
+  
+  // Check fallback first
+  if (fallbackCoords[zipcode]) {
+    // If we have the API key, still try to geocode for accuracy
+    if (!GOOGLE_API_KEY) {
+      return fallbackCoords[zipcode];
+    }
+  }
+  
   if (!GOOGLE_API_KEY) {
-    // Fallback coordinates for known zipcodes
-    const fallbackCoords = {
-      '63033': { lat: 38.7892, lng: -90.3226 },
-      '63031': { lat: 38.8012, lng: -90.3412 },
-      '63042': { lat: 38.7698, lng: -90.3789 },
-      '63121': { lat: 38.7012, lng: -90.3098 },
-      '63135': { lat: 38.7442, lng: -90.2954 }
-    };
-    return fallbackCoords[zipcode] || { lat: 38.7892, lng: -90.3226 };
+    // No API key, use fallback or default
+    return fallbackCoords[zipcode] || { lat: 38.6270, lng: -90.1994 }; // Default to downtown STL
   }
 
   try {
@@ -64,7 +146,8 @@ async function geocodeZipcode(zipcode) {
     console.error('Geocoding error:', error);
   }
   
-  return { lat: 38.7892, lng: -90.3226 }; // Default to Florissant, MO
+  // Last resort: use fallback coords or downtown STL
+  return fallbackCoords[zipcode] || { lat: 38.6270, lng: -90.1994 }; // Default to downtown STL
 }
 
 // ═══════════════════════════════════════════════════════════════
