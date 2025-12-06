@@ -770,8 +770,8 @@
                         <p>Your intelligent repair assistant. I can diagnose device issues, check IMEI status, provide repair estimates, and answer any questions about device repair.</p>
                         
                         <div class="quick-actions">
-                            <button class="quick-action" onclick="sendQuickAction('shops')">
-                                <span>📍</span> Find shops near me
+                            <button class="quick-action" onclick="sendQuickAction('shops_gps')" style="background: linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%); border-color: rgba(34,197,94,0.3);">
+                                <span>📍</span> Find shops near me (GPS)
                             </button>
                             <button class="quick-action" onclick="sendQuickAction('diagnose')">
                                 <span>🔬</span> Diagnose my device
@@ -847,21 +847,22 @@
                 try {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, {
-                            enableHighAccuracy: false,
-                            timeout: 5000,
-                            maximumAge: 300000 // Cache for 5 minutes
+                            enableHighAccuracy: true, // Request high accuracy GPS
+                            timeout: 10000,
+                            maximumAge: 60000 // Cache for 1 minute
                         });
                     });
                     
                     userLocation = {
                         lat: position.coords.latitude,
                         lng: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
                         source: 'gps'
                     };
-                    console.log('📍 Location detected via GPS:', userLocation);
+                    console.log('📍 GPS location:', userLocation.lat, userLocation.lng, '(accuracy:', userLocation.accuracy, 'm)');
                     return;
                 } catch (e) {
-                    console.log('GPS location denied or failed, trying IP geolocation...');
+                    console.log('GPS denied/failed:', e.message, '- trying IP...');
                 }
             }
             
@@ -877,14 +878,49 @@
                         city: data.city,
                         region: data.region,
                         country: data.country_name,
-                        source: 'ip'
+                        source: 'ip',
+                        accuracy: 5000 // IP is ~5km accurate at best
                     };
-                    console.log('📍 Location detected via IP:', userLocation);
+                    console.log('📍 IP location:', userLocation.city, userLocation.region);
                 }
             } catch (e) {
                 console.log('IP geolocation failed:', e);
             }
         }
+        
+        // Request precise GPS location (call this when user clicks "Use exact location")
+        async function requestPreciseLocation() {
+            if (!navigator.geolocation) {
+                alert('GPS not available in your browser');
+                return false;
+            }
+            
+            try {
+                const position = await new Promise((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 0 // Force fresh location
+                    });
+                });
+                
+                userLocation = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    accuracy: position.coords.accuracy,
+                    source: 'gps'
+                };
+                console.log('📍 Precise GPS:', userLocation.lat, userLocation.lng);
+                return true;
+            } catch (e) {
+                console.log('GPS request failed:', e.message);
+                alert('Could not get your location. Please allow location access or enter your address manually.');
+                return false;
+            }
+        }
+        
+        // Expose for quick action
+        window.requestPreciseLocation = requestPreciseLocation;
         
         // Detect location on page load
         detectUserLocation();
@@ -901,7 +937,22 @@
         // QUICK ACTIONS
         // ═══════════════════════════════════════════════════════════════
         
-        window.sendQuickAction = function(action) {
+        window.sendQuickAction = async function(action) {
+            // Special handling for GPS-based shop search
+            if (action === 'shops_gps') {
+                const success = await requestPreciseLocation();
+                if (success) {
+                    // Clear welcome and send message
+                    const welcomeMsg = chatMessages.querySelector('.welcome-message');
+                    if (welcomeMsg) {
+                        welcomeMsg.style.animation = 'fadeOut 0.3s forwards';
+                        setTimeout(() => welcomeMsg.remove(), 300);
+                    }
+                    sendUserMessage("Find the nearest phone repair shops to my exact location");
+                }
+                return;
+            }
+            
             const actions = {
                 'shops': "Find the nearest phone repair shops near me",
                 'diagnose': "I need help diagnosing an issue with my device. Can you help me figure out what's wrong?",
