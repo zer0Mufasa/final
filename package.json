@@ -14,7 +14,7 @@
     "jsonwebtoken": "^9.0.2",
     "stripe": "^14.10.0",
     "uuid": "^9.0.1",
-    "@vercel/kv": "^2.0.0"
+    "@upstash/redis": "^1.28.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

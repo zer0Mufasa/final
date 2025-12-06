@@ -4,7 +4,13 @@
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
+
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN,
+});
 const { v4: uuidv4 } = require('uuid');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fixology-secret-key-change-in-production';
@@ -48,7 +54,7 @@ function verifyToken(token) {
  */
 async function createUser({ email, password, name, phone }) {
   // Check if user already exists
-  const existingUser = await kv.get(`user:${email.toLowerCase()}`);
+  const existingUser = await redis.get(`user:${email.toLowerCase()}`);
   if (existingUser) {
     throw new Error('Email already registered');
   }
@@ -70,11 +76,11 @@ async function createUser({ email, password, name, phone }) {
   };
 
   // Save user to KV
-  await kv.set(`user:${email.toLowerCase()}`, user);
-  await kv.set(`user:id:${userId}`, email.toLowerCase());
+  await redis.set(`user:${email.toLowerCase()}`, user);
+  await redis.set(`user:id:${userId}`, email.toLowerCase());
   
   // Add to users list
-  await kv.sadd('users', userId);
+  await redis.sadd('users', userId);
 
   // Generate token
   const token = generateToken({ 
@@ -92,7 +98,7 @@ async function createUser({ email, password, name, phone }) {
  * Login user
  */
 async function loginUser(email, password) {
-  const user = await kv.get(`user:${email.toLowerCase()}`);
+  const user = await redis.get(`user:${email.toLowerCase()}`);
   
   if (!user) {
     throw new Error('Invalid email or password');
@@ -119,10 +125,10 @@ async function loginUser(email, password) {
  * Get user by ID
  */
 async function getUserById(userId) {
-  const email = await kv.get(`user:id:${userId}`);
+  const email = await redis.get(`user:id:${userId}`);
   if (!email) return null;
   
-  const user = await kv.get(`user:${email}`);
+  const user = await redis.get(`user:${email}`);
   if (!user) return null;
 
   const { passwordHash: _, ...safeUser } = user;
@@ -133,7 +139,7 @@ async function getUserById(userId) {
  * Get user by email
  */
 async function getUserByEmail(email) {
-  const user = await kv.get(`user:${email.toLowerCase()}`);
+  const user = await redis.get(`user:${email.toLowerCase()}`);
   if (!user) return null;
 
   const { passwordHash: _, ...safeUser } = user;
@@ -144,10 +150,10 @@ async function getUserByEmail(email) {
  * Update user
  */
 async function updateUser(userId, updates) {
-  const email = await kv.get(`user:id:${userId}`);
+  const email = await redis.get(`user:id:${userId}`);
   if (!email) throw new Error('User not found');
   
-  const user = await kv.get(`user:${email}`);
+  const user = await redis.get(`user:${email}`);
   if (!user) throw new Error('User not found');
 
   const updatedUser = {
@@ -162,7 +168,7 @@ async function updateUser(userId, updates) {
   updatedUser.id = user.id;
   updatedUser.email = user.email;
 
-  await kv.set(`user:${email}`, updatedUser);
+  await redis.set(`user:${email}`, updatedUser);
 
   const { passwordHash: _, ...safeUser } = updatedUser;
   return safeUser;
@@ -193,7 +199,7 @@ async function authenticateRequest(req) {
  */
 async function createShopUser({ email, password, shopName, address, phone }) {
   // Check if shop user already exists
-  const existingShop = await kv.get(`shop:${email.toLowerCase()}`);
+  const existingShop = await redis.get(`shop:${email.toLowerCase()}`);
   if (existingShop) {
     throw new Error('Email already registered');
   }
@@ -219,11 +225,11 @@ async function createShopUser({ email, password, shopName, address, phone }) {
   };
 
   // Save shop to KV
-  await kv.set(`shop:${email.toLowerCase()}`, shop);
-  await kv.set(`shop:id:${shopId}`, email.toLowerCase());
+  await redis.set(`shop:${email.toLowerCase()}`, shop);
+  await redis.set(`shop:id:${shopId}`, email.toLowerCase());
   
   // Add to shops list
-  await kv.sadd('shops', shopId);
+  await redis.sadd('shops', shopId);
 
   // Generate token
   const token = generateToken({ 
@@ -241,7 +247,7 @@ async function createShopUser({ email, password, shopName, address, phone }) {
  * Login shop user
  */
 async function loginShopUser(email, password) {
-  const shop = await kv.get(`shop:${email.toLowerCase()}`);
+  const shop = await redis.get(`shop:${email.toLowerCase()}`);
   
   if (!shop) {
     throw new Error('Invalid email or password');
@@ -268,10 +274,10 @@ async function loginShopUser(email, password) {
  * Get shop by ID
  */
 async function getShopById(shopId) {
-  const email = await kv.get(`shop:id:${shopId}`);
+  const email = await redis.get(`shop:id:${shopId}`);
   if (!email) return null;
   
-  const shop = await kv.get(`shop:${email}`);
+  const shop = await redis.get(`shop:${email}`);
   if (!shop) return null;
 
   const { passwordHash: _, ...safeShop } = shop;
