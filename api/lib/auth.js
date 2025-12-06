@@ -195,6 +195,64 @@ async function authenticateRequest(req) {
 }
 
 /**
+ * Require authentication - returns user or error response
+ */
+async function requireAuth(req, res) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { error: 'Authentication required', status: 401 };
+  }
+
+  const token = authHeader.substring(7);
+  const decoded = verifyToken(token);
+  
+  if (!decoded) {
+    return { error: 'Invalid or expired token', status: 401 };
+  }
+
+  // Check if it's a user or shop token
+  if (decoded.userId) {
+    const user = await getUserById(decoded.userId);
+    if (!user) {
+      return { error: 'User not found', status: 404 };
+    }
+    return { user, type: 'user' };
+  }
+  
+  if (decoded.shopId) {
+    const shop = await getShopById(decoded.shopId);
+    if (!shop) {
+      return { error: 'Shop not found', status: 404 };
+    }
+    return { user: shop, type: 'shop' };
+  }
+
+  return { error: 'Invalid token', status: 401 };
+}
+
+/**
+ * Update user password
+ */
+async function updateUserPassword(userId, newPassword) {
+  const email = await redis.get(`user:id:${userId}`);
+  if (!email) throw new Error('User not found');
+  
+  const user = await redis.get(`user:${email}`);
+  if (!user) throw new Error('User not found');
+
+  const passwordHash = await hashPassword(newPassword);
+  
+  const updatedUser = {
+    ...user,
+    passwordHash,
+    updatedAt: new Date().toISOString()
+  };
+
+  await redis.set(`user:${email}`, updatedUser);
+  return true;
+}
+
+/**
  * Create shop user
  */
 async function createShopUser({ email, password, shopName, address, phone }) {
@@ -294,7 +352,9 @@ module.exports = {
   getUserById,
   getUserByEmail,
   updateUser,
+  updateUserPassword,
   authenticateRequest,
+  requireAuth,
   createShopUser,
   loginShopUser,
   getShopById
