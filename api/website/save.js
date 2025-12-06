@@ -3,8 +3,8 @@
  * Save shop website configuration
  */
 
-const { handleCors, sendSuccess, sendError, readDatabase, writeDatabase, sanitizeInput } = require('../../lib/utils');
-const { requireAuth, updateShop } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, readDatabase, writeDatabase, sanitizeInput } = require('../lib/utils');
+const { requireAuth, updateShop } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

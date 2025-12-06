@@ -3,8 +3,8 @@
  * Save conversation memory for a user
  */
 
-const { handleCors, sendSuccess, sendError, readDatabase, writeDatabase } = require('../../lib/utils');
-const { requireAuth } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, readDatabase, writeDatabase } = require('../lib/utils');
+const { requireAuth } = require('../lib/auth');
 
 const MAX_MESSAGES = 20;
 

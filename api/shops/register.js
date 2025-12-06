@@ -3,8 +3,8 @@
  * Shop owner registration
  */
 
-const { handleCors, sendSuccess, sendError, validateEmail, validatePassword, validateRequired, sanitizeInput } = require('../../lib/utils');
-const { createShop } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, validateEmail, validatePassword, validateRequired, sanitizeInput } = require('../lib/utils');
+const { createShop } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

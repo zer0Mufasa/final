@@ -3,8 +3,8 @@
  * Submit new password with reset token
  */
 
-const { handleCors, sendSuccess, sendError, validatePassword } = require('../../lib/utils');
-const { validateResetToken, consumeResetToken, findUserByEmail, updateUserPassword, findShopByEmail } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, validatePassword } = require('../lib/utils');
+const { validateResetToken, consumeResetToken, findUserByEmail, updateUserPassword, findShopByEmail } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

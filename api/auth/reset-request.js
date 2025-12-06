@@ -3,8 +3,8 @@
  * Request password reset email
  */
 
-const { handleCors, sendSuccess, sendError, validateEmail, sanitizeInput } = require('../../lib/utils');
-const { findUserByEmail, createResetToken } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, validateEmail, sanitizeInput } = require('../lib/utils');
+const { findUserByEmail, createResetToken } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

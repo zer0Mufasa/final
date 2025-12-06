@@ -3,8 +3,8 @@
  * Stripe webhook handler
  */
 
-const { sendSuccess, sendError, setCorsHeaders } = require('../../lib/utils');
-const { findShopById, updateShop } = require('../../lib/auth');
+const { sendSuccess, sendError, setCorsHeaders } = require('../lib/utils');
+const { findShopById, updateShop } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   // Webhooks don't need CORS but need raw body

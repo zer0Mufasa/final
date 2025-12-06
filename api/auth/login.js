@@ -3,8 +3,8 @@
  * Customer account login
  */
 
-const { handleCors, sendSuccess, sendError, validateEmail, validateRequired, sanitizeInput, appendToLog } = require('../../lib/utils');
-const { authenticateUser } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, validateEmail, validateRequired, sanitizeInput, appendToLog } = require('../lib/utils');
+const { authenticateUser } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

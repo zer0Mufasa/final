@@ -3,8 +3,8 @@
  * Create Stripe checkout session for subscription
  */
 
-const { handleCors, sendSuccess, sendError, validateRequired } = require('../../lib/utils');
-const { requireAuth } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, validateRequired } = require('../lib/utils');
+const { requireAuth } = require('../lib/auth');
 
 // Plan configurations
 const PLANS = {

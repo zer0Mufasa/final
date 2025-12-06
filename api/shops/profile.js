@@ -3,8 +3,8 @@
  * POST /api/shops/profile - Update shop profile
  */
 
-const { handleCors, sendSuccess, sendError, sanitizeInput } = require('../../lib/utils');
-const { requireAuth, updateShop } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, sanitizeInput } = require('../lib/utils');
+const { requireAuth, updateShop } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

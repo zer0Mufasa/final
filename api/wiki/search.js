@@ -3,7 +3,7 @@
  * Search repair wiki articles
  */
 
-const { handleCors, sendSuccess, sendError, readDatabase } = require('../../lib/utils');
+const { handleCors, sendSuccess, sendError, readDatabase } = require('../lib/utils');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

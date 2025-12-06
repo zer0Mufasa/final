@@ -3,8 +3,8 @@
  * POST /api/auth/profile - Update profile
  */
 
-const { handleCors, sendSuccess, sendError, sanitizeInput } = require('../../lib/utils');
-const { requireAuth, updateUser, updateUserPassword } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, sanitizeInput } = require('../lib/utils');
+const { requireAuth, updateUser, updateUserPassword } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

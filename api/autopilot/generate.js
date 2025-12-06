@@ -3,8 +3,8 @@
  * AI-powered content generation for shops
  */
 
-const { handleCors, sendSuccess, sendError, sanitizeInput } = require('../../lib/utils');
-const { requireAuth } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, sanitizeInput } = require('../lib/utils');
+const { requireAuth } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;

@@ -3,8 +3,8 @@
  * Admin dashboard statistics
  */
 
-const { handleCors, sendSuccess, sendError, readDatabase } = require('../../lib/utils');
-const { requireAdmin } = require('../../lib/auth');
+const { handleCors, sendSuccess, sendError, readDatabase } = require('../lib/utils');
+const { requireAdmin } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
