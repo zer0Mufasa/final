@@ -4,7 +4,7 @@
  */
 
 const IMEI_CONFIG = {
-  apiEndpoint: 'https://final-oc9r.vercel.app/api/imei-check',
+  apiEndpoint: 'https://final-git-main-mufasas-projects.vercel.app/api/imei-check',
   debugMode: true // Set to false for production
 };
 
