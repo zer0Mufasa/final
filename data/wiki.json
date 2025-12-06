@@ -1,0 +1,130 @@
+{
+  "articles": [
+    {
+      "id": "iphone-screen-replacement",
+      "title": "iPhone Screen Replacement Guide",
+      "category": "iPhone",
+      "subcategory": "Screen Repair",
+      "difficulty": "Intermediate",
+      "timeEstimate": "45-60 minutes",
+      "tools": ["Pentalobe screwdriver", "Suction cup", "Spudger", "Tweezers", "Heat gun"],
+      "content": "Complete guide to replacing iPhone screens. Covers iPhone 8 through iPhone 15 Pro Max models.",
+      "steps": [
+        "Power off the device completely",
+        "Remove the two pentalobe screws at the bottom",
+        "Apply heat around the edges to soften adhesive",
+        "Use suction cup and spudger to lift the screen",
+        "Disconnect battery first before any other connectors",
+        "Remove the metal bracket covering display connectors",
+        "Disconnect display cables carefully",
+        "Transfer components to new screen assembly",
+        "Reconnect in reverse order",
+        "Test before sealing"
+      ],
+      "warnings": ["Always disconnect battery first", "Don't pry too hard on flex cables", "Use proper ESD protection"],
+      "relatedArticles": ["iphone-battery-replacement", "iphone-face-id-calibration"],
+      "views": 15420,
+      "helpful": 892,
+      "updatedAt": "2024-12-01T00:00:00.000Z"
+    },
+    {
+      "id": "iphone-battery-replacement",
+      "title": "iPhone Battery Replacement Guide",
+      "category": "iPhone",
+      "subcategory": "Battery",
+      "difficulty": "Beginner",
+      "timeEstimate": "20-30 minutes",
+      "tools": ["Pentalobe screwdriver", "Tri-wing screwdriver", "Spudger", "Adhesive strips"],
+      "content": "Step-by-step guide to replacing iPhone batteries safely.",
+      "steps": [
+        "Power off and remove SIM tray",
+        "Remove bottom screws",
+        "Open the display carefully",
+        "Disconnect battery connector",
+        "Remove adhesive tabs slowly",
+        "Install new battery with fresh adhesive",
+        "Reconnect and test"
+      ],
+      "warnings": ["Never puncture the battery", "Pull adhesive tabs slowly at low angle"],
+      "relatedArticles": ["iphone-screen-replacement"],
+      "views": 23150,
+      "helpful": 1205,
+      "updatedAt": "2024-11-15T00:00:00.000Z"
+    },
+    {
+      "id": "samsung-screen-replacement",
+      "title": "Samsung Galaxy Screen Replacement",
+      "category": "Samsung",
+      "subcategory": "Screen Repair",
+      "difficulty": "Advanced",
+      "timeEstimate": "60-90 minutes",
+      "tools": ["Heat gun", "Suction cup", "Plastic pry tools", "Isopropyl alcohol", "B7000 adhesive"],
+      "content": "Guide for Samsung Galaxy S and Note series screen replacements.",
+      "steps": [
+        "Heat the back glass thoroughly",
+        "Remove back glass carefully",
+        "Remove midframe screws",
+        "Disconnect battery and other cables",
+        "Heat front screen edges",
+        "Separate display from frame",
+        "Transfer frame or use pre-framed display",
+        "Apply new adhesive and reassemble"
+      ],
+      "warnings": ["Samsung screens are very fragile", "Curved edges require extra care", "AMOLED screens can be damaged by pressure"],
+      "relatedArticles": ["samsung-battery-replacement"],
+      "views": 8920,
+      "helpful": 456,
+      "updatedAt": "2024-11-20T00:00:00.000Z"
+    },
+    {
+      "id": "iphone-charging-port",
+      "title": "iPhone Charging Port Replacement",
+      "category": "iPhone",
+      "subcategory": "Charging",
+      "difficulty": "Intermediate",
+      "timeEstimate": "30-45 minutes",
+      "tools": ["Pentalobe screwdriver", "Tri-wing screwdriver", "Spudger", "Tweezers"],
+      "content": "Replace the Lightning or USB-C charging port on iPhones.",
+      "steps": [
+        "Remove display assembly",
+        "Remove Taptic Engine",
+        "Remove speaker",
+        "Disconnect charging port flex cable",
+        "Remove all screws securing the flex",
+        "Install new charging port assembly",
+        "Reassemble in reverse order"
+      ],
+      "warnings": ["Many small screws - keep organized", "Flex cable is delicate"],
+      "relatedArticles": ["iphone-speaker-replacement"],
+      "views": 12340,
+      "helpful": 678,
+      "updatedAt": "2024-11-25T00:00:00.000Z"
+    },
+    {
+      "id": "ipad-screen-replacement",
+      "title": "iPad Screen Replacement Guide",
+      "category": "iPad",
+      "subcategory": "Screen Repair",
+      "difficulty": "Advanced",
+      "timeEstimate": "60-90 minutes",
+      "tools": ["Heat gun", "Suction cups", "Plastic pry tools", "iSesamo", "Adhesive strips"],
+      "content": "Complete guide to iPad screen replacement for all models.",
+      "steps": [
+        "Heat edges thoroughly (not center)",
+        "Insert picks around perimeter",
+        "Lift screen slowly watching for cables",
+        "Disconnect digitizer and LCD cables",
+        "Remove home button or Touch ID (if transferring)",
+        "Install new screen with fresh adhesive"
+      ],
+      "warnings": ["iPad digitizer cables are very fragile", "Don't heat the center (LCD damage)", "Home button pairing can be lost"],
+      "relatedArticles": ["ipad-battery-replacement"],
+      "views": 6780,
+      "helpful": 342,
+      "updatedAt": "2024-11-18T00:00:00.000Z"
+    }
+  ],
+  "categories": ["iPhone", "Samsung", "iPad", "MacBook", "Google Pixel", "OnePlus", "Gaming Consoles", "Smartwatches"],
+  "updatedAt": "2024-12-06T00:00:00.000Z"
+}
+
