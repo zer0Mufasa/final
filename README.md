@@ -144,7 +144,7 @@ See [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) for complete documentation.
 
 The Fixology GPT is available at:
 ```
-https://chatgpt.com/g/g-692e842d0dc48191989c1f877d00165d-fixology-repair-assistant
+https://fixologyai.com/ai.html
 ```
 
 ## Browser Support
