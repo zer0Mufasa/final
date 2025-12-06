@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard | Fixology</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: rgba(255, 255, 255, 0.03);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.7);
+      --text-muted: rgba(255, 255, 255, 0.5);
+      --accent-purple: #a78bfa;
+      --accent-cyan: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+    
+    .dashboard { display: flex; min-height: 100vh; }
+    
+    .sidebar {
+      width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-color);
+      padding: 1.5rem; position: fixed; height: 100vh; overflow-y: auto;
+    }
+    .logo { display: flex; align-items: center; gap: 0.75rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-decoration: none; margin-bottom: 2rem; }
+    .logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    
+    .nav-section { margin-bottom: 1.5rem; }
+    .nav-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.75rem; padding: 0 0.75rem; }
+    .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 0.25rem; }
+    .nav-link:hover { background: var(--bg-card); color: var(--text-primary); }
+    .nav-link.active { background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(6, 182, 212, 0.15)); color: var(--accent-purple); border: 1px solid rgba(167, 139, 250, 0.2); }
+    
+    .user-info { padding: 1rem; background: var(--bg-card); border-radius: 12px; margin-top: auto; border: 1px solid var(--border-color); }
+    .user-name { font-weight: 600; margin-bottom: 0.25rem; }
+    .user-plan { font-size: 0.8125rem; color: var(--accent-cyan); }
+    
+    .main-content { flex: 1; margin-left: 260px; padding: 2rem; }
+    
+    .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+    .page-title { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; }
+    .page-subtitle { color: var(--text-secondary); margin-top: 0.25rem; }
+    
+    .quick-actions { display: flex; gap: 1rem; }
+    .btn { padding: 0.75rem 1.5rem; font-size: 0.9375rem; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary { background: var(--gradient-primary); color: white; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(167, 139, 250, 0.3); }
+    .btn-secondary { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; }
+    .stat-card.highlight { background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(6, 182, 212, 0.1)); border-color: rgba(167, 139, 250, 0.3); }
+    .stat-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .stat-label { color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem; }
+    
+    .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+    
+    .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 600; }
+    .card-link { color: var(--accent-purple); text-decoration: none; font-size: 0.875rem; }
+    
+    .repair-list { list-style: none; }
+    .repair-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); }
+    .repair-item:last-child { border-bottom: none; }
+    .repair-device { font-weight: 500; }
+    .repair-type { font-size: 0.875rem; color: var(--text-muted); }
+    .repair-status { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .status-progress { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+    .status-complete { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    
+    .activity-list { list-style: none; }
+    .activity-item { display: flex; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon { width: 36px; height: 36px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .activity-text { flex: 1; }
+    .activity-title { font-size: 0.9375rem; }
+    .activity-time { font-size: 0.8125rem; color: var(--text-muted); }
+    
+    .quick-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+    .quick-link { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.25rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-primary); transition: all 0.2s; }
+    .quick-link:hover { border-color: var(--accent-purple); transform: translateY(-2px); }
+    .quick-link-icon { font-size: 1.5rem; }
+    .quick-link-text { font-size: 0.875rem; font-weight: 500; }
+    
+    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .content-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } .stats-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <a href="../index.html" class="logo"><span class="logo-icon">🔧</span><span>Fixology</span></a>
+      
+      <div class="nav-section">
+        <div class="nav-label">Main</div>
+        <a href="index.html" class="nav-link active">🏠 Dashboard</a>
+        <a href="repairs.html" class="nav-link">📋 Repairs</a>
+        <a href="customers.html" class="nav-link">👥 Customers</a>
+        <a href="inventory.html" class="nav-link">📦 Inventory</a>
+        <a href="invoices.html" class="nav-link">💰 Invoices</a>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-label">Tools</div>
+        <a href="imei.html" class="nav-link">🔍 IMEI Lookup</a>
+        <a href="diagnostics.html" class="nav-link">🩺 Diagnostics</a>
+        <a href="autopilot.html" class="nav-link">🤖 AI Autopilot</a>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-label">Business</div>
+        <a href="websites.html" class="nav-link">🌐 Website</a>
+        <a href="auto-reply.html" class="nav-link">💬 Auto Reply</a>
+        <a href="settings.html" class="nav-link">⚙️ Settings</a>
+      </div>
+      
+      <div class="nav-section">
+        <div class="nav-label">Account</div>
+        <a href="../billing.html" class="nav-link">💳 Billing</a>
+        <a href="../upgrade.html" class="nav-link">⬆️ Upgrade Plan</a>
+        <a href="#" class="nav-link" onclick="logout()">🚪 Logout</a>
+      </div>
+      
+      <div class="user-info" id="user-info">
+        <div class="user-name" id="shop-name">Loading...</div>
+        <div class="user-plan" id="shop-plan">Free Plan</div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">👋 Welcome back!</h1>
+          <p class="page-subtitle">Here's what's happening with your shop today</p>
+        </div>
+        <div class="quick-actions">
+          <a href="repairs.html" class="btn btn-primary">➕ New Repair</a>
+          <a href="imei.html" class="btn btn-secondary">🔍 IMEI Check</a>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-icon">📋</div>
+          <div class="stat-value" id="stat-repairs">0</div>
+          <div class="stat-label">Active Repairs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-value" id="stat-completed">0</div>
+          <div class="stat-label">Completed This Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value" id="stat-revenue">$0</div>
+          <div class="stat-label">Revenue This Month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔍</div>
+          <div class="stat-value" id="stat-imei">0</div>
+          <div class="stat-label">IMEI Checks Used</div>
+        </div>
+      </div>
+
+      <div class="content-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">📋 Recent Repairs</h2>
+            <a href="repairs.html" class="card-link">View All →</a>
+          </div>
+          <ul class="repair-list" id="repairs-list">
+            <li class="repair-item">
+              <div>
+                <div class="repair-device">No repairs yet</div>
+                <div class="repair-type">Start by adding your first repair</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+              <h2 class="card-title">⚡ Quick Actions</h2>
+            </div>
+            <div class="quick-links">
+              <a href="repairs.html" class="quick-link">
+                <span class="quick-link-icon">➕</span>
+                <span class="quick-link-text">New Repair</span>
+              </a>
+              <a href="imei.html" class="quick-link">
+                <span class="quick-link-icon">🔍</span>
+                <span class="quick-link-text">IMEI Check</span>
+              </a>
+              <a href="invoices.html" class="quick-link">
+                <span class="quick-link-icon">📄</span>
+                <span class="quick-link-text">Create Invoice</span>
+              </a>
+              <a href="websites.html" class="quick-link">
+                <span class="quick-link-icon">🌐</span>
+                <span class="quick-link-text">Edit Website</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">🕐 Recent Activity</h2>
+            </div>
+            <ul class="activity-list" id="activity-list">
+              <li class="activity-item">
+                <div class="activity-icon">👋</div>
+                <div class="activity-text">
+                  <div class="activity-title">Welcome to Fixology!</div>
+                  <div class="activity-time">Just now</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = 'https://final-bice-phi.vercel.app';
+    const token = localStorage.getItem('fixology_shop_token');
+
+    if (!token) {
+      window.location.href = '../shop-login.html';
+    }
+
+    async function loadDashboard() {
+      try {
+        const response = await fetch(`${API_BASE}/api/shops/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (data.success && data.shop) {
+          document.getElementById('shop-name').textContent = data.shop.shopName || 'Your Shop';
+          
+          const planNames = { free: 'Free Plan', basic: '🚀 Basic Plan', pro: '💎 Pro Plan', enterprise: '🏢 Enterprise' };
+          document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
+          
+          document.getElementById('stat-imei').textContent = data.shop.imeiChecksUsed || 0;
+        }
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('fixology_shop_token');
+      localStorage.removeItem('fixology_token');
+      window.location.href = '../index.html';
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
+

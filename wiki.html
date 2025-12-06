@@ -23,38 +23,71 @@
       --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
-    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(10, 10, 15, 0.9); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
+    .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: rgba(10, 10, 15, 0.95); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(20px); }
     .logo { display: flex; align-items: center; gap: 0.75rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-decoration: none; }
     .logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
     .nav-links { display: flex; gap: 2rem; list-style: none; }
-    .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; }
-    .nav-links a:hover { color: var(--accent-purple); }
-    .hero { padding: 4rem 2rem; text-align: center; background: linear-gradient(180deg, rgba(167, 139, 250, 0.05) 0%, transparent 100%); }
-    .hero-title { font-family: 'Space Grotesk', sans-serif; font-size: 2.75rem; font-weight: 700; margin-bottom: 1rem; }
+    .nav-links a { color: var(--text-secondary); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--accent-purple); }
+    
+    .hero { padding: 4rem 2rem; text-align: center; background: linear-gradient(180deg, rgba(167, 139, 250, 0.08) 0%, transparent 100%); }
+    .hero-title { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; font-weight: 700; margin-bottom: 1rem; }
     .hero-title span { background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero-subtitle { color: var(--text-secondary); font-size: 1.125rem; max-width: 600px; margin: 0 auto 2rem; }
+    .hero-subtitle { color: var(--text-secondary); font-size: 1.25rem; max-width: 600px; margin: 0 auto 2.5rem; }
     .search-container { max-width: 640px; margin: 0 auto; position: relative; }
     .search-input { width: 100%; padding: 1.25rem 1.5rem 1.25rem 3.5rem; font-size: 1.125rem; background: var(--bg-secondary); border: 2px solid var(--border-color); border-radius: 16px; color: var(--text-primary); transition: all 0.2s; }
     .search-input:focus { outline: none; border-color: var(--accent-purple); box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.15); }
+    .search-input::placeholder { color: var(--text-muted); }
     .search-icon { position: absolute; left: 1.25rem; top: 50%; transform: translateY(-50%); font-size: 1.25rem; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
     .categories { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem; justify-content: center; }
-    .category-btn { padding: 0.5rem 1rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; font-size: 0.9375rem; }
-    .category-btn:hover, .category-btn.active { background: var(--accent-purple); border-color: var(--accent-purple); color: white; }
+    .category-btn { padding: 0.625rem 1.25rem; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 25px; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; font-size: 0.9375rem; font-weight: 500; }
+    .category-btn:hover { border-color: var(--accent-purple); color: var(--text-primary); }
+    .category-btn.active { background: var(--gradient-primary); border-color: transparent; color: white; }
+    
     .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .results-count { color: var(--text-muted); font-size: 0.9375rem; }
-    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-    .article-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; transition: all 0.2s; cursor: pointer; }
-    .article-card:hover { border-color: var(--accent-purple); transform: translateY(-4px); }
-    .article-category { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.75rem; }
-    .article-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .article-excerpt { color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .article-meta { display: flex; gap: 1rem; font-size: 0.8125rem; color: var(--text-muted); }
-    .article-meta span { display: flex; align-items: center; gap: 0.25rem; }
-    .loading { text-align: center; padding: 3rem; color: var(--text-muted); }
-    .no-results { text-align: center; padding: 3rem; color: var(--text-muted); }
-    .no-results h3 { font-family: 'Space Grotesk', sans-serif; margin-bottom: 0.5rem; color: var(--text-primary); }
-    @media (max-width: 640px) { .hero-title { font-size: 2rem; } .articles-grid { grid-template-columns: 1fr; } }
+    
+    .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem; }
+    .article-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.75rem; transition: all 0.3s; cursor: pointer; }
+    .article-card:hover { border-color: var(--accent-purple); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(167, 139, 250, 0.15); }
+    .article-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+    .article-category { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; font-weight: 600; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.05em; }
+    .article-difficulty { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .difficulty-easy { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .difficulty-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+    .difficulty-hard { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+    .difficulty-expert { background: rgba(167, 139, 250, 0.15); color: var(--accent-purple); }
+    .article-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; line-height: 1.4; }
+    .article-excerpt { color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.7; margin-bottom: 1.25rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .article-meta { display: flex; gap: 1.25rem; font-size: 0.8125rem; color: var(--text-muted); flex-wrap: wrap; }
+    .article-meta span { display: flex; align-items: center; gap: 0.375rem; }
+    .article-tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); }
+    .article-tag { padding: 0.25rem 0.625rem; background: var(--bg-card); border-radius: 6px; font-size: 0.75rem; color: var(--text-muted); }
+    
+    .loading, .no-results { text-align: center; padding: 4rem 2rem; grid-column: 1 / -1; }
+    .loading { color: var(--text-muted); }
+    .no-results h3 { font-family: 'Space Grotesk', sans-serif; margin-bottom: 0.5rem; color: var(--text-primary); font-size: 1.5rem; }
+    .no-results p { color: var(--text-muted); }
+    
+    /* Article Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 2rem; backdrop-filter: blur(4px); }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 20px; max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; }
+    .modal-header { padding: 2rem 2rem 1rem; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background: var(--bg-secondary); }
+    .modal-close { position: absolute; top: 1.5rem; right: 1.5rem; background: var(--bg-card); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.25rem; color: var(--text-secondary); transition: all 0.2s; }
+    .modal-close:hover { background: var(--accent-purple); color: white; }
+    .modal-content { padding: 2rem; line-height: 1.8; color: var(--text-secondary); }
+    .modal-content h2 { font-family: 'Space Grotesk', sans-serif; color: var(--text-primary); margin: 1.5rem 0 1rem; font-size: 1.25rem; }
+    .modal-content ul { margin-left: 1.5rem; margin-bottom: 1rem; }
+    .modal-content li { margin-bottom: 0.5rem; }
+    
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2rem; }
+      .articles-grid { grid-template-columns: 1fr; }
+      .nav-links { gap: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -63,16 +96,17 @@
     <ul class="nav-links">
       <li><a href="diagnose.html">Diagnose</a></li>
       <li><a href="imei.html">IMEI Check</a></li>
-      <li><a href="wiki.html" style="color: var(--accent-purple);">Wiki</a></li>
+      <li><a href="wiki.html" class="active">Wiki</a></li>
+      <li><a href="login.html">Login</a></li>
     </ul>
   </nav>
 
   <div class="hero">
     <h1 class="hero-title">Device Repair <span>Wiki</span></h1>
-    <p class="hero-subtitle">Free repair guides, troubleshooting tips, and tutorials for technicians</p>
+    <p class="hero-subtitle">50+ free repair guides, troubleshooting tips, and step-by-step tutorials for technicians</p>
     <div class="search-container">
       <span class="search-icon">🔍</span>
-      <input type="text" id="search-input" class="search-input" placeholder="Search repair guides...">
+      <input type="text" id="search-input" class="search-input" placeholder="Search guides... (e.g. iPhone screen, battery, water damage)">
     </div>
   </div>
 
@@ -82,11 +116,26 @@
     </div>
 
     <div class="results-header">
-      <span class="results-count" id="results-count">Loading...</span>
+      <span class="results-count" id="results-count">Loading articles...</span>
     </div>
 
     <div id="articles-container" class="articles-grid">
-      <div class="loading">Loading articles...</div>
+      <div class="loading">
+        <p>🔄 Loading repair guides...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Article Modal -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <div class="article-category" id="modal-category"></div>
+        <h1 class="article-title" id="modal-title" style="font-size: 1.75rem; margin-top: 0.75rem;"></h1>
+        <div class="article-meta" id="modal-meta" style="margin-top: 1rem;"></div>
+      </div>
+      <div class="modal-content" id="modal-content"></div>
     </div>
   </div>
 
@@ -94,23 +143,26 @@
     const API_BASE = 'https://final-bice-phi.vercel.app';
     let currentCategory = '';
     let searchTimeout = null;
+    let allArticles = [];
 
     async function loadArticles(query = '', category = '') {
       const container = document.getElementById('articles-container');
-      container.innerHTML = '<div class="loading">Searching...</div>';
+      container.innerHTML = '<div class="loading"><p>🔄 Searching guides...</p></div>';
 
       try {
         const params = new URLSearchParams();
         if (query) params.append('q', query);
         if (category) params.append('category', category);
+        params.append('limit', '50');
 
         const response = await fetch(`${API_BASE}/api/wiki/search?${params}`);
         const data = await response.json();
 
-        if (data.success) {
+        if (data.success && data.results) {
+          allArticles = data.results;
           document.getElementById('results-count').textContent = `${data.total} article${data.total !== 1 ? 's' : ''} found`;
 
-          // Render categories
+          // Render categories (only once)
           if (data.categories && !document.querySelector('[data-category="iPhone"]')) {
             const categoriesContainer = document.getElementById('categories');
             data.categories.forEach(cat => {
@@ -126,45 +178,113 @@
           // Render articles
           if (data.results.length === 0) {
             container.innerHTML = `
-              <div class="no-results" style="grid-column: 1/-1;">
-                <h3>No articles found</h3>
-                <p>Try a different search term or category</p>
+              <div class="no-results">
+                <h3>🔍 No articles found</h3>
+                <p>Try a different search term or browse by category</p>
               </div>
             `;
           } else {
-            container.innerHTML = data.results.map(article => `
-              <div class="article-card" onclick="viewArticle('${article.id}')">
-                <div class="article-category">${article.category} › ${article.subcategory}</div>
-                <h3 class="article-title">${article.title}</h3>
-                <p class="article-excerpt">${article.excerpt}</p>
-                <div class="article-meta">
-                  <span>⏱️ ${article.timeEstimate}</span>
-                  <span>📊 ${article.difficulty}</span>
-                  <span>👁️ ${article.views.toLocaleString()}</span>
+            container.innerHTML = data.results.map(article => {
+              const difficultyClass = article.difficulty?.toLowerCase().replace(/\s+/g, '-') || 'medium';
+              return `
+              <div class="article-card" onclick="viewArticle(${article.id})">
+                <div class="article-header">
+                  <div class="article-category">📁 ${article.category}</div>
+                  <span class="article-difficulty difficulty-${difficultyClass}">${article.difficulty || 'Medium'}</span>
                 </div>
+                <h3 class="article-title">${article.title}</h3>
+                <p class="article-excerpt">${article.content}</p>
+                <div class="article-meta">
+                  <span>📱 ${article.device || 'Various'}</span>
+                  <span>⏱️ ${article.time || '30 mins'}</span>
+                </div>
+                ${article.tags ? `
+                <div class="article-tags">
+                  ${article.tags.slice(0, 4).map(tag => `<span class="article-tag">#${tag}</span>`).join('')}
+                </div>
+                ` : ''}
               </div>
-            `).join('');
+            `}).join('');
           }
+        } else {
+          throw new Error(data.error || 'Failed to load articles');
         }
       } catch (err) {
         console.error('Error loading articles:', err);
-        container.innerHTML = '<div class="no-results"><h3>Error loading articles</h3><p>Please try again later</p></div>';
+        container.innerHTML = `
+          <div class="no-results">
+            <h3>⚠️ Error loading articles</h3>
+            <p>Please try again later. Error: ${err.message}</p>
+          </div>
+        `;
       }
     }
 
     function selectCategory(category) {
-      currentCategory = category;
+      currentCategory = category === currentCategory ? '' : category;
       document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.category === category);
+        btn.classList.toggle('active', btn.dataset.category === currentCategory || (currentCategory === '' && btn.dataset.category === ''));
       });
-      loadArticles(document.getElementById('search-input').value, category);
+      loadArticles(document.getElementById('search-input').value, currentCategory);
     }
 
     function viewArticle(id) {
-      // In a full implementation, this would navigate to an article page
-      alert('Article viewer coming soon! Article ID: ' + id);
+      const article = allArticles.find(a => a.id === id);
+      if (!article) return;
+
+      document.getElementById('modal-category').textContent = `📁 ${article.category}`;
+      document.getElementById('modal-title').textContent = article.title;
+      document.getElementById('modal-meta').innerHTML = `
+        <span>📱 ${article.device || 'Various Devices'}</span>
+        <span>⏱️ ${article.time || '30 mins'}</span>
+        <span>📊 ${article.difficulty || 'Medium'}</span>
+      `;
+      
+      document.getElementById('modal-content').innerHTML = `
+        <h2>📋 Overview</h2>
+        <p>${article.content}</p>
+        
+        <h2>🔧 What You'll Need</h2>
+        <ul>
+          <li>Appropriate screwdriver set (pentalobe, Phillips, tri-wing)</li>
+          <li>Spudger or plastic pry tools</li>
+          <li>Tweezers</li>
+          <li>Heat gun or iOpener (for adhesive)</li>
+          <li>Replacement part</li>
+          <li>Adhesive strips (if needed)</li>
+        </ul>
+        
+        <h2>⚠️ Important Notes</h2>
+        <ul>
+          <li>Always power off the device before starting</li>
+          <li>Work in a clean, well-lit area</li>
+          <li>Use an anti-static mat if available</li>
+          <li>Keep screws organized (magnetic mat recommended)</li>
+          <li>Take photos during disassembly for reference</li>
+        </ul>
+        
+        <h2>🏷️ Tags</h2>
+        <div class="article-tags" style="padding-top: 0; border-top: none; margin-top: 0;">
+          ${article.tags ? article.tags.map(tag => `<span class="article-tag">#${tag}</span>`).join('') : '<span class="article-tag">#repair</span>'}
+        </div>
+      `;
+
+      document.getElementById('modal-overlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
     }
 
+    function closeModal(event) {
+      if (event && event.target !== event.currentTarget) return;
+      document.getElementById('modal-overlay').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Search with debounce
     document.getElementById('search-input').addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
       searchTimeout = setTimeout(() => {
@@ -177,4 +297,3 @@
   </script>
 </body>
 </html>
-
