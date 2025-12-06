@@ -83,7 +83,7 @@
         <a href="index.html" class="sidebar-logo">
             <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
             <span>Fixology</span>
-            <span class="sidebar-badge">HQ</span>
+            <span class="sidebar-badge">ADMIN</span>
         </a>
         <div class="sidebar-section">
             <div class="sidebar-section-title">Overview</div>
@@ -91,46 +91,27 @@
                 <li><a href="index.html"><span class="sidebar-nav-icon">📊</span><span>Dashboard</span></a></li>
                 <li><a href="shops.html"><span class="sidebar-nav-icon">🏪</span><span>Shops</span></a></li>
                 <li><a href="users.html"><span class="sidebar-nav-icon">👥</span><span>Users</span></a></li>
-                <li><a href="billing.html"><span class="sidebar-nav-icon">💳</span><span>Billing</span></a></li>
             </ul>
         </div>
         <div class="sidebar-section">
-            <div class="sidebar-section-title">Intelligence</div>
+            <div class="sidebar-section-title">Analytics</div>
             <ul class="sidebar-nav">
-                <li><a href="ai-logs.html"><span class="sidebar-nav-icon">🧠</span><span>AI Logs</span></a></li>
-                <li><a href="imei-logs.html"><span class="sidebar-nav-icon">📱</span><span>IMEI Logs</span></a></li>
                 <li><a href="usage.html"><span class="sidebar-nav-icon">📈</span><span>Usage</span></a></li>
-            </ul>
-        </div>
-        <div class="sidebar-section">
-            <div class="sidebar-section-title">Operations</div>
-            <ul class="sidebar-nav">
-                <li><a href="support.html"><span class="sidebar-nav-icon">🎫</span><span>Support</span></a></li>
-                <li><a href="suppliers.html"><span class="sidebar-nav-icon">📦</span><span>Suppliers</span></a></li>
-                <li><a href="api-keys.html"><span class="sidebar-nav-icon">🔑</span><span>API Keys</span></a></li>
+                <li><a href="billing.html"><span class="sidebar-nav-icon">💳</span><span>Billing</span></a></li>
+                <li><a href="events.html"><span class="sidebar-nav-icon">📋</span><span>Events</span></a></li>
             </ul>
         </div>
         <div class="sidebar-section">
             <div class="sidebar-section-title">Platform</div>
             <ul class="sidebar-nav">
                 <li><a href="content.html"><span class="sidebar-nav-icon">📝</span><span>Content</span></a></li>
-                <li><a href="releases.html"><span class="sidebar-nav-icon">🚀</span><span>Releases</span></a></li>
-                <li><a href="status.html"><span class="sidebar-nav-icon">🟢</span><span>Status</span></a></li>
-                <li><a href="legal.html"><span class="sidebar-nav-icon">📜</span><span>Legal</span></a></li>
                 <li><a href="settings.html" class="active"><span class="sidebar-nav-icon">⚙️</span><span>Settings</span></a></li>
             </ul>
         </div>
         <div class="sidebar-bottom">
-            <a href="../index.html" class="sidebar-nav" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);border-radius:10px">
-                <span class="sidebar-nav-icon">←</span><span>Back to Site</span>
-            </a>
-            <div class="sidebar-user">
-                <div class="sidebar-avatar">M</div>
-                <div class="sidebar-user-info">
-                    <div class="sidebar-user-name">Mufasa</div>
-                    <div class="sidebar-user-role">Founder</div>
-                </div>
-            </div>
+            <a href="../index.html" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--text-secondary);text-decoration:none"><span>←</span><span>Back to Site</span></a>
+            <a href="#" onclick="sessionStorage.removeItem('fixology_user');window.location.href='../login.html'" style="display:flex;align-items:center;gap:12px;padding:12px;font-size:14px;color:var(--danger,#EF4444);text-decoration:none"><span>🚪</span><span>Logout</span></a>
+            <div class="sidebar-user"><div class="sidebar-avatar">M</div><div><div class="sidebar-user-name">Mufasa</div><div class="sidebar-user-role">Founder</div></div></div>
         </div>
     </aside>
 
