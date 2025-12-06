@@ -37,8 +37,8 @@ module.exports = async function handler(req, res) {
       return sendError(res, 'Password must be at least 8 characters', 400);
     }
 
-    // Create user
-    const user = await createUser({
+    // Create user using Vercel KV
+    const result = await createUser({
       email,
       password,
       name,
@@ -49,7 +49,8 @@ module.exports = async function handler(req, res) {
 
     return sendSuccess(res, {
       message: 'Account created successfully',
-      user
+      user: result.user,
+      token: result.token
     }, 201);
 
   } catch (err) {
@@ -59,7 +60,6 @@ module.exports = async function handler(req, res) {
       return sendError(res, err.message, 409);
     }
     
-    return sendError(res, 'Failed to create account', 500);
+    return sendError(res, err.message || 'Failed to create account', 500);
   }
 };
-

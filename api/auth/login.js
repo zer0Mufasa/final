@@ -1,10 +1,10 @@
 /**
  * POST /api/auth/login
- * Customer account login
+ * Customer login
  */
 
-const { handleCors, sendSuccess, sendError, validateEmail, validateRequired, sanitizeInput, appendToLog } = require('../lib/utils');
-const { authenticateUser } = require('../lib/auth');
+const { handleCors, sendSuccess, sendError, validateRequired, sanitizeInput } = require('../lib/utils');
+const { loginUser } = require('../lib/auth');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
@@ -16,6 +16,7 @@ module.exports = async function handler(req, res) {
   try {
     const body = req.body || {};
     
+    // Validate required fields
     const missing = validateRequired(body, ['email', 'password']);
     if (missing.length > 0) {
       return sendError(res, `Missing required fields: ${missing.join(', ')}`, 400);
@@ -24,36 +25,19 @@ module.exports = async function handler(req, res) {
     const email = sanitizeInput(body.email);
     const password = body.password;
 
-    if (!validateEmail(email)) {
-      return sendError(res, 'Invalid email format', 400);
-    }
-
-    const { user, token } = await authenticateUser(email, password);
-
-    // Log login
-    await appendToLog('auth-log.json', {
-      type: 'login',
-      email: user.email,
-      userId: user.id,
-      ip: req.headers['x-forwarded-for'] || 'unknown'
-    });
+    // Login user
+    const result = await loginUser(email, password);
 
     console.log(`User logged in: ${email}`);
 
     return sendSuccess(res, {
       message: 'Login successful',
-      user,
-      token
+      user: result.user,
+      token: result.token
     });
 
   } catch (err) {
     console.error('Login error:', err.message);
-    
-    if (err.message === 'Invalid email or password') {
-      return sendError(res, err.message, 401);
-    }
-    
-    return sendError(res, 'Login failed', 500);
+    return sendError(res, err.message || 'Login failed', 401);
   }
 };
-
