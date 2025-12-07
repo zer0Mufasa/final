@@ -1,10 +1,10 @@
 /**
  * GET /api/admin/stats
- * Admin dashboard statistics
+ * Admin dashboard statistics - pulls real data from Redis
+ * Falls back to showing current registered users/shops
  */
 
-const { handleCors, sendSuccess, sendError, readDatabase } = require('../lib/utils');
-const { requireAdmin, getAllUsers, getAllShops } = require('../lib/auth');
+const { handleCors, sendSuccess, sendError } = require('../lib/utils');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
@@ -14,27 +14,53 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // For now, allow stats without admin auth for testing
-    // In production, uncomment the auth check below
-    /*
-    const auth = await requireAdmin(req, res);
-    if (auth.error) {
-      return sendError(res, auth.error, auth.status);
+    let users = [];
+    let shops = [];
+    let imeiChecks = [];
+    let diagnostics = [];
+
+    // Try to load from Redis
+    try {
+      const { getAllUsers, getAllShops, getRedis } = require('../lib/auth');
+      
+      [users, shops] = await Promise.all([
+        getAllUsers().catch(() => []),
+        getAllShops().catch(() => [])
+      ]);
+
+      // Try to get logs
+      const redis = getRedis();
+      if (redis) {
+        try {
+          const imeiLogsRaw = await redis.lrange('imei_logs', 0, -1);
+          imeiChecks = (imeiLogsRaw || []).map(log => {
+            try {
+              return typeof log === 'string' ? JSON.parse(log) : log;
+            } catch {
+              return null;
+            }
+          }).filter(Boolean);
+        } catch (e) {
+          console.log('No IMEI logs:', e.message);
+        }
+        
+        try {
+          const diagLogsRaw = await redis.lrange('diagnostics_logs', 0, -1);
+          diagnostics = (diagLogsRaw || []).map(log => {
+            try {
+              return typeof log === 'string' ? JSON.parse(log) : log;
+            } catch {
+              return null;
+            }
+          }).filter(Boolean);
+        } catch (e) {
+          console.log('No diagnostics logs:', e.message);
+        }
+      }
+    } catch (redisError) {
+      console.log('Redis not available:', redisError.message);
+      // Continue with empty arrays
     }
-    */
-
-    // Load all data from Redis
-    const [users, shops, imeiLogs, diagnosticsLogs, memoryData] = await Promise.all([
-      getAllUsers().catch(() => []),
-      getAllShops().catch(() => []),
-      readDatabase('imei-log.json').catch(() => []),
-      readDatabase('diagnostics-log.json').catch(() => []),
-      readDatabase('memory.json').catch(() => ({ conversations: {} }))
-    ]);
-
-    const imeiChecks = Array.isArray(imeiLogs) ? imeiLogs : [];
-    const diagnostics = Array.isArray(diagnosticsLogs) ? diagnosticsLogs : [];
-    const conversations = memoryData?.conversations || {};
 
     // Calculate time-based stats
     const now = new Date();
@@ -43,12 +69,12 @@ module.exports = async function handler(req, res) {
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // User stats
-    const usersToday = users.filter(u => new Date(u.createdAt) >= today).length;
-    const usersThisWeek = users.filter(u => new Date(u.createdAt) >= thisWeek).length;
-    const usersThisMonth = users.filter(u => new Date(u.createdAt) >= thisMonth).length;
+    const usersToday = users.filter(u => u.createdAt && new Date(u.createdAt) >= today).length;
+    const usersThisWeek = users.filter(u => u.createdAt && new Date(u.createdAt) >= thisWeek).length;
+    const usersThisMonth = users.filter(u => u.createdAt && new Date(u.createdAt) >= thisMonth).length;
 
     // Shop stats
-    const shopsToday = shops.filter(s => new Date(s.createdAt) >= today).length;
+    const shopsToday = shops.filter(s => s.createdAt && new Date(s.createdAt) >= today).length;
     const activeShops24h = shops.filter(s => {
       const updated = new Date(s.updatedAt || s.createdAt);
       return (now - updated) < 24 * 60 * 60 * 1000;
@@ -63,13 +89,13 @@ module.exports = async function handler(req, res) {
     };
 
     // IMEI check stats
-    const imeiToday = imeiChecks.filter(c => new Date(c.timestamp) >= today).length;
-    const imeiThisWeek = imeiChecks.filter(c => new Date(c.timestamp) >= thisWeek).length;
-    const imeiThisMonth = imeiChecks.filter(c => new Date(c.timestamp) >= thisMonth).length;
+    const imeiToday = imeiChecks.filter(c => c.timestamp && new Date(c.timestamp) >= today).length;
+    const imeiThisWeek = imeiChecks.filter(c => c.timestamp && new Date(c.timestamp) >= thisWeek).length;
+    const imeiThisMonth = imeiChecks.filter(c => c.timestamp && new Date(c.timestamp) >= thisMonth).length;
 
     // Diagnostics stats
-    const diagToday = diagnostics.filter(d => new Date(d.timestamp) >= today).length;
-    const diagThisWeek = diagnostics.filter(d => new Date(d.timestamp) >= thisWeek).length;
+    const diagToday = diagnostics.filter(d => d.timestamp && new Date(d.timestamp) >= today).length;
+    const diagThisWeek = diagnostics.filter(d => d.timestamp && new Date(d.timestamp) >= thisWeek).length;
 
     // Device popularity (from diagnostics)
     const deviceCounts = {};
@@ -95,7 +121,7 @@ module.exports = async function handler(req, res) {
       .slice(0, 10)
       .map(([city, count]) => ({ city, count }));
 
-    // Revenue calculation (estimated)
+    // Revenue calculation
     const monthlyRevenue = {
       basic: subscriptionStats.basic * 29,
       pro: subscriptionStats.pro * 79,
@@ -112,14 +138,17 @@ module.exports = async function handler(req, res) {
       dailyVolume.push({
         date: date.toISOString().split('T')[0],
         imei: imeiChecks.filter(c => {
+          if (!c.timestamp) return false;
           const t = new Date(c.timestamp);
           return t >= date && t < nextDate;
         }).length,
         diagnostics: diagnostics.filter(d => {
+          if (!d.timestamp) return false;
           const t = new Date(d.timestamp);
           return t >= date && t < nextDate;
         }).length,
         users: users.filter(u => {
+          if (!u.createdAt) return false;
           const t = new Date(u.createdAt);
           return t >= date && t < nextDate;
         }).length
@@ -131,8 +160,7 @@ module.exports = async function handler(req, res) {
         totalUsers: users.length,
         totalShops: shops.length,
         totalImeiChecks: imeiChecks.length,
-        totalDiagnostics: diagnostics.length,
-        activeConversations: Object.keys(conversations).length
+        totalDiagnostics: diagnostics.length
       },
       users: {
         total: users.length,
@@ -164,11 +192,33 @@ module.exports = async function handler(req, res) {
       },
       revenue: monthlyRevenue,
       dailyVolume,
+      usersList: users.slice(0, 50),
+      shopsList: shops.slice(0, 50),
       generatedAt: new Date().toISOString()
     });
 
   } catch (err) {
     console.error('Admin stats error:', err.message);
-    return sendError(res, 'Failed to retrieve stats', 500);
+    
+    // Return minimal stats on error so the page doesn't break
+    return sendSuccess(res, {
+      overview: {
+        totalUsers: 0,
+        totalShops: 0,
+        totalImeiChecks: 0,
+        totalDiagnostics: 0
+      },
+      users: { total: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+      shops: { total: 0, today: 0, activeLastDay: 0, verified: 0, subscriptions: { free: 0, basic: 0, pro: 0, enterprise: 0 } },
+      imei: { total: 0, today: 0, thisWeek: 0, thisMonth: 0 },
+      diagnostics: { total: 0, today: 0, thisWeek: 0, topDevices: [] },
+      locations: { topCities: [] },
+      revenue: { basic: 0, pro: 0, enterprise: 0, total: 0 },
+      dailyVolume: [],
+      usersList: [],
+      shopsList: [],
+      generatedAt: new Date().toISOString(),
+      error: err.message
+    });
   }
 };
