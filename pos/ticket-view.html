@@ -6,7 +6,7 @@
   <title>View Ticket | Fixology POS</title>
   <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/pos.css">
+  <link rel="stylesheet" href="css/pos.css" type="text/css">
   <style>
     .ticket-layout {
       display: grid;
@@ -800,11 +800,135 @@
 
     // Edit Functions
     function editDevice() {
-      POS.info('Device editing coming soon');
+      // Create edit modal
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay open';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 600px;">
+          <div class="modal-header">
+            <h3 class="modal-title">Edit Device</h3>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="modal-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+              <div class="form-group">
+                <label class="form-label">Brand</label>
+                <input type="text" class="form-input" id="edit-device-brand" value="${ticket.device?.brand || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Model</label>
+                <input type="text" class="form-input" id="edit-device-model" value="${ticket.device?.model || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Color</label>
+                <input type="text" class="form-input" id="edit-device-color" value="${ticket.device?.color || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">IMEI/Serial</label>
+                <input type="text" class="form-input" id="edit-device-imei" value="${ticket.device?.imei || ticket.device?.serial || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Passcode</label>
+                <input type="text" class="form-input" id="edit-device-passcode" value="${ticket.device?.passcode || ''}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Condition</label>
+                <select class="form-input form-select" id="edit-device-condition">
+                  <option value="Excellent" ${ticket.device?.condition === 'Excellent' ? 'selected' : ''}>Excellent</option>
+                  <option value="Good" ${ticket.device?.condition === 'Good' ? 'selected' : ''}>Good</option>
+                  <option value="Fair" ${ticket.device?.condition === 'Fair' ? 'selected' : ''}>Fair</option>
+                  <option value="Poor" ${ticket.device?.condition === 'Poor' ? 'selected' : ''}>Poor</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveDeviceEdit()">Save Changes</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      window.saveDeviceEdit = function() {
+        ticket.device = {
+          ...ticket.device,
+          brand: document.getElementById('edit-device-brand').value,
+          model: document.getElementById('edit-device-model').value,
+          color: document.getElementById('edit-device-color').value,
+          imei: document.getElementById('edit-device-imei').value,
+          passcode: document.getElementById('edit-device-passcode').value,
+          condition: document.getElementById('edit-device-condition').value
+        };
+        POS_DATA.addActivity(ticketId, 'Device information updated', 'User');
+        POS_DATA.saveTicket(ticket);
+        renderDeviceInfo();
+        modal.remove();
+        POS.success('Device information updated');
+        delete window.saveDeviceEdit;
+      };
     }
 
     function editIssue() {
-      POS.info('Issue editing coming soon');
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay open';
+      modal.innerHTML = `
+        <div class="modal" style="max-width: 700px;">
+          <div class="modal-header">
+            <h3 class="modal-title">Edit Issue & Diagnosis</h3>
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Customer Description</label>
+              <textarea class="form-input form-textarea" id="edit-issue-desc" rows="3">${ticket.issue?.customerDescription || ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tech Diagnosis</label>
+              <textarea class="form-input form-textarea" id="edit-tech-diagnosis" rows="3">${ticket.issue?.techDiagnosis || ''}</textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Repair Type</label>
+              <select class="form-input form-select" id="edit-repair-type">
+                <option value="screen_replacement" ${ticket.repair?.type === 'screen_replacement' ? 'selected' : ''}>Screen Replacement</option>
+                <option value="battery_replacement" ${ticket.repair?.type === 'battery_replacement' ? 'selected' : ''}>Battery Replacement</option>
+                <option value="charging_port" ${ticket.repair?.type === 'charging_port' ? 'selected' : ''}>Charging Port</option>
+                <option value="back_glass" ${ticket.repair?.type === 'back_glass' ? 'selected' : ''}>Back Glass</option>
+                <option value="camera_repair" ${ticket.repair?.type === 'camera_repair' ? 'selected' : ''}>Camera Repair</option>
+                <option value="other" ${ticket.repair?.type === 'other' ? 'selected' : ''}>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Assigned To</label>
+              <input type="text" class="form-input" id="edit-assigned" value="${ticket.repair?.assignedTo || ''}" placeholder="Tech name">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveIssueEdit()">Save Changes</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      window.saveIssueEdit = function() {
+        ticket.issue = {
+          ...ticket.issue,
+          customerDescription: document.getElementById('edit-issue-desc').value,
+          techDiagnosis: document.getElementById('edit-tech-diagnosis').value
+        };
+        ticket.repair = {
+          ...ticket.repair,
+          type: document.getElementById('edit-repair-type').value,
+          assignedTo: document.getElementById('edit-assigned').value
+        };
+        POS_DATA.addActivity(ticketId, 'Issue and repair details updated', 'User');
+        POS_DATA.saveTicket(ticket);
+        renderIssueInfo();
+        modal.remove();
+        POS.success('Issue information updated');
+        delete window.saveIssueEdit;
+      };
     }
 
     function editPricing() {

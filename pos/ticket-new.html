@@ -6,7 +6,7 @@
   <title>New Ticket | Fixology POS</title>
   <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/pos.css">
+  <link rel="stylesheet" href="css/pos.css" type="text/css">
   <style>
     .wizard-container {
       max-width: 900px;
@@ -791,6 +791,13 @@
       setupSignaturePad();
       setupNavigation();
       updatePricingSummary();
+      
+      // Check for prefill customer from customers page
+      const prefillCustomerId = sessionStorage.getItem('prefill_customer');
+      if (prefillCustomerId) {
+        selectCustomer(prefillCustomerId);
+        sessionStorage.removeItem('prefill_customer');
+      }
     });
 
     // Navigation
