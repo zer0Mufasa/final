@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Ticket | Fixology POS</title>
+  <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/pos.css">
+  <style>
+    .ticket-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: var(--space-5);
+    }
+    
+    .ticket-main {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+    
+    .ticket-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-5);
+    }
+    
+    .info-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+    
+    .info-card-header {
+      padding: var(--space-4);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-input);
+    }
+    
+    .info-card-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+    
+    .info-card-body {
+      padding: var(--space-4);
+    }
+    
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-2) 0;
+      font-size: 14px;
+    }
+    
+    .info-row .label {
+      color: var(--text-secondary);
+    }
+    
+    .info-row .value {
+      font-weight: 500;
+      text-align: right;
+    }
+    
+    /* Status Progress */
+    .status-progress {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    
+    .status-step {
+      flex: 1;
+      text-align: center;
+    }
+    
+    .status-step-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--border-color);
+      margin: 0 auto var(--space-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+    }
+    
+    .status-step.completed .status-step-dot {
+      background: var(--success);
+    }
+    
+    .status-step.active .status-step-dot {
+      background: var(--primary);
+      box-shadow: 0 0 0 4px rgba(93,63,211,0.2);
+    }
+    
+    .status-step-label {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    
+    .status-step.active .status-step-label {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    /* Activity Log */
+    .activity-log {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .activity-item {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+    
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    
+    .activity-content {
+      flex: 1;
+    }
+    
+    .activity-text {
+      font-size: 13px;
+    }
+    
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    
+    /* Customer Actions */
+    .customer-actions {
+      display: flex;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+    
+    .customer-actions .btn {
+      flex: 1;
+    }
+    
+    /* Pricing Table */
+    .pricing-table {
+      width: 100%;
+    }
+    
+    .pricing-table .row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-2) 0;
+    }
+    
+    .pricing-table .row.total {
+      border-top: 2px solid var(--border-color);
+      margin-top: var(--space-2);
+      padding-top: var(--space-3);
+      font-weight: 700;
+      font-size: 16px;
+    }
+    
+    .pricing-table .row.balance {
+      color: var(--primary);
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-2);
+    }
+
+    @media (max-width: 1024px) {
+      .ticket-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pos-app">
+    <!-- Sidebar -->
+    <aside class="pos-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+          <span>Fixology</span>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <a href="index.html" class="nav-link"><span class="icon">📊</span><span>Dashboard</span></a>
+          <a href="tickets.html" class="nav-link active"><span class="icon">🎫</span><span>Tickets</span></a>
+          <a href="customers.html" class="nav-link"><span class="icon">👥</span><span>Customers</span></a>
+          <a href="inventory.html" class="nav-link"><span class="icon">📦</span><span>Inventory</span></a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="pos-main">
+      <header class="pos-header">
+        <div class="header-left">
+          <a href="tickets.html" class="btn btn-ghost">← Back to Tickets</a>
+          <h1 class="header-title" id="ticket-id">Loading...</h1>
+        </div>
+        <div class="header-right">
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle">🖨️ Print</button>
+            <div class="dropdown-menu">
+              <div class="dropdown-item" onclick="printIntakeForm()">📋 Intake Form</div>
+              <div class="dropdown-item" onclick="printEstimate()">💰 Estimate</div>
+              <div class="dropdown-item" onclick="printReceipt()">🧾 Receipt</div>
+              <div class="dropdown-item" onclick="printLabel()">🏷️ Repair Label</div>
+              <div class="dropdown-item" onclick="printClaimTicket()">🎫 Claim Ticket</div>
+            </div>
+          </div>
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle">⚡ Actions</button>
+            <div class="dropdown-menu">
+              <div class="dropdown-item" onclick="sendSMSUpdate()">💬 Send SMS Update</div>
+              <div class="dropdown-item" onclick="sendEmailUpdate()">✉️ Send Email Update</div>
+              <div class="dropdown-item" onclick="requestApproval()">✅ Request Approval</div>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-item" onclick="cloneTicket()">📋 Clone Ticket</div>
+              <div class="dropdown-item danger" onclick="deleteTicket()">🗑️ Delete Ticket</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="pos-content">
+        <div class="ticket-layout">
+          <!-- Main Column -->
+          <div class="ticket-main">
+            <!-- Status Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <h3>📊 Status</h3>
+                <select class="form-input form-select" id="status-select" style="width: auto;">
+                  <option value="new">New</option>
+                  <option value="diagnosed">Diagnosed</option>
+                  <option value="waiting_parts">Waiting Parts</option>
+                  <option value="in_repair">In Repair</option>
+                  <option value="ready">Ready for Pickup</option>
+                  <option value="picked_up">Picked Up</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div class="info-card-body">
+                <div class="status-progress" id="status-progress">
+                  <!-- Will be rendered by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Device Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <h3>📱 Device</h3>
+                <button class="btn btn-ghost btn-sm" onclick="editDevice()">Edit</button>
+              </div>
+              <div class="info-card-body" id="device-info">
+                <!-- Will be rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Issue Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <h3>🔧 Issue & Repair</h3>
+                <button class="btn btn-ghost btn-sm" onclick="editIssue()">Edit</button>
+              </div>
+              <div class="info-card-body" id="issue-info">
+                <!-- Will be rendered by JS -->
+              </div>
+            </div>
+
+            <!-- Photos Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <h3>📷 Photos</h3>
+                <button class="btn btn-ghost btn-sm" onclick="addPhoto()">+ Add Photo</button>
+              </div>
+              <div class="info-card-body">
+                <div id="photos-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2);">
+                  <div style="aspect-ratio: 1; background: var(--bg-input); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: var(--text-muted); cursor: pointer;" onclick="addPhoto()">
+                    + Add
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar Column -->
+          <div class="ticket-sidebar">
+            <!-- Customer Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <h3>👤 Customer</h3>
+              </div>
+              <div class="info-card-body">
+                <div id="customer-info">
+                  <!-- Will be rendered by JS -->
+                </div>
+                <div class="customer-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="callCustomer()">📞 Call</button>
+                  <button class="btn btn-secondary btn-sm" onclick="smsCustomer()">💬 SMS</button>
+                  <button class="btn btn-secondary btn-sm" onclick="emailCustomer()">✉️ Email</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pricing Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <h3>💰 Pricing</h3>
+                <button class="btn btn-ghost btn-sm" onclick="editPricing()">Edit</button>
+              </div>
+              <div class="info-card-body">
+                <div class="pricing-table" id="pricing-info">
+                  <!-- Will be rendered by JS -->
+                </div>
+                <div style="margin-top: var(--space-4);">
+                  <button class="btn btn-primary" style="width: 100%;" onclick="takePayment()">
+                    💳 Take Payment
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Log Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <h3>📝 Activity Log</h3>
+                <button class="btn btn-ghost btn-sm" onclick="addNote()">+ Add Note</button>
+              </div>
+              <div class="info-card-body">
+                <div class="activity-log" id="activity-log">
+                  <!-- Will be rendered by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+              <button class="btn btn-success" onclick="markReady()">✅ Mark Ready</button>
+              <button class="btn btn-primary" onclick="completePickup()">💰 Complete Pickup</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Edit Pricing Modal -->
+  <div class="modal-overlay" id="pricing-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Edit Pricing</h3>
+        <button class="modal-close" onclick="POS.closeModal('pricing-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Labor Cost</label>
+          <input type="number" class="form-input" id="edit-labor" min="0" step="5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Parts Cost</label>
+          <input type="number" class="form-input" id="edit-parts" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Discount</label>
+          <input type="number" class="form-input" id="edit-discount" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deposit Paid</label>
+          <input type="number" class="form-input" id="edit-deposit" min="0">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="POS.closeModal('pricing-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="savePricing()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Note Modal -->
+  <div class="modal-overlay" id="note-modal">
+    <div class="modal" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Note</h3>
+        <button class="modal-close" onclick="POS.closeModal('note-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Note</label>
+          <textarea class="form-input form-textarea" id="note-text" placeholder="Enter note..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="POS.closeModal('note-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNote()">Add Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" id="payment-modal">
+    <div class="modal" style="max-width: 500px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Take Payment</h3>
+        <button class="modal-close" onclick="POS.closeModal('payment-modal')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: var(--space-5);">
+          <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="payment-amount">$0.00</div>
+          <div style="color: var(--text-muted);">Balance Due</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Payment Method</label>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2);">
+            <button type="button" class="btn btn-secondary payment-method-btn active" data-method="cash">💵 Cash</button>
+            <button type="button" class="btn btn-secondary payment-method-btn" data-method="card">💳 Card</button>
+            <button type="button" class="btn btn-secondary payment-method-btn" data-method="invoice">📄 Invoice</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount Received</label>
+          <input type="number" class="form-input" id="payment-received" min="0" step="0.01">
+        </div>
+        <div id="change-display" style="display: none; padding: var(--space-3); background: var(--success-light); border-radius: var(--radius-md); text-align: center;">
+          Change Due: <strong id="change-amount">$0.00</strong>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="POS.closeModal('payment-modal')">Cancel</button>
+        <button class="btn btn-success" onclick="processPayment()">Complete Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/pos-data.js"></script>
+  <script src="js/pos-core.js"></script>
+  <script src="js/printer.js"></script>
+  <script>
+    let ticket = null;
+    let ticketId = null;
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      ticketId = POS.getUrlParam('id');
+      if (!ticketId) {
+        POS.error('No ticket ID provided');
+        setTimeout(() => window.location.href = 'tickets.html', 2000);
+        return;
+      }
+      
+      loadTicket();
+      setupEventListeners();
+    });
+
+    function loadTicket() {
+      ticket = POS_DATA.getTicket(ticketId);
+      if (!ticket) {
+        POS.error('Ticket not found');
+        setTimeout(() => window.location.href = 'tickets.html', 2000);
+        return;
+      }
+      
+      renderTicket();
+    }
+
+    function setupEventListeners() {
+      // Status change
+      document.getElementById('status-select').addEventListener('change', (e) => {
+        updateStatus(e.target.value);
+      });
+
+      // Payment method toggle
+      document.querySelectorAll('.payment-method-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.payment-method-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+
+      // Payment amount change
+      document.getElementById('payment-received').addEventListener('input', (e) => {
+        const received = parseFloat(e.target.value) || 0;
+        const due = ticket.pricing?.total - (ticket.pricing?.deposit || 0);
+        const change = received - due;
+        
+        if (change > 0) {
+          document.getElementById('change-display').style.display = 'block';
+          document.getElementById('change-amount').textContent = POS.formatCurrency(change);
+        } else {
+          document.getElementById('change-display').style.display = 'none';
+        }
+      });
+    }
+
+    function renderTicket() {
+      // Title
+      document.getElementById('ticket-id').textContent = ticket.id;
+      document.title = `${ticket.id} | Fixology POS`;
+
+      // Status
+      document.getElementById('status-select').value = ticket.status;
+      renderStatusProgress();
+
+      // Device
+      renderDeviceInfo();
+
+      // Issue
+      renderIssueInfo();
+
+      // Customer
+      renderCustomerInfo();
+
+      // Pricing
+      renderPricingInfo();
+
+      // Activity
+      renderActivityLog();
+    }
+
+    function renderStatusProgress() {
+      const statuses = ['new', 'diagnosed', 'waiting_parts', 'in_repair', 'ready', 'picked_up'];
+      const currentIndex = statuses.indexOf(ticket.status);
+      
+      const html = statuses.map((status, i) => {
+        let className = '';
+        if (i < currentIndex) className = 'completed';
+        if (i === currentIndex) className = 'active';
+        
+        return `
+          <div class="status-step ${className}">
+            <div class="status-step-dot">${i < currentIndex ? '✓' : (i + 1)}</div>
+            <div class="status-step-label">${POS.getStatusLabel(status)}</div>
+          </div>
+        `;
+      }).join('');
+      
+      document.getElementById('status-progress').innerHTML = html;
+    }
+
+    function renderDeviceInfo() {
+      const d = ticket.device || {};
+      document.getElementById('device-info').innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
+          <div style="font-size: 32px;">${POS.getDeviceIcon(d.type)}</div>
+          <div>
+            <div style="font-size: 18px; font-weight: 600;">${d.brand || ''} ${d.model || 'Unknown Device'}</div>
+            <div style="color: var(--text-secondary);">${d.color || ''}</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="label">IMEI/Serial</span>
+          <span class="value" style="font-family: var(--font-mono);">${d.imei || d.serial || 'N/A'}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Passcode</span>
+          <span class="value">${d.passcode || 'N/A'}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Condition</span>
+          <span class="value">${d.condition || 'N/A'}</span>
+        </div>
+        ${d.imei ? `<button class="btn btn-secondary btn-sm" style="margin-top: var(--space-3);" onclick="checkIMEI()">🔍 Check IMEI</button>` : ''}
+      `;
+    }
+
+    function renderIssueInfo() {
+      const issue = ticket.issue || {};
+      const repair = ticket.repair || {};
+      
+      document.getElementById('issue-info').innerHTML = `
+        <div style="margin-bottom: var(--space-4);">
+          <div style="font-weight: 600; margin-bottom: var(--space-2);">Customer Description</div>
+          <div style="background: var(--bg-input); padding: var(--space-3); border-radius: var(--radius-md);">
+            "${issue.customerDescription || 'No description'}"
+          </div>
+        </div>
+        <div style="margin-bottom: var(--space-4);">
+          <div style="font-weight: 600; margin-bottom: var(--space-2);">Repair Type</div>
+          <span class="status-pill diagnosed">${(repair.type || 'repair').replace(/_/g, ' ')}</span>
+        </div>
+        ${issue.symptoms && issue.symptoms.length > 0 ? `
+          <div style="margin-bottom: var(--space-4);">
+            <div style="font-weight: 600; margin-bottom: var(--space-2);">Symptoms</div>
+            <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+              ${issue.symptoms.map(s => `<span style="padding: 4px 10px; background: var(--warning-light); border-radius: var(--radius-full); font-size: 12px;">${s.replace(/_/g, ' ')}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+        ${repair.assignedTo ? `
+          <div class="info-row">
+            <span class="label">Assigned To</span>
+            <span class="value">${repair.assignedTo}</span>
+          </div>
+        ` : ''}
+        ${repair.estimatedTime ? `
+          <div class="info-row">
+            <span class="label">Estimated Time</span>
+            <span class="value">${repair.estimatedTime} minutes</span>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function renderCustomerInfo() {
+      const c = ticket.customer || {};
+      document.getElementById('customer-info').innerHTML = `
+        <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px;">
+            ${(c.name || 'U').charAt(0)}
+          </div>
+          <div>
+            <div style="font-weight: 600; font-size: 16px;">${c.name || 'Unknown'}</div>
+            <div style="color: var(--text-secondary); font-size: 13px;">${c.email || 'No email'}</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="label">Phone</span>
+          <span class="value">${POS.formatPhone(c.phone) || 'N/A'}</span>
+        </div>
+        ${c.address ? `
+          <div class="info-row">
+            <span class="label">Address</span>
+            <span class="value" style="font-size: 12px;">${c.address}</span>
+          </div>
+        ` : ''}
+      `;
+    }
+
+    function renderPricingInfo() {
+      const p = ticket.pricing || {};
+      const subtotal = (p.laborCost || 0) + (p.partsCost || 0) - (p.discount || 0);
+      const tax = subtotal * (p.taxRate || 0.08);
+      const total = subtotal + tax;
+      const balance = total - (p.deposit || 0);
+      
+      document.getElementById('pricing-info').innerHTML = `
+        ${ticket.parts && ticket.parts.length > 0 ? ticket.parts.map(part => `
+          <div class="row">
+            <span>${part.name}</span>
+            <span>${POS.formatCurrency(part.price)}</span>
+          </div>
+        `).join('') : `
+          <div class="row">
+            <span>Parts</span>
+            <span>${POS.formatCurrency(p.partsCost || 0)}</span>
+          </div>
+        `}
+        <div class="row">
+          <span>Labor</span>
+          <span>${POS.formatCurrency(p.laborCost || 0)}</span>
+        </div>
+        ${(p.discount || 0) > 0 ? `
+          <div class="row" style="color: var(--success);">
+            <span>Discount</span>
+            <span>-${POS.formatCurrency(p.discount)}</span>
+          </div>
+        ` : ''}
+        <div class="row">
+          <span>Subtotal</span>
+          <span>${POS.formatCurrency(subtotal)}</span>
+        </div>
+        <div class="row">
+          <span>Tax (${((p.taxRate || 0.08) * 100).toFixed(0)}%)</span>
+          <span>${POS.formatCurrency(tax)}</span>
+        </div>
+        <div class="row total">
+          <span>Total</span>
+          <span>${POS.formatCurrency(total)}</span>
+        </div>
+        ${(p.deposit || 0) > 0 ? `
+          <div class="row">
+            <span>Deposit Paid</span>
+            <span>-${POS.formatCurrency(p.deposit)}</span>
+          </div>
+        ` : ''}
+        <div class="row balance">
+          <span>Balance Due</span>
+          <span>${POS.formatCurrency(balance)}</span>
+        </div>
+      `;
+    }
+
+    function renderActivityLog() {
+      const notes = ticket.repair?.notes || [];
+      const log = document.getElementById('activity-log');
+      
+      if (notes.length === 0) {
+        log.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: var(--space-4);">No activity yet</div>';
+        return;
+      }
+      
+      log.innerHTML = notes.map(note => `
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-content">
+            <div class="activity-text">${POS.escapeHtml(note.text)}</div>
+            <div class="activity-time">${POS.formatDateTime(note.timestamp)} • ${note.author}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Status Update
+    function updateStatus(newStatus) {
+      ticket.status = newStatus;
+      POS_DATA.addActivity(ticketId, `Status changed to ${POS.getStatusLabel(newStatus)}`, 'User');
+      POS_DATA.saveTicket(ticket);
+      renderStatusProgress();
+      renderActivityLog();
+      POS.success(`Status updated to ${POS.getStatusLabel(newStatus)}`);
+    }
+
+    // Customer Actions
+    function callCustomer() {
+      if (ticket.customer?.phone) {
+        window.open(`tel:${ticket.customer.phone}`);
+      } else {
+        POS.warning('No phone number available');
+      }
+    }
+
+    function smsCustomer() {
+      if (ticket.customer?.phone) {
+        const message = `Hi ${ticket.customer.name}, update on your ${ticket.device?.model} repair (${ticket.id}): Status is now ${POS.getStatusLabel(ticket.status)}.`;
+        window.open(`sms:${ticket.customer.phone}?body=${encodeURIComponent(message)}`);
+      } else {
+        POS.warning('No phone number available');
+      }
+    }
+
+    function emailCustomer() {
+      if (ticket.customer?.email) {
+        const subject = `Repair Update - ${ticket.id}`;
+        const body = `Hi ${ticket.customer.name},\n\nUpdate on your ${ticket.device?.model} repair:\n\nStatus: ${POS.getStatusLabel(ticket.status)}\n\nThank you for choosing Fixology!`;
+        window.open(`mailto:${ticket.customer.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+      } else {
+        POS.warning('No email address available');
+      }
+    }
+
+    // IMEI Check
+    async function checkIMEI() {
+      const imei = ticket.device?.imei;
+      if (!imei) {
+        POS.warning('No IMEI number available');
+        return;
+      }
+      
+      POS.info('Checking IMEI...');
+      
+      try {
+        const response = await fetch('/api/imei-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imei, checkType: 'basic' })
+        });
+        const data = await response.json();
+        
+        if (data.valid !== false) {
+          POS.success(`IMEI Valid: ${data.deviceName || data.modelName || 'Device verified'}`);
+        } else {
+          POS.error('Invalid IMEI number');
+        }
+      } catch (err) {
+        POS.error('Could not check IMEI');
+      }
+    }
+
+    // Edit Functions
+    function editDevice() {
+      POS.info('Device editing coming soon');
+    }
+
+    function editIssue() {
+      POS.info('Issue editing coming soon');
+    }
+
+    function editPricing() {
+      document.getElementById('edit-labor').value = ticket.pricing?.laborCost || 0;
+      document.getElementById('edit-parts').value = ticket.pricing?.partsCost || 0;
+      document.getElementById('edit-discount').value = ticket.pricing?.discount || 0;
+      document.getElementById('edit-deposit').value = ticket.pricing?.deposit || 0;
+      POS.openModal('pricing-modal');
+    }
+
+    function savePricing() {
+      ticket.pricing.laborCost = parseFloat(document.getElementById('edit-labor').value) || 0;
+      ticket.pricing.partsCost = parseFloat(document.getElementById('edit-parts').value) || 0;
+      ticket.pricing.discount = parseFloat(document.getElementById('edit-discount').value) || 0;
+      ticket.pricing.deposit = parseFloat(document.getElementById('edit-deposit').value) || 0;
+      
+      // Recalculate
+      const subtotal = ticket.pricing.laborCost + ticket.pricing.partsCost - ticket.pricing.discount;
+      ticket.pricing.tax = subtotal * (ticket.pricing.taxRate || 0.08);
+      ticket.pricing.total = subtotal + ticket.pricing.tax;
+      
+      POS_DATA.saveTicket(ticket);
+      POS_DATA.addActivity(ticketId, 'Pricing updated', 'User');
+      renderPricingInfo();
+      renderActivityLog();
+      POS.closeModal('pricing-modal');
+      POS.success('Pricing updated');
+    }
+
+    // Notes
+    function addNote() {
+      document.getElementById('note-text').value = '';
+      POS.openModal('note-modal');
+    }
+
+    function saveNote() {
+      const text = document.getElementById('note-text').value.trim();
+      if (!text) {
+        POS.warning('Please enter a note');
+        return;
+      }
+      
+      POS_DATA.addActivity(ticketId, text, 'User');
+      loadTicket(); // Reload to get updated data
+      POS.closeModal('note-modal');
+      POS.success('Note added');
+    }
+
+    // Payment
+    function takePayment() {
+      const balance = (ticket.pricing?.total || 0) - (ticket.pricing?.deposit || 0);
+      document.getElementById('payment-amount').textContent = POS.formatCurrency(balance);
+      document.getElementById('payment-received').value = balance.toFixed(2);
+      document.getElementById('change-display').style.display = 'none';
+      POS.openModal('payment-modal');
+    }
+
+    function processPayment() {
+      const method = document.querySelector('.payment-method-btn.active')?.dataset.method || 'cash';
+      const received = parseFloat(document.getElementById('payment-received').value) || 0;
+      const balance = (ticket.pricing?.total || 0) - (ticket.pricing?.deposit || 0);
+      
+      if (received < balance) {
+        POS.warning('Amount received is less than balance due');
+        return;
+      }
+      
+      // Update ticket
+      ticket.pickup = {
+        pickedUpAt: new Date().toISOString(),
+        paymentMethod: method,
+        amountPaid: received,
+        change: received - balance
+      };
+      ticket.status = 'picked_up';
+      
+      POS_DATA.addActivity(ticketId, `Payment received: ${POS.formatCurrency(received)} (${method})`, 'User');
+      POS_DATA.saveTicket(ticket);
+      
+      POS.closeModal('payment-modal');
+      POS.success('Payment processed successfully!');
+      
+      loadTicket();
+      
+      // Offer to print receipt
+      setTimeout(() => {
+        if (confirm('Print receipt?')) {
+          printReceipt();
+        }
+      }, 500);
+    }
+
+    // Quick Actions
+    function markReady() {
+      updateStatus('ready');
+      
+      // Offer to send SMS
+      if (ticket.customer?.phone && confirm('Send SMS notification to customer?')) {
+        smsCustomer();
+      }
+    }
+
+    function completePickup() {
+      if (ticket.status !== 'ready') {
+        POS.warning('Ticket must be Ready before pickup');
+        return;
+      }
+      takePayment();
+    }
+
+    // Actions Dropdown
+    function sendSMSUpdate() {
+      smsCustomer();
+    }
+
+    function sendEmailUpdate() {
+      emailCustomer();
+    }
+
+    function requestApproval() {
+      if (ticket.customer?.phone) {
+        const message = `Hi ${ticket.customer.name}, your ${ticket.device?.model} repair estimate is ready. Total: ${POS.formatCurrency(ticket.pricing?.total)}. Reply YES to approve or call us with questions.`;
+        window.open(`sms:${ticket.customer.phone}?body=${encodeURIComponent(message)}`);
+        POS_DATA.addActivity(ticketId, 'Approval request sent via SMS', 'User');
+        POS_DATA.saveTicket(ticket);
+        renderActivityLog();
+      } else {
+        POS.warning('No phone number available');
+      }
+    }
+
+    function cloneTicket() {
+      const cloned = { ...ticket };
+      delete cloned.id;
+      delete cloned.createdAt;
+      delete cloned.updatedAt;
+      cloned.status = 'new';
+      cloned.repair.notes = [];
+      
+      const saved = POS_DATA.saveTicket(cloned);
+      POS.success('Ticket cloned!');
+      setTimeout(() => {
+        window.location.href = `ticket-view.html?id=${saved.id}`;
+      }, 1000);
+    }
+
+    function deleteTicket() {
+      POS.confirm(
+        'Delete Ticket',
+        'Are you sure you want to delete this ticket? This action cannot be undone.',
+        () => {
+          POS_DATA.deleteTicket(ticketId);
+          POS.success('Ticket deleted');
+          setTimeout(() => {
+            window.location.href = 'tickets.html';
+          }, 1000);
+        }
+      );
+    }
+
+    // Photos
+    function addPhoto() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            if (!ticket.repair.photos) ticket.repair.photos = { intake: [], diagnosis: [], completion: [] };
+            ticket.repair.photos.intake.push(event.target.result);
+            POS_DATA.saveTicket(ticket);
+            POS.success('Photo added');
+            // Would render photo grid here
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+    }
+
+    // Print Functions (use printer.js)
+    function printIntakeForm() {
+      if (typeof PRINTER !== 'undefined') {
+        PRINTER.printIntakeForm(ticket);
+      } else {
+        POS.error('Printer module not loaded');
+      }
+    }
+
+    function printEstimate() {
+      if (typeof PRINTER !== 'undefined') {
+        PRINTER.printEstimate(ticket);
+      } else {
+        POS.error('Printer module not loaded');
+      }
+    }
+
+    function printReceipt() {
+      if (typeof PRINTER !== 'undefined') {
+        PRINTER.printReceipt(ticket);
+      } else {
+        POS.error('Printer module not loaded');
+      }
+    }
+
+    function printLabel() {
+      if (typeof PRINTER !== 'undefined') {
+        PRINTER.printLabel(ticket);
+      } else {
+        POS.error('Printer module not loaded');
+      }
+    }
+
+    function printClaimTicket() {
+      if (typeof PRINTER !== 'undefined') {
+        PRINTER.printClaimTicket(ticket);
+      } else {
+        POS.error('Printer module not loaded');
+      }
+    }
+  </script>
+</body>
+</html>
+

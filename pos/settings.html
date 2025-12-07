@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings | Fixology POS</title>
+  <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/pos.css">
+  <style>
+    .settings-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: var(--space-5);
+    }
+    
+    .settings-nav {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      padding: var(--space-3);
+      height: fit-content;
+    }
+    
+    .settings-nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .settings-nav-item:hover {
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+    
+    .settings-nav-item.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .settings-panel {
+      display: none;
+    }
+    
+    .settings-panel.active {
+      display: block;
+    }
+    
+    .settings-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      margin-bottom: var(--space-5);
+    }
+    
+    .settings-card-header {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .settings-card-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .settings-card-header p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    
+    .settings-card-body {
+      padding: var(--space-5);
+    }
+    
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-4) 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .setting-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    
+    .setting-row:first-child {
+      padding-top: 0;
+    }
+    
+    .setting-info h4 {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+    
+    .setting-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border-color);
+      transition: 0.3s;
+      border-radius: 26px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+      background-color: var(--primary);
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+    
+    .danger-zone {
+      border-color: var(--danger);
+    }
+    
+    .danger-zone .settings-card-header {
+      background: var(--danger-light);
+    }
+
+    @media (max-width: 768px) {
+      .settings-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .settings-nav {
+        display: flex;
+        overflow-x: auto;
+        gap: var(--space-2);
+      }
+      
+      .settings-nav-item {
+        white-space: nowrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pos-app">
+    <!-- Sidebar -->
+    <aside class="pos-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+          <span>Fixology</span>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <a href="index.html" class="nav-link"><span class="icon">📊</span><span>Dashboard</span></a>
+          <a href="tickets.html" class="nav-link"><span class="icon">🎫</span><span>Tickets</span></a>
+          <a href="customers.html" class="nav-link"><span class="icon">👥</span><span>Customers</span></a>
+          <a href="inventory.html" class="nav-link"><span class="icon">📦</span><span>Inventory</span></a>
+        </div>
+        <div class="nav-section">
+          <a href="settings.html" class="nav-link active"><span class="icon">⚙️</span><span>Settings</span></a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="pos-main">
+      <header class="pos-header">
+        <div class="header-left">
+          <h1 class="header-title">⚙️ Settings</h1>
+        </div>
+      </header>
+
+      <div class="pos-content">
+        <div class="settings-layout">
+          <!-- Settings Nav -->
+          <nav class="settings-nav">
+            <div class="settings-nav-item active" data-panel="general">
+              <span>🏪</span>
+              <span>General</span>
+            </div>
+            <div class="settings-nav-item" data-panel="pricing">
+              <span>💰</span>
+              <span>Pricing</span>
+            </div>
+            <div class="settings-nav-item" data-panel="notifications">
+              <span>🔔</span>
+              <span>Notifications</span>
+            </div>
+            <div class="settings-nav-item" data-panel="printing">
+              <span>🖨️</span>
+              <span>Printing</span>
+            </div>
+            <div class="settings-nav-item" data-panel="data">
+              <span>💾</span>
+              <span>Data</span>
+            </div>
+          </nav>
+
+          <!-- Settings Panels -->
+          <div class="settings-content">
+            <!-- General -->
+            <div class="settings-panel active" id="panel-general">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h3>Shop Information</h3>
+                  <p>Basic information about your repair shop</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="form-group">
+                    <label class="form-label">Shop Name</label>
+                    <input type="text" class="form-input" id="shop-name" placeholder="Fixology Repair">
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                    <div class="form-group">
+                      <label class="form-label">Phone</label>
+                      <input type="tel" class="form-input" id="shop-phone" placeholder="314-555-0100">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Email</label>
+                      <input type="email" class="form-input" id="shop-email" placeholder="info@fixology.com">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <textarea class="form-input form-textarea" id="shop-address" rows="2" placeholder="123 Main St, City, ST 12345"></textarea>
+                  </div>
+                  <button class="btn btn-primary" onclick="saveGeneralSettings()">Save Changes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="settings-panel" id="panel-pricing">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h3>Tax Settings</h3>
+                  <p>Configure tax rates for your location</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="form-group">
+                    <label class="form-label">Tax Rate (%)</label>
+                    <input type="number" class="form-input" id="tax-rate" placeholder="8" min="0" max="20" step="0.1" style="max-width: 150px;">
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Include Tax in Prices</h4>
+                      <p>Show prices with tax included</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="tax-inclusive">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <button class="btn btn-primary" onclick="savePricingSettings()" style="margin-top: var(--space-4);">Save Changes</button>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h3>Default Labor Rates</h3>
+                  <p>Set default labor costs for common repairs</p>
+                </div>
+                <div class="settings-card-body">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                    <div class="form-group">
+                      <label class="form-label">Screen Repair</label>
+                      <input type="number" class="form-input" id="labor-screen" placeholder="50" min="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Battery Replacement</label>
+                      <input type="number" class="form-input" id="labor-battery" placeholder="30" min="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Charging Port</label>
+                      <input type="number" class="form-input" id="labor-charging" placeholder="40" min="0">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label">Diagnostic</label>
+                      <input type="number" class="form-input" id="labor-diagnostic" placeholder="25" min="0">
+                    </div>
+                  </div>
+                  <button class="btn btn-primary" onclick="saveLaborRates()">Save Labor Rates</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="settings-panel" id="panel-notifications">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h3>Customer Notifications</h3>
+                  <p>Automatic notifications to customers</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Ticket Created</h4>
+                      <p>Send confirmation when ticket is created</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="notify-created" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Status Updates</h4>
+                      <p>Notify when repair status changes</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="notify-status" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Ready for Pickup</h4>
+                      <p>Alert when device is ready</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="notify-ready" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <button class="btn btn-primary" onclick="saveNotificationSettings()" style="margin-top: var(--space-4);">Save Changes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Printing -->
+            <div class="settings-panel" id="panel-printing">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h3>Print Settings</h3>
+                  <p>Configure receipt and label printing</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Auto-Print Intake Form</h4>
+                      <p>Print intake form when ticket is created</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="print-intake">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Auto-Print Label</h4>
+                      <p>Print repair label when ticket is created</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="print-label">
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Auto-Print Receipt</h4>
+                      <p>Print receipt on payment</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="print-receipt" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                  <button class="btn btn-primary" onclick="savePrintSettings()" style="margin-top: var(--space-4);">Save Changes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Data -->
+            <div class="settings-panel" id="panel-data">
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h3>Export Data</h3>
+                  <p>Download your data as JSON files</p>
+                </div>
+                <div class="settings-card-body">
+                  <div style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="exportData('tickets')">📥 Export Tickets</button>
+                    <button class="btn btn-secondary" onclick="exportData('customers')">📥 Export Customers</button>
+                    <button class="btn btn-secondary" onclick="exportData('inventory')">📥 Export Inventory</button>
+                    <button class="btn btn-secondary" onclick="exportData('all')">📥 Export All Data</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-card">
+                <div class="settings-card-header">
+                  <h3>Import Data</h3>
+                  <p>Import data from JSON file</p>
+                </div>
+                <div class="settings-card-body">
+                  <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImport(event)">
+                  <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📤 Import Data</button>
+                </div>
+              </div>
+
+              <div class="settings-card danger-zone">
+                <div class="settings-card-header">
+                  <h3 style="color: var(--danger);">⚠️ Danger Zone</h3>
+                  <p>Irreversible actions</p>
+                </div>
+                <div class="settings-card-body">
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Clear All Tickets</h4>
+                      <p>Delete all ticket data permanently</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="clearData('tickets')">Clear Tickets</button>
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Clear All Customers</h4>
+                      <p>Delete all customer data permanently</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="clearData('customers')">Clear Customers</button>
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4>Clear All Inventory</h4>
+                      <p>Delete all inventory data permanently</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="clearData('inventory')">Clear Inventory</button>
+                  </div>
+                  <div class="setting-row">
+                    <div class="setting-info">
+                      <h4 style="color: var(--danger);">Reset Everything</h4>
+                      <p>Delete ALL data and reset to default</p>
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="resetAll()">Reset All Data</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/pos-data.js"></script>
+  <script src="js/pos-core.js"></script>
+  <script>
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      setupNavigation();
+      loadSettings();
+    });
+
+    function setupNavigation() {
+      document.querySelectorAll('.settings-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+          document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
+          
+          item.classList.add('active');
+          document.getElementById(`panel-${item.dataset.panel}`).classList.add('active');
+        });
+      });
+    }
+
+    function loadSettings() {
+      const settings = POS_DATA.getSettings();
+      
+      // General
+      document.getElementById('shop-name').value = settings.shopName || '';
+      document.getElementById('shop-phone').value = settings.shopPhone || '';
+      document.getElementById('shop-email').value = settings.shopEmail || '';
+      document.getElementById('shop-address').value = settings.shopAddress || '';
+      
+      // Pricing
+      document.getElementById('tax-rate').value = (settings.taxRate || 0.08) * 100;
+      document.getElementById('tax-inclusive').checked = settings.taxInclusive || false;
+      document.getElementById('labor-screen').value = settings.laborScreen || 50;
+      document.getElementById('labor-battery').value = settings.laborBattery || 30;
+      document.getElementById('labor-charging').value = settings.laborCharging || 40;
+      document.getElementById('labor-diagnostic').value = settings.laborDiagnostic || 25;
+      
+      // Notifications
+      document.getElementById('notify-created').checked = settings.notifyCreated !== false;
+      document.getElementById('notify-status').checked = settings.notifyStatus !== false;
+      document.getElementById('notify-ready').checked = settings.notifyReady !== false;
+      
+      // Printing
+      document.getElementById('print-intake').checked = settings.printIntake || false;
+      document.getElementById('print-label').checked = settings.printLabel || false;
+      document.getElementById('print-receipt').checked = settings.printReceipt !== false;
+    }
+
+    function saveGeneralSettings() {
+      POS_DATA.saveSetting('shopName', document.getElementById('shop-name').value);
+      POS_DATA.saveSetting('shopPhone', document.getElementById('shop-phone').value);
+      POS_DATA.saveSetting('shopEmail', document.getElementById('shop-email').value);
+      POS_DATA.saveSetting('shopAddress', document.getElementById('shop-address').value);
+      POS.success('General settings saved');
+    }
+
+    function savePricingSettings() {
+      const taxRate = parseFloat(document.getElementById('tax-rate').value) / 100;
+      POS_DATA.saveSetting('taxRate', taxRate);
+      POS_DATA.saveSetting('taxInclusive', document.getElementById('tax-inclusive').checked);
+      POS.success('Pricing settings saved');
+    }
+
+    function saveLaborRates() {
+      POS_DATA.saveSetting('laborScreen', parseFloat(document.getElementById('labor-screen').value) || 50);
+      POS_DATA.saveSetting('laborBattery', parseFloat(document.getElementById('labor-battery').value) || 30);
+      POS_DATA.saveSetting('laborCharging', parseFloat(document.getElementById('labor-charging').value) || 40);
+      POS_DATA.saveSetting('laborDiagnostic', parseFloat(document.getElementById('labor-diagnostic').value) || 25);
+      POS.success('Labor rates saved');
+    }
+
+    function saveNotificationSettings() {
+      POS_DATA.saveSetting('notifyCreated', document.getElementById('notify-created').checked);
+      POS_DATA.saveSetting('notifyStatus', document.getElementById('notify-status').checked);
+      POS_DATA.saveSetting('notifyReady', document.getElementById('notify-ready').checked);
+      POS.success('Notification settings saved');
+    }
+
+    function savePrintSettings() {
+      POS_DATA.saveSetting('printIntake', document.getElementById('print-intake').checked);
+      POS_DATA.saveSetting('printLabel', document.getElementById('print-label').checked);
+      POS_DATA.saveSetting('printReceipt', document.getElementById('print-receipt').checked);
+      POS.success('Print settings saved');
+    }
+
+    function exportData(type) {
+      let data = {};
+      let filename = '';
+      
+      if (type === 'tickets' || type === 'all') {
+        data.tickets = POS_DATA.getTickets();
+      }
+      if (type === 'customers' || type === 'all') {
+        data.customers = POS_DATA.getCustomers();
+      }
+      if (type === 'inventory' || type === 'all') {
+        data.inventory = POS_DATA.getInventory();
+      }
+      if (type === 'all') {
+        data.settings = POS_DATA.getSettings();
+        filename = 'fixology-all-data.json';
+      } else {
+        filename = `fixology-${type}.json`;
+      }
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      POS.success(`${type} data exported`);
+    }
+
+    function handleImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          
+          if (data.tickets) {
+            localStorage.setItem('fixology_tickets', JSON.stringify(data.tickets));
+          }
+          if (data.customers) {
+            localStorage.setItem('fixology_customers', JSON.stringify(data.customers));
+          }
+          if (data.inventory) {
+            localStorage.setItem('fixology_inventory', JSON.stringify(data.inventory));
+          }
+          if (data.settings) {
+            localStorage.setItem('fixology_pos_settings', JSON.stringify(data.settings));
+            loadSettings();
+          }
+          
+          POS.success('Data imported successfully');
+        } catch (err) {
+          POS.error('Invalid JSON file');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function clearData(type) {
+      POS.confirm(
+        'Clear Data',
+        `Are you sure you want to delete all ${type}? This cannot be undone.`,
+        () => {
+          if (type === 'tickets') {
+            localStorage.setItem('fixology_tickets', '[]');
+          } else if (type === 'customers') {
+            localStorage.setItem('fixology_customers', '[]');
+          } else if (type === 'inventory') {
+            localStorage.setItem('fixology_inventory', '[]');
+          }
+          POS.success(`All ${type} cleared`);
+        }
+      );
+    }
+
+    function resetAll() {
+      POS.confirm(
+        'Reset All Data',
+        'This will delete ALL data including tickets, customers, inventory, and settings. This action cannot be undone!',
+        () => {
+          localStorage.removeItem('fixology_tickets');
+          localStorage.removeItem('fixology_customers');
+          localStorage.removeItem('fixology_inventory');
+          localStorage.removeItem('fixology_pos_settings');
+          POS.success('All data reset');
+          setTimeout(() => window.location.reload(), 1000);
+        }
+      );
+    }
+  </script>
+</body>
+</html>
+

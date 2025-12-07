@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory | Fixology POS</title>
+  <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/pos.css">
+  <style>
+    .inventory-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+    }
+    
+    .stat-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      padding: var(--space-5);
+    }
+    
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .stat-card .label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+    
+    .stat-card.warning .value {
+      color: var(--danger);
+    }
+    
+    .inventory-table {
+      background: white;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+    
+    .inventory-table .table th,
+    .inventory-table .table td {
+      padding: var(--space-4);
+    }
+    
+    .stock-badge {
+      padding: 4px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .stock-badge.in-stock {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    
+    .stock-badge.low-stock {
+      background: var(--warning-light);
+      color: var(--warning);
+    }
+    
+    .stock-badge.out-of-stock {
+      background: var(--danger-light);
+      color: var(--danger);
+    }
+    
+    .part-row {
+      cursor: pointer;
+    }
+    
+    .part-row:hover {
+      background: var(--bg-input);
+    }
+    
+    .quick-adjust {
+      display: flex;
+      gap: var(--space-2);
+      align-items: center;
+    }
+    
+    .quick-adjust button {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    
+    .quick-adjust button:hover {
+      background: var(--bg-input);
+    }
+    
+    .quick-adjust .count {
+      min-width: 40px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+    
+    .category-pills {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-4);
+      flex-wrap: wrap;
+    }
+    
+    .category-pill {
+      padding: 6px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      cursor: pointer;
+      background: white;
+      transition: all var(--transition-fast);
+    }
+    
+    .category-pill:hover {
+      border-color: var(--primary);
+    }
+    
+    .category-pill.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    @media (max-width: 768px) {
+      .inventory-stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="pos-app">
+    <!-- Sidebar -->
+    <aside class="pos-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+          <span>Fixology</span>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <a href="index.html" class="nav-link"><span class="icon">📊</span><span>Dashboard</span></a>
+          <a href="tickets.html" class="nav-link"><span class="icon">🎫</span><span>Tickets</span></a>
+          <a href="customers.html" class="nav-link"><span class="icon">👥</span><span>Customers</span></a>
+          <a href="inventory.html" class="nav-link active"><span class="icon">📦</span><span>Inventory</span></a>
+        </div>
+        <div class="nav-section">
+          <a href="settings.html" class="nav-link"><span class="icon">⚙️</span><span>Settings</span></a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="pos-main">
+      <header class="pos-header">
+        <div class="header-left">
+          <h1 class="header-title">
+            📦 Inventory
+            <span class="count" id="part-count">0</span>
+          </h1>
+        </div>
+        <div class="header-right">
+          <div class="search-box">
+            <span class="icon">🔍</span>
+            <input type="text" class="form-input" placeholder="Search parts..." id="search-input">
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Part</button>
+        </div>
+      </header>
+
+      <div class="pos-content">
+        <!-- Stats -->
+        <div class="inventory-stats">
+          <div class="stat-card">
+            <div class="value" id="stat-total">0</div>
+            <div class="label">Total Parts</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="stat-value">$0</div>
+            <div class="label">Inventory Value</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="value" id="stat-low">0</div>
+            <div class="label">Low Stock</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="stat-categories">0</div>
+            <div class="label">Categories</div>
+          </div>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="category-pills" id="category-pills">
+          <button class="category-pill active" data-category="all">All</button>
+          <!-- Categories rendered by JS -->
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="inventory-table">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Part Name</th>
+                <th>SKU</th>
+                <th>Category</th>
+                <th>Cost</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="inventory-tbody">
+              <!-- Rows rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div id="empty-state" class="empty-state" style="display: none;">
+          <div class="empty-state-icon">📦</div>
+          <h3 class="empty-state-title">No parts in inventory</h3>
+          <p class="empty-state-text">Add your first part to get started</p>
+          <button class="btn btn-primary" onclick="openAddModal()">+ Add Part</button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Part Modal -->
+  <div class="modal-overlay" id="part-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Add Part</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="part-id">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+          <div class="form-group" style="grid-column: span 2;">
+            <label class="form-label">Part Name *</label>
+            <input type="text" class="form-input" id="part-name" placeholder="iPhone 14 Pro Max Screen Assembly">
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU</label>
+            <input type="text" class="form-input" id="part-sku" placeholder="IP14PM-SCR">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select class="form-input form-select" id="part-category">
+              <option value="Screens">Screens</option>
+              <option value="Batteries">Batteries</option>
+              <option value="Charging">Charging Ports</option>
+              <option value="Cameras">Cameras</option>
+              <option value="Speakers">Speakers</option>
+              <option value="Buttons">Buttons</option>
+              <option value="Housing">Housing/Frames</option>
+              <option value="Console Parts">Console Parts</option>
+              <option value="Laptop Parts">Laptop Parts</option>
+              <option value="Tools">Tools</option>
+              <option value="Accessories">Accessories</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cost (Your Price) *</label>
+            <input type="number" class="form-input" id="part-cost" placeholder="85.00" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sell Price *</label>
+            <input type="number" class="form-input" id="part-price" placeholder="149.00" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Stock Quantity</label>
+            <input type="number" class="form-input" id="part-stock" placeholder="10" min="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Grade</label>
+            <select class="form-input form-select" id="part-grade">
+              <option value="A">Grade A (OEM/Premium)</option>
+              <option value="B">Grade B (High Quality)</option>
+              <option value="C">Grade C (Economy)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Low Stock Alert</label>
+            <input type="number" class="form-input" id="part-alert" placeholder="5" min="0" value="5">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Supplier</label>
+            <input type="text" class="form-input" id="part-supplier" placeholder="Supplier name">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="savePart()">Save Part</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Adjust Stock Modal -->
+  <div class="modal-overlay" id="adjust-modal">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Adjust Stock</h3>
+        <button class="modal-close" onclick="closeAdjustModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="adjust-part-id">
+        <p id="adjust-part-name" style="font-weight: 600; margin-bottom: var(--space-4);"></p>
+        <p style="margin-bottom: var(--space-2);">Current Stock: <strong id="adjust-current">0</strong></p>
+        <div class="form-group">
+          <label class="form-label">Adjustment (+/-)</label>
+          <input type="number" class="form-input" id="adjust-amount" placeholder="Enter amount (+5 or -3)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Reason</label>
+          <select class="form-input form-select" id="adjust-reason">
+            <option value="received">Received from Supplier</option>
+            <option value="used">Used in Repair</option>
+            <option value="damaged">Damaged/Defective</option>
+            <option value="returned">Returned by Customer</option>
+            <option value="correction">Inventory Correction</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeAdjustModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="confirmAdjust()">Adjust Stock</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/pos-data.js"></script>
+  <script src="js/pos-core.js"></script>
+  <script>
+    let currentFilter = 'all';
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      loadInventory();
+      loadCategories();
+      setupSearch();
+    });
+
+    function setupSearch() {
+      document.getElementById('search-input').addEventListener('input', POS.debounce((e) => {
+        loadInventory(e.target.value);
+      }, 300));
+    }
+
+    function loadCategories() {
+      const inventory = POS_DATA.getInventory();
+      const categories = [...new Set(inventory.map(p => p.category).filter(Boolean))];
+      
+      const pills = document.getElementById('category-pills');
+      pills.innerHTML = `<button class="category-pill active" data-category="all">All</button>` +
+        categories.map(c => `<button class="category-pill" data-category="${c}">${c}</button>`).join('');
+      
+      pills.querySelectorAll('.category-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          currentFilter = pill.dataset.category;
+          loadInventory();
+        });
+      });
+    }
+
+    function loadInventory(query = '') {
+      let inventory = query 
+        ? POS_DATA.searchInventory(query)
+        : POS_DATA.getInventory();
+      
+      // Apply category filter
+      if (currentFilter !== 'all') {
+        inventory = inventory.filter(p => p.category === currentFilter);
+      }
+      
+      // Update stats
+      const allParts = POS_DATA.getInventory();
+      const totalValue = allParts.reduce((sum, p) => sum + (p.cost || 0) * (p.stock || 0), 0);
+      const lowStock = allParts.filter(p => (p.stock || 0) <= (p.lowStockAlert || 5)).length;
+      const categories = [...new Set(allParts.map(p => p.category).filter(Boolean))];
+      
+      document.getElementById('stat-total').textContent = allParts.length;
+      document.getElementById('stat-value').textContent = POS.formatCurrency(totalValue);
+      document.getElementById('stat-low').textContent = lowStock;
+      document.getElementById('stat-categories').textContent = categories.length;
+      document.getElementById('part-count').textContent = inventory.length;
+      
+      if (inventory.length === 0) {
+        document.querySelector('.inventory-table').style.display = 'none';
+        document.getElementById('empty-state').style.display = 'block';
+        return;
+      }
+      
+      document.querySelector('.inventory-table').style.display = 'block';
+      document.getElementById('empty-state').style.display = 'none';
+      
+      const tbody = document.getElementById('inventory-tbody');
+      tbody.innerHTML = inventory.map(p => {
+        const stock = p.stock || 0;
+        const lowAlert = p.lowStockAlert || 5;
+        let stockClass = 'in-stock';
+        let stockLabel = 'In Stock';
+        
+        if (stock === 0) {
+          stockClass = 'out-of-stock';
+          stockLabel = 'Out of Stock';
+        } else if (stock <= lowAlert) {
+          stockClass = 'low-stock';
+          stockLabel = 'Low Stock';
+        }
+        
+        const margin = p.price && p.cost ? ((p.price - p.cost) / p.price * 100).toFixed(0) : 0;
+        
+        return `
+          <tr class="part-row">
+            <td>
+              <div style="font-weight: 600;">${POS.escapeHtml(p.name || 'Unknown')}</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Grade ${p.grade || 'A'} • ${margin}% margin</div>
+            </td>
+            <td style="font-family: var(--font-mono); font-size: 12px;">${p.sku || '-'}</td>
+            <td>${p.category || '-'}</td>
+            <td>${POS.formatCurrency(p.cost)}</td>
+            <td style="font-weight: 600;">${POS.formatCurrency(p.price)}</td>
+            <td>
+              <div class="quick-adjust" onclick="event.stopPropagation();">
+                <button onclick="quickAdjust('${p.id}', -1)">−</button>
+                <span class="count">${stock}</span>
+                <button onclick="quickAdjust('${p.id}', 1)">+</button>
+              </div>
+            </td>
+            <td><span class="stock-badge ${stockClass}">${stockLabel}</span></td>
+            <td>
+              <div class="dropdown" onclick="event.stopPropagation();">
+                <button class="btn btn-ghost btn-icon dropdown-toggle">⋮</button>
+                <div class="dropdown-menu">
+                  <div class="dropdown-item" onclick="editPart('${p.id}')">✏️ Edit</div>
+                  <div class="dropdown-item" onclick="openAdjustModal('${p.id}')">📊 Adjust Stock</div>
+                  <div class="dropdown-divider"></div>
+                  <div class="dropdown-item danger" onclick="deletePart('${p.id}')">🗑️ Delete</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function quickAdjust(id, amount) {
+      POS_DATA.adjustStock(id, amount);
+      loadInventory(document.getElementById('search-input').value);
+    }
+
+    function openAddModal() {
+      document.getElementById('modal-title').textContent = 'Add Part';
+      document.getElementById('part-id').value = '';
+      document.getElementById('part-name').value = '';
+      document.getElementById('part-sku').value = '';
+      document.getElementById('part-category').value = 'Screens';
+      document.getElementById('part-cost').value = '';
+      document.getElementById('part-price').value = '';
+      document.getElementById('part-stock').value = '';
+      document.getElementById('part-grade').value = 'A';
+      document.getElementById('part-alert').value = '5';
+      document.getElementById('part-supplier').value = '';
+      POS.openModal('part-modal');
+    }
+
+    function editPart(id) {
+      const part = POS_DATA.getPart(id);
+      if (!part) return;
+      
+      document.getElementById('modal-title').textContent = 'Edit Part';
+      document.getElementById('part-id').value = part.id;
+      document.getElementById('part-name').value = part.name || '';
+      document.getElementById('part-sku').value = part.sku || '';
+      document.getElementById('part-category').value = part.category || 'Screens';
+      document.getElementById('part-cost').value = part.cost || '';
+      document.getElementById('part-price').value = part.price || '';
+      document.getElementById('part-stock').value = part.stock || '';
+      document.getElementById('part-grade').value = part.grade || 'A';
+      document.getElementById('part-alert').value = part.lowStockAlert || 5;
+      document.getElementById('part-supplier').value = part.supplier || '';
+      POS.openModal('part-modal');
+    }
+
+    function closeModal() {
+      POS.closeModal('part-modal');
+    }
+
+    function savePart() {
+      const id = document.getElementById('part-id').value;
+      const name = document.getElementById('part-name').value.trim();
+      const cost = parseFloat(document.getElementById('part-cost').value);
+      const price = parseFloat(document.getElementById('part-price').value);
+      
+      if (!name) {
+        POS.error('Part name is required');
+        return;
+      }
+      
+      if (isNaN(cost) || isNaN(price)) {
+        POS.error('Cost and price are required');
+        return;
+      }
+      
+      const part = {
+        id: id || undefined,
+        name,
+        sku: document.getElementById('part-sku').value.trim(),
+        category: document.getElementById('part-category').value,
+        cost,
+        price,
+        stock: parseInt(document.getElementById('part-stock').value) || 0,
+        grade: document.getElementById('part-grade').value,
+        lowStockAlert: parseInt(document.getElementById('part-alert').value) || 5,
+        supplier: document.getElementById('part-supplier').value.trim()
+      };
+      
+      POS_DATA.savePart(part);
+      POS.success(id ? 'Part updated' : 'Part added');
+      closeModal();
+      loadInventory();
+      loadCategories();
+    }
+
+    function deletePart(id) {
+      const part = POS_DATA.getPart(id);
+      if (!part) return;
+      
+      POS.confirm(
+        'Delete Part',
+        `Are you sure you want to delete "${part.name}"?`,
+        () => {
+          POS_DATA.deletePart(id);
+          POS.success('Part deleted');
+          loadInventory();
+          loadCategories();
+        }
+      );
+    }
+
+    function openAdjustModal(id) {
+      const part = POS_DATA.getPart(id);
+      if (!part) return;
+      
+      document.getElementById('adjust-part-id').value = part.id;
+      document.getElementById('adjust-part-name').textContent = part.name;
+      document.getElementById('adjust-current').textContent = part.stock || 0;
+      document.getElementById('adjust-amount').value = '';
+      document.getElementById('adjust-reason').value = 'received';
+      POS.openModal('adjust-modal');
+    }
+
+    function closeAdjustModal() {
+      POS.closeModal('adjust-modal');
+    }
+
+    function confirmAdjust() {
+      const id = document.getElementById('adjust-part-id').value;
+      const amount = parseInt(document.getElementById('adjust-amount').value);
+      
+      if (isNaN(amount) || amount === 0) {
+        POS.warning('Please enter a valid adjustment amount');
+        return;
+      }
+      
+      POS_DATA.adjustStock(id, amount);
+      POS.success(`Stock adjusted by ${amount > 0 ? '+' : ''}${amount}`);
+      closeAdjustModal();
+      loadInventory();
+    }
+  </script>
+</body>
+</html>
+

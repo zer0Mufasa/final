@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Ticket | Fixology POS</title>
+  <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/pos.css">
+  <style>
+    .wizard-container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .wizard-card {
+      background: white;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    
+    .wizard-header {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      padding: var(--space-6);
+      color: white;
+    }
+    
+    .wizard-header h1 {
+      font-size: 24px;
+      margin-bottom: var(--space-2);
+    }
+    
+    .wizard-header p {
+      opacity: 0.8;
+    }
+    
+    .wizard-steps-nav {
+      display: flex;
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-input);
+    }
+    
+    .step-nav-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .step-nav-item.active {
+      background: white;
+      box-shadow: var(--shadow-sm);
+    }
+    
+    .step-nav-item.completed .step-num {
+      background: var(--success);
+    }
+    
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--border-color);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .step-nav-item.active .step-num {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    
+    .step-nav-item.active .step-label {
+      color: var(--text-primary);
+    }
+    
+    .wizard-body {
+      padding: var(--space-6);
+      min-height: 400px;
+    }
+    
+    .wizard-step {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .wizard-step.active {
+      display: block;
+    }
+    
+    .wizard-footer {
+      padding: var(--space-5) var(--space-6);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    /* Customer Search */
+    .customer-search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 10;
+      display: none;
+    }
+    
+    .customer-search-results.open {
+      display: block;
+    }
+    
+    .customer-result {
+      padding: var(--space-3) var(--space-4);
+      cursor: pointer;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .customer-result:hover {
+      background: var(--bg-input);
+    }
+    
+    .customer-result:last-child {
+      border-bottom: none;
+    }
+    
+    .selected-customer {
+      background: var(--secondary);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    
+    .selected-customer .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    /* Device Type Selector */
+    .device-types {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-5);
+    }
+    
+    .device-type-btn {
+      padding: var(--space-4);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      background: white;
+      cursor: pointer;
+      text-align: center;
+      transition: all var(--transition-fast);
+    }
+    
+    .device-type-btn:hover {
+      border-color: var(--primary);
+    }
+    
+    .device-type-btn.active {
+      border-color: var(--primary);
+      background: var(--secondary);
+    }
+    
+    .device-type-btn .icon {
+      font-size: 28px;
+      display: block;
+      margin-bottom: var(--space-2);
+    }
+    
+    .device-type-btn .label {
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    /* Symptom Chips */
+    .symptom-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+    }
+    
+    .symptom-chip {
+      padding: 8px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      background: white;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .symptom-chip:hover {
+      border-color: var(--primary);
+    }
+    
+    .symptom-chip.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    /* Checklist */
+    .diagnosis-checklist {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-3);
+    }
+    
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      background: var(--bg-input);
+      border-radius: var(--radius-md);
+    }
+    
+    .checklist-item label {
+      flex: 1;
+      font-size: 13px;
+    }
+    
+    .checklist-toggles {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .checklist-toggle {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      cursor: pointer;
+      background: white;
+    }
+    
+    .checklist-toggle.active-yes { background: var(--success); color: white; }
+    .checklist-toggle.active-no { background: var(--danger); color: white; }
+    .checklist-toggle.active-unknown { background: var(--warning); color: white; }
+    
+    /* Pricing Summary */
+    .pricing-summary {
+      background: var(--bg-input);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+    
+    .pricing-row {
+      display: flex;
+      justify-content: space-between;
+      padding: var(--space-2) 0;
+      font-size: 14px;
+    }
+    
+    .pricing-row.total {
+      border-top: 2px solid var(--border-color);
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    /* Parts Selector */
+    .parts-list {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+    
+    .part-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+    }
+    
+    .part-item:hover {
+      background: var(--bg-input);
+    }
+    
+    .part-item.selected {
+      background: var(--secondary);
+    }
+    
+    .part-item:last-child {
+      border-bottom: none;
+    }
+    
+    /* Signature Pad */
+    .signature-pad-container {
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      text-align: center;
+    }
+    
+    .signature-pad {
+      width: 100%;
+      height: 150px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      cursor: crosshair;
+      background: white;
+    }
+    
+    /* Review Summary */
+    .review-section {
+      background: var(--bg-input);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    
+    .review-section h4 {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-3);
+    }
+  </style>
+</head>
+<body>
+  <div class="pos-app">
+    <!-- Sidebar -->
+    <aside class="pos-sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="sidebar-logo">
+          <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+          <span>Fixology</span>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <a href="index.html" class="nav-link"><span class="icon">📊</span><span>Dashboard</span></a>
+          <a href="tickets.html" class="nav-link"><span class="icon">🎫</span><span>Tickets</span></a>
+          <a href="customers.html" class="nav-link"><span class="icon">👥</span><span>Customers</span></a>
+          <a href="inventory.html" class="nav-link"><span class="icon">📦</span><span>Inventory</span></a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="pos-main">
+      <header class="pos-header">
+        <div class="header-left">
+          <a href="tickets.html" class="btn btn-ghost">← Back</a>
+        </div>
+      </header>
+
+      <div class="pos-content">
+        <div class="wizard-container">
+          <div class="wizard-card">
+            <div class="wizard-header">
+              <h1>🎫 New Repair Ticket</h1>
+              <p>Create a new repair ticket for your customer</p>
+            </div>
+
+            <div class="wizard-steps-nav">
+              <div class="step-nav-item active" data-step="1">
+                <span class="step-num">1</span>
+                <span class="step-label">Customer</span>
+              </div>
+              <div class="step-nav-item" data-step="2">
+                <span class="step-num">2</span>
+                <span class="step-label">Device</span>
+              </div>
+              <div class="step-nav-item" data-step="3">
+                <span class="step-num">3</span>
+                <span class="step-label">Issue</span>
+              </div>
+              <div class="step-nav-item" data-step="4">
+                <span class="step-num">4</span>
+                <span class="step-label">Pricing</span>
+              </div>
+              <div class="step-nav-item" data-step="5">
+                <span class="step-num">5</span>
+                <span class="step-label">Review</span>
+              </div>
+            </div>
+
+            <div class="wizard-body">
+              <!-- Step 1: Customer -->
+              <div class="wizard-step active" data-step="1">
+                <h2 style="margin-bottom: var(--space-5);">Customer Information</h2>
+                
+                <div id="customer-search-container" style="position: relative; margin-bottom: var(--space-5);">
+                  <label class="form-label">Search Existing Customer</label>
+                  <input type="text" class="form-input" id="customer-search" placeholder="Search by name, phone, or email...">
+                  <div class="customer-search-results" id="customer-results"></div>
+                </div>
+
+                <div id="selected-customer-display" style="display: none; margin-bottom: var(--space-5);"></div>
+
+                <div style="text-align: center; margin-bottom: var(--space-5);">
+                  <span style="color: var(--text-muted);">— OR —</span>
+                </div>
+
+                <h3 style="margin-bottom: var(--space-4);">Add New Customer</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                  <div class="form-group">
+                    <label class="form-label">Full Name *</label>
+                    <input type="text" class="form-input" id="customer-name" placeholder="John Smith">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Phone *</label>
+                    <input type="tel" class="form-input" id="customer-phone" placeholder="314-555-1234">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" id="customer-email" placeholder="john@email.com">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <input type="text" class="form-input" id="customer-address" placeholder="123 Main St, City, ST 12345">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 2: Device -->
+              <div class="wizard-step" data-step="2">
+                <h2 style="margin-bottom: var(--space-5);">Device Information</h2>
+                
+                <label class="form-label">Device Type</label>
+                <div class="device-types">
+                  <button type="button" class="device-type-btn active" data-type="smartphone">
+                    <span class="icon">📱</span>
+                    <span class="label">Phone</span>
+                  </button>
+                  <button type="button" class="device-type-btn" data-type="tablet">
+                    <span class="icon">📱</span>
+                    <span class="label">Tablet</span>
+                  </button>
+                  <button type="button" class="device-type-btn" data-type="laptop">
+                    <span class="icon">💻</span>
+                    <span class="label">Laptop</span>
+                  </button>
+                  <button type="button" class="device-type-btn" data-type="desktop">
+                    <span class="icon">🖥️</span>
+                    <span class="label">Desktop</span>
+                  </button>
+                  <button type="button" class="device-type-btn" data-type="console">
+                    <span class="icon">🎮</span>
+                    <span class="label">Console</span>
+                  </button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                  <div class="form-group">
+                    <label class="form-label">Brand *</label>
+                    <select class="form-input form-select" id="device-brand">
+                      <option value="">Select Brand</option>
+                      <option value="Apple">Apple</option>
+                      <option value="Samsung">Samsung</option>
+                      <option value="Google">Google</option>
+                      <option value="OnePlus">OnePlus</option>
+                      <option value="Motorola">Motorola</option>
+                      <option value="LG">LG</option>
+                      <option value="Sony">Sony</option>
+                      <option value="Microsoft">Microsoft</option>
+                      <option value="Dell">Dell</option>
+                      <option value="HP">HP</option>
+                      <option value="Lenovo">Lenovo</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Model *</label>
+                    <input type="text" class="form-input" id="device-model" placeholder="iPhone 14 Pro Max">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Color</label>
+                    <input type="text" class="form-input" id="device-color" placeholder="Space Black">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">IMEI / Serial</label>
+                    <div style="display: flex; gap: var(--space-2);">
+                      <input type="text" class="form-input" id="device-imei" placeholder="356558088449233" style="flex: 1;">
+                      <button type="button" class="btn btn-secondary" id="check-imei-btn">Check</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Passcode</label>
+                    <input type="text" class="form-input" id="device-passcode" placeholder="1234 or pattern">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Condition</label>
+                    <select class="form-input form-select" id="device-condition">
+                      <option value="Excellent">Excellent</option>
+                      <option value="Good" selected>Good</option>
+                      <option value="Fair">Fair</option>
+                      <option value="Poor">Poor</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="imei-result" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: var(--success-light); border-radius: var(--radius-md);"></div>
+              </div>
+
+              <!-- Step 3: Issue -->
+              <div class="wizard-step" data-step="3">
+                <h2 style="margin-bottom: var(--space-5);">Issue & Diagnosis</h2>
+
+                <div class="form-group">
+                  <label class="form-label">Customer's Description *</label>
+                  <textarea class="form-input form-textarea" id="issue-description" placeholder="Describe the problem in the customer's words..."></textarea>
+                </div>
+
+                <label class="form-label">Common Symptoms (click to select)</label>
+                <div class="symptom-chips" id="symptom-chips">
+                  <button type="button" class="symptom-chip" data-symptom="cracked_screen">🔲 Cracked Screen</button>
+                  <button type="button" class="symptom-chip" data-symptom="no_power">⚡ Won't Power On</button>
+                  <button type="button" class="symptom-chip" data-symptom="no_charge">🔌 Won't Charge</button>
+                  <button type="button" class="symptom-chip" data-symptom="battery_drain">🔋 Battery Drains Fast</button>
+                  <button type="button" class="symptom-chip" data-symptom="water_damage">💧 Water Damage</button>
+                  <button type="button" class="symptom-chip" data-symptom="no_touch">👆 Touch Not Working</button>
+                  <button type="button" class="symptom-chip" data-symptom="no_display">🖥️ Display Issues</button>
+                  <button type="button" class="symptom-chip" data-symptom="speaker">🔊 Speaker Issues</button>
+                  <button type="button" class="symptom-chip" data-symptom="microphone">🎤 Microphone Issues</button>
+                  <button type="button" class="symptom-chip" data-symptom="camera">📷 Camera Issues</button>
+                  <button type="button" class="symptom-chip" data-symptom="buttons">🔘 Button Issues</button>
+                  <button type="button" class="symptom-chip" data-symptom="software">📱 Software Issues</button>
+                </div>
+
+                <label class="form-label" style="margin-top: var(--space-5);">Diagnostic Checklist</label>
+                <div class="diagnosis-checklist" id="checklist">
+                  <div class="checklist-item" data-check="powersOn">
+                    <label>Powers On</label>
+                    <div class="checklist-toggles">
+                      <button type="button" class="checklist-toggle" data-value="yes">✓</button>
+                      <button type="button" class="checklist-toggle" data-value="no">✗</button>
+                      <button type="button" class="checklist-toggle active-unknown" data-value="unknown">?</button>
+                    </div>
+                  </div>
+                  <div class="checklist-item" data-check="touchWorks">
+                    <label>Touch Works</label>
+                    <div class="checklist-toggles">
+                      <button type="button" class="checklist-toggle" data-value="yes">✓</button>
+                      <button type="button" class="checklist-toggle" data-value="no">✗</button>
+                      <button type="button" class="checklist-toggle active-unknown" data-value="unknown">?</button>
+                    </div>
+                  </div>
+                  <div class="checklist-item" data-check="soundWorks">
+                    <label>Sound Works</label>
+                    <div class="checklist-toggles">
+                      <button type="button" class="checklist-toggle" data-value="yes">✓</button>
+                      <button type="button" class="checklist-toggle" data-value="no">✗</button>
+                      <button type="button" class="checklist-toggle active-unknown" data-value="unknown">?</button>
+                    </div>
+                  </div>
+                  <div class="checklist-item" data-check="chargingWorks">
+                    <label>Charging Works</label>
+                    <div class="checklist-toggles">
+                      <button type="button" class="checklist-toggle" data-value="yes">✓</button>
+                      <button type="button" class="checklist-toggle" data-value="no">✗</button>
+                      <button type="button" class="checklist-toggle active-unknown" data-value="unknown">?</button>
+                    </div>
+                  </div>
+                  <div class="checklist-item" data-check="cameraWorks">
+                    <label>Camera Works</label>
+                    <div class="checklist-toggles">
+                      <button type="button" class="checklist-toggle" data-value="yes">✓</button>
+                      <button type="button" class="checklist-toggle" data-value="no">✗</button>
+                      <button type="button" class="checklist-toggle active-unknown" data-value="unknown">?</button>
+                    </div>
+                  </div>
+                  <div class="checklist-item" data-check="wifiWorks">
+                    <label>WiFi Works</label>
+                    <div class="checklist-toggles">
+                      <button type="button" class="checklist-toggle" data-value="yes">✓</button>
+                      <button type="button" class="checklist-toggle" data-value="no">✗</button>
+                      <button type="button" class="checklist-toggle active-unknown" data-value="unknown">?</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-top: var(--space-5);">
+                  <label class="form-label">Technician Notes</label>
+                  <textarea class="form-input form-textarea" id="tech-notes" placeholder="Internal notes about the diagnosis..."></textarea>
+                </div>
+              </div>
+
+              <!-- Step 4: Pricing -->
+              <div class="wizard-step" data-step="4">
+                <h2 style="margin-bottom: var(--space-5);">Pricing & Parts</h2>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+                  <div>
+                    <div class="form-group">
+                      <label class="form-label">Repair Type</label>
+                      <select class="form-input form-select" id="repair-type">
+                        <option value="screen_replacement">Screen Replacement</option>
+                        <option value="battery_replacement">Battery Replacement</option>
+                        <option value="charging_port">Charging Port Repair</option>
+                        <option value="back_glass">Back Glass Replacement</option>
+                        <option value="camera_repair">Camera Repair</option>
+                        <option value="speaker_repair">Speaker Repair</option>
+                        <option value="button_repair">Button Repair</option>
+                        <option value="water_damage">Water Damage Treatment</option>
+                        <option value="software">Software Repair</option>
+                        <option value="diagnostic">Diagnostic Only</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+
+                    <label class="form-label">Select Parts</label>
+                    <div class="parts-list" id="parts-list">
+                      <!-- Parts will be loaded from inventory -->
+                    </div>
+
+                    <div style="margin-top: var(--space-4); display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+                      <div class="form-group">
+                        <label class="form-label">Labor Cost</label>
+                        <input type="number" class="form-input" id="labor-cost" value="50" min="0" step="5">
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">Discount</label>
+                        <input type="number" class="form-input" id="discount" value="0" min="0">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Estimated Time (minutes)</label>
+                      <input type="number" class="form-input" id="est-time" value="30" min="5" step="5">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Deposit Required</label>
+                      <input type="number" class="form-input" id="deposit" value="0" min="0">
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="pricing-summary" id="pricing-summary">
+                      <h3 style="margin-bottom: var(--space-4);">💰 Pricing Summary</h3>
+                      <div class="pricing-row">
+                        <span>Parts</span>
+                        <span id="summary-parts">$0.00</span>
+                      </div>
+                      <div class="pricing-row">
+                        <span>Labor</span>
+                        <span id="summary-labor">$50.00</span>
+                      </div>
+                      <div class="pricing-row">
+                        <span>Discount</span>
+                        <span id="summary-discount">-$0.00</span>
+                      </div>
+                      <div class="pricing-row">
+                        <span>Subtotal</span>
+                        <span id="summary-subtotal">$50.00</span>
+                      </div>
+                      <div class="pricing-row">
+                        <span>Tax (8%)</span>
+                        <span id="summary-tax">$4.00</span>
+                      </div>
+                      <div class="pricing-row total">
+                        <span>Total</span>
+                        <span id="summary-total">$54.00</span>
+                      </div>
+                      <div class="pricing-row" style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--border-color);">
+                        <span>Deposit</span>
+                        <span id="summary-deposit">$0.00</span>
+                      </div>
+                      <div class="pricing-row" style="font-weight: 600; color: var(--primary);">
+                        <span>Balance Due</span>
+                        <span id="summary-balance">$54.00</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 5: Review -->
+              <div class="wizard-step" data-step="5">
+                <h2 style="margin-bottom: var(--space-5);">Review & Submit</h2>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+                  <div class="review-section">
+                    <h4>👤 Customer</h4>
+                    <div id="review-customer"></div>
+                  </div>
+                  <div class="review-section">
+                    <h4>📱 Device</h4>
+                    <div id="review-device"></div>
+                  </div>
+                  <div class="review-section">
+                    <h4>🔧 Issue</h4>
+                    <div id="review-issue"></div>
+                  </div>
+                  <div class="review-section">
+                    <h4>💰 Pricing</h4>
+                    <div id="review-pricing"></div>
+                  </div>
+                </div>
+
+                <div style="margin-top: var(--space-5);">
+                  <label class="form-label">Customer Signature</label>
+                  <div class="signature-pad-container">
+                    <canvas id="signature-pad" class="signature-pad"></canvas>
+                    <div style="margin-top: var(--space-3);">
+                      <button type="button" class="btn btn-secondary btn-sm" id="clear-signature">Clear</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: var(--space-4);">
+                  <label style="display: flex; align-items: center; gap: var(--space-2); cursor: pointer;">
+                    <input type="checkbox" id="terms-agree">
+                    <span>Customer agrees to repair terms and conditions</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="wizard-footer">
+              <button type="button" class="btn btn-secondary" id="prev-btn" style="visibility: hidden;">← Previous</button>
+              <div>
+                <button type="button" class="btn btn-secondary" id="save-draft-btn">Save Draft</button>
+                <button type="button" class="btn btn-primary" id="next-btn">Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/pos-data.js"></script>
+  <script src="js/pos-core.js"></script>
+  <script>
+    // Ticket data being built
+    let ticketData = {
+      customer: null,
+      device: { type: 'smartphone' },
+      issue: { symptoms: [], checklist: {} },
+      repair: { notes: [] },
+      parts: [],
+      pricing: { laborCost: 50, partsCost: 0, discount: 0, taxRate: 0.08, deposit: 0 }
+    };
+
+    let currentStep = 1;
+    const totalSteps = 5;
+    let selectedParts = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      setupCustomerSearch();
+      setupDeviceTypes();
+      setupSymptomChips();
+      setupChecklist();
+      loadPartsInventory();
+      setupPricingListeners();
+      setupSignaturePad();
+      setupNavigation();
+      updatePricingSummary();
+    });
+
+    // Navigation
+    function setupNavigation() {
+      document.getElementById('next-btn').addEventListener('click', () => {
+        if (validateStep(currentStep)) {
+          if (currentStep < totalSteps) {
+            goToStep(currentStep + 1);
+          } else {
+            submitTicket();
+          }
+        }
+      });
+
+      document.getElementById('prev-btn').addEventListener('click', () => {
+        if (currentStep > 1) {
+          goToStep(currentStep - 1);
+        }
+      });
+
+      document.querySelectorAll('.step-nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const step = parseInt(item.dataset.step);
+          if (step < currentStep || validateStep(currentStep)) {
+            goToStep(step);
+          }
+        });
+      });
+    }
+
+    function goToStep(step) {
+      // Mark previous steps as completed
+      for (let i = 1; i < step; i++) {
+        document.querySelector(`.step-nav-item[data-step="${i}"]`).classList.add('completed');
+      }
+
+      // Update current step
+      currentStep = step;
+
+      // Update nav
+      document.querySelectorAll('.step-nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelector(`.step-nav-item[data-step="${step}"]`).classList.add('active');
+
+      // Show step content
+      document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+      document.querySelector(`.wizard-step[data-step="${step}"]`).classList.add('active');
+
+      // Update buttons
+      document.getElementById('prev-btn').style.visibility = step === 1 ? 'hidden' : 'visible';
+      document.getElementById('next-btn').textContent = step === totalSteps ? '✓ Create Ticket' : 'Next →';
+
+      // Update review if on last step
+      if (step === 5) {
+        updateReview();
+      }
+    }
+
+    function validateStep(step) {
+      if (step === 1) {
+        const name = document.getElementById('customer-name').value;
+        const phone = document.getElementById('customer-phone').value;
+        if (!ticketData.customer && (!name || !phone)) {
+          POS.error('Please enter customer name and phone');
+          return false;
+        }
+        if (!ticketData.customer) {
+          ticketData.customer = {
+            id: 'CUST-' + Date.now(),
+            name: name,
+            phone: phone,
+            email: document.getElementById('customer-email').value,
+            address: document.getElementById('customer-address').value
+          };
+        }
+      }
+      if (step === 2) {
+        const brand = document.getElementById('device-brand').value;
+        const model = document.getElementById('device-model').value;
+        if (!brand || !model) {
+          POS.error('Please enter device brand and model');
+          return false;
+        }
+        ticketData.device.brand = brand;
+        ticketData.device.model = model;
+        ticketData.device.color = document.getElementById('device-color').value;
+        ticketData.device.imei = document.getElementById('device-imei').value;
+        ticketData.device.passcode = document.getElementById('device-passcode').value;
+        ticketData.device.condition = document.getElementById('device-condition').value;
+      }
+      if (step === 3) {
+        const description = document.getElementById('issue-description').value;
+        if (!description) {
+          POS.error('Please enter the customer\'s issue description');
+          return false;
+        }
+        ticketData.issue.customerDescription = description;
+        ticketData.issue.techNotes = document.getElementById('tech-notes').value;
+      }
+      if (step === 4) {
+        ticketData.repair.type = document.getElementById('repair-type').value;
+        ticketData.repair.estimatedTime = parseInt(document.getElementById('est-time').value);
+        ticketData.parts = selectedParts;
+        ticketData.pricing.laborCost = parseFloat(document.getElementById('labor-cost').value) || 0;
+        ticketData.pricing.discount = parseFloat(document.getElementById('discount').value) || 0;
+        ticketData.pricing.deposit = parseFloat(document.getElementById('deposit').value) || 0;
+        calculateTotal();
+      }
+      return true;
+    }
+
+    // Customer Search
+    function setupCustomerSearch() {
+      const searchInput = document.getElementById('customer-search');
+      const resultsDiv = document.getElementById('customer-results');
+
+      searchInput.addEventListener('input', POS.debounce((e) => {
+        const query = e.target.value;
+        if (query.length < 2) {
+          resultsDiv.classList.remove('open');
+          return;
+        }
+
+        const customers = POS_DATA.searchCustomers(query);
+        if (customers.length === 0) {
+          resultsDiv.innerHTML = '<div class="customer-result">No customers found</div>';
+        } else {
+          resultsDiv.innerHTML = customers.map(c => `
+            <div class="customer-result" data-id="${c.id}">
+              <strong>${c.name}</strong><br>
+              <small>${c.phone} • ${c.email || 'No email'}</small>
+            </div>
+          `).join('');
+        }
+        resultsDiv.classList.add('open');
+      }, 200));
+
+      resultsDiv.addEventListener('click', (e) => {
+        const result = e.target.closest('.customer-result');
+        if (result && result.dataset.id) {
+          selectCustomer(result.dataset.id);
+          resultsDiv.classList.remove('open');
+          searchInput.value = '';
+        }
+      });
+
+      // Close on outside click
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#customer-search-container')) {
+          resultsDiv.classList.remove('open');
+        }
+      });
+    }
+
+    function selectCustomer(customerId) {
+      const customer = POS_DATA.getCustomer(customerId);
+      if (customer) {
+        ticketData.customer = customer;
+        document.getElementById('selected-customer-display').style.display = 'block';
+        document.getElementById('selected-customer-display').innerHTML = `
+          <div class="selected-customer">
+            <div class="avatar">${customer.name.charAt(0)}</div>
+            <div>
+              <strong>${customer.name}</strong><br>
+              <small>${customer.phone} • ${customer.email || 'No email'}</small>
+            </div>
+            <button type="button" class="btn btn-ghost" onclick="clearSelectedCustomer()">✕</button>
+          </div>
+        `;
+        // Clear new customer form
+        document.getElementById('customer-name').value = '';
+        document.getElementById('customer-phone').value = '';
+        document.getElementById('customer-email').value = '';
+        document.getElementById('customer-address').value = '';
+      }
+    }
+
+    function clearSelectedCustomer() {
+      ticketData.customer = null;
+      document.getElementById('selected-customer-display').style.display = 'none';
+      document.getElementById('selected-customer-display').innerHTML = '';
+    }
+
+    // Device Types
+    function setupDeviceTypes() {
+      document.querySelectorAll('.device-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.device-type-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          ticketData.device.type = btn.dataset.type;
+        });
+      });
+
+      // IMEI Check
+      document.getElementById('check-imei-btn').addEventListener('click', async () => {
+        const imei = document.getElementById('device-imei').value;
+        if (!imei) {
+          POS.warning('Please enter an IMEI number');
+          return;
+        }
+        
+        const resultDiv = document.getElementById('imei-result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = '<p>Checking IMEI...</p>';
+        
+        try {
+          const response = await fetch('/api/imei-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imei, checkType: 'basic' })
+          });
+          const data = await response.json();
+          
+          if (data.valid !== false) {
+            resultDiv.innerHTML = `
+              <p><strong>✅ IMEI Valid</strong></p>
+              <p>Device: ${data.deviceName || 'Unknown'}</p>
+              <p>Model: ${data.modelName || 'Unknown'}</p>
+            `;
+            if (data.modelName) {
+              document.getElementById('device-model').value = data.modelName;
+            }
+          } else {
+            resultDiv.style.background = 'var(--danger-light)';
+            resultDiv.innerHTML = '<p><strong>❌ Invalid IMEI</strong></p>';
+          }
+        } catch (err) {
+          resultDiv.style.background = 'var(--warning-light)';
+          resultDiv.innerHTML = '<p>Could not check IMEI. You can continue without verification.</p>';
+        }
+      });
+    }
+
+    // Symptom Chips
+    function setupSymptomChips() {
+      document.querySelectorAll('.symptom-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          chip.classList.toggle('active');
+          const symptom = chip.dataset.symptom;
+          if (chip.classList.contains('active')) {
+            ticketData.issue.symptoms.push(symptom);
+          } else {
+            ticketData.issue.symptoms = ticketData.issue.symptoms.filter(s => s !== symptom);
+          }
+        });
+      });
+    }
+
+    // Checklist
+    function setupChecklist() {
+      document.querySelectorAll('.checklist-item').forEach(item => {
+        const checkName = item.dataset.check;
+        ticketData.issue.checklist[checkName] = 'unknown';
+
+        item.querySelectorAll('.checklist-toggle').forEach(toggle => {
+          toggle.addEventListener('click', () => {
+            // Clear all active classes
+            item.querySelectorAll('.checklist-toggle').forEach(t => {
+              t.classList.remove('active-yes', 'active-no', 'active-unknown');
+            });
+            
+            const value = toggle.dataset.value;
+            toggle.classList.add(`active-${value}`);
+            ticketData.issue.checklist[checkName] = value;
+          });
+        });
+      });
+    }
+
+    // Parts Inventory
+    function loadPartsInventory() {
+      const inventory = POS_DATA.getInventory();
+      const partsList = document.getElementById('parts-list');
+      
+      if (inventory.length === 0) {
+        partsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">No parts in inventory</div>';
+        return;
+      }
+
+      partsList.innerHTML = inventory.map(part => `
+        <div class="part-item" data-id="${part.id}">
+          <input type="checkbox" style="width: 18px; height: 18px;">
+          <div style="flex: 1;">
+            <strong>${part.name}</strong>
+            <div style="font-size: 12px; color: var(--text-muted);">Stock: ${part.stock || 0}</div>
+          </div>
+          <div style="font-family: var(--font-mono); font-weight: 600;">$${part.price?.toFixed(2)}</div>
+        </div>
+      `).join('');
+
+      partsList.querySelectorAll('.part-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const checkbox = item.querySelector('input');
+          checkbox.checked = !checkbox.checked;
+          item.classList.toggle('selected', checkbox.checked);
+
+          const partId = item.dataset.id;
+          if (checkbox.checked) {
+            const part = POS_DATA.getPart(partId);
+            selectedParts.push({ ...part, quantity: 1 });
+          } else {
+            selectedParts = selectedParts.filter(p => p.id !== partId);
+          }
+          updatePricingSummary();
+        });
+      });
+    }
+
+    // Pricing
+    function setupPricingListeners() {
+      ['labor-cost', 'discount', 'deposit'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updatePricingSummary);
+      });
+    }
+
+    function updatePricingSummary() {
+      const laborCost = parseFloat(document.getElementById('labor-cost').value) || 0;
+      const discount = parseFloat(document.getElementById('discount').value) || 0;
+      const deposit = parseFloat(document.getElementById('deposit').value) || 0;
+      const partsCost = selectedParts.reduce((sum, p) => sum + (p.price || 0) * (p.quantity || 1), 0);
+      
+      const subtotal = laborCost + partsCost - discount;
+      const tax = subtotal * 0.08;
+      const total = subtotal + tax;
+      const balance = total - deposit;
+
+      document.getElementById('summary-parts').textContent = POS.formatCurrency(partsCost);
+      document.getElementById('summary-labor').textContent = POS.formatCurrency(laborCost);
+      document.getElementById('summary-discount').textContent = '-' + POS.formatCurrency(discount);
+      document.getElementById('summary-subtotal').textContent = POS.formatCurrency(subtotal);
+      document.getElementById('summary-tax').textContent = POS.formatCurrency(tax);
+      document.getElementById('summary-total').textContent = POS.formatCurrency(total);
+      document.getElementById('summary-deposit').textContent = POS.formatCurrency(deposit);
+      document.getElementById('summary-balance').textContent = POS.formatCurrency(balance);
+
+      ticketData.pricing.partsCost = partsCost;
+      ticketData.pricing.tax = tax;
+      ticketData.pricing.total = total;
+    }
+
+    function calculateTotal() {
+      const { laborCost, partsCost, discount, taxRate, deposit } = ticketData.pricing;
+      const subtotal = laborCost + partsCost - discount;
+      const tax = subtotal * taxRate;
+      const total = subtotal + tax;
+      
+      ticketData.pricing.tax = tax;
+      ticketData.pricing.total = total;
+      ticketData.pricing.balanceDue = total - deposit;
+    }
+
+    // Signature Pad
+    function setupSignaturePad() {
+      const canvas = document.getElementById('signature-pad');
+      const ctx = canvas.getContext('2d');
+      let isDrawing = false;
+
+      // Set canvas size
+      canvas.width = canvas.offsetWidth;
+      canvas.height = 150;
+
+      canvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(e.offsetX, e.offsetY);
+      });
+
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
+      });
+
+      canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        isDrawing = false;
+      });
+
+      // Touch support
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isDrawing) return;
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        ctx.stroke();
+      });
+
+      canvas.addEventListener('touchend', () => {
+        isDrawing = false;
+      });
+
+      document.getElementById('clear-signature').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      });
+    }
+
+    // Review
+    function updateReview() {
+      document.getElementById('review-customer').innerHTML = `
+        <p><strong>${ticketData.customer?.name || 'Unknown'}</strong></p>
+        <p>${ticketData.customer?.phone || ''}</p>
+        <p>${ticketData.customer?.email || ''}</p>
+      `;
+
+      document.getElementById('review-device').innerHTML = `
+        <p><strong>${ticketData.device?.brand} ${ticketData.device?.model}</strong></p>
+        <p>${ticketData.device?.color || ''} • ${ticketData.device?.condition || ''}</p>
+        <p>IMEI: ${ticketData.device?.imei || 'N/A'}</p>
+      `;
+
+      document.getElementById('review-issue').innerHTML = `
+        <p>${ticketData.issue?.customerDescription || ''}</p>
+        <p>Repair: ${ticketData.repair?.type?.replace(/_/g, ' ') || ''}</p>
+        <p>Est. Time: ${ticketData.repair?.estimatedTime || 30} min</p>
+      `;
+
+      document.getElementById('review-pricing').innerHTML = `
+        <p>Total: <strong>${POS.formatCurrency(ticketData.pricing?.total)}</strong></p>
+        <p>Deposit: ${POS.formatCurrency(ticketData.pricing?.deposit)}</p>
+        <p>Balance: <strong>${POS.formatCurrency(ticketData.pricing?.total - ticketData.pricing?.deposit)}</strong></p>
+      `;
+    }
+
+    // Submit
+    function submitTicket() {
+      if (!document.getElementById('terms-agree').checked) {
+        POS.error('Please confirm customer agrees to terms');
+        return;
+      }
+
+      // Get signature
+      const canvas = document.getElementById('signature-pad');
+      ticketData.approval = {
+        estimateApproved: true,
+        approvedAt: new Date().toISOString(),
+        approvalMethod: 'in_person',
+        signature: canvas.toDataURL()
+      };
+
+      // Set status
+      ticketData.status = 'new';
+      ticketData.priority = 'normal';
+
+      // Save customer if new
+      if (ticketData.customer && !ticketData.customer.id.startsWith('CUST-')) {
+        POS_DATA.saveCustomer(ticketData.customer);
+      }
+
+      // Save ticket
+      const savedTicket = POS_DATA.saveTicket(ticketData);
+      POS_DATA.addActivity(savedTicket.id, 'Ticket created', 'System');
+
+      POS.success('Ticket created successfully!');
+      
+      setTimeout(() => {
+        window.location.href = `ticket-view.html?id=${savedTicket.id}`;
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
+
