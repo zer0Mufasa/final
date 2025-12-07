@@ -26,7 +26,8 @@
     .sidebar-logo img{width:26px;height:26px;filter:brightness(10)}
     .sidebar-title{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:linear-gradient(135deg,var(--lavender-400),var(--cyan-400));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;opacity:0;transition:opacity 0.2s 0.1s}
     .sidebar:hover .sidebar-title{opacity:1}
-    .sidebar-nav{flex:1;padding:16px 14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+    .sidebar-nav{flex:1;padding:16px 14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
+    .sidebar-nav::-webkit-scrollbar{display:none}
     .nav-section{margin-bottom:16px}
     .nav-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:8px 14px;white-space:nowrap;opacity:0;transition:opacity 0.2s}
     .sidebar:hover .nav-section-title{opacity:1}
