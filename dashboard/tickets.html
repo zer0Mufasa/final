@@ -131,8 +131,8 @@
     /* SLIDE-IN DETAIL PANEL */
     .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:all 0.3s;z-index:200}
     .detail-overlay.open{opacity:1;visibility:visible}
-    .detail-panel{position:fixed;top:0;right:-500px;width:500px;height:100vh;background:var(--surface-1);border-left:1px solid var(--border-subtle);display:flex;flex-direction:column;transition:right 0.4s cubic-bezier(0.4,0,0.2,1);z-index:201;box-shadow:-20px 0 60px rgba(0,0,0,0.5)}
-    .detail-panel.open{right:0}
+    .detail-panel{position:fixed;top:0;right:0;width:500px;height:100vh;background:var(--surface-1);border-left:1px solid var(--border-subtle);display:flex;flex-direction:column;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1),visibility 0.4s;z-index:201;box-shadow:-20px 0 60px rgba(0,0,0,0.5);transform:translateX(100%);visibility:hidden}
+    .detail-panel.open{transform:translateX(0);visibility:visible}
     .detail-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-subtle);background:var(--surface-2)}
     .detail-header h2{font-family:var(--font-tech);font-size:1.25rem}
     .detail-actions{display:flex;gap:8px}
