@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets | Fixology POS</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--surface-5:#232329;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.5;display:flex;min-height:100vh;overflow:hidden}
+    
+    /* Sidebar */
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border-subtle)}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .sidebar-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:9px;font-weight:700;padding:3px 6px;background:var(--lavender-600);border-radius:4px;color:white;margin-left:auto}
+    .sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+    .sidebar-section{margin-bottom:20px}
+    .sidebar-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:8px 12px;margin-bottom:4px}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:13px;font-weight:500;color:var(--text-secondary);border-radius:10px;margin-bottom:2px;transition:all 0.15s;text-decoration:none}
+    .sidebar-link:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-link.active{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .sidebar-link-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-link-badge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;background:var(--lavender-600);border-radius:10px;color:white}
+    .sidebar-link-badge.warning{background:var(--warning)}
+    .sidebar-divider{height:1px;background:var(--border-subtle);margin:12px 0}
+    .sidebar-footer{padding:12px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-3);border-radius:12px}
+    .sidebar-user-avatar{width:40px;height:40px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+    .sidebar-user-info{flex:1;min-width:0}
+    .sidebar-user-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-user-plan{font-size:11px;color:var(--lavender-400)}
+
+    /* Main */
+    .main{flex:1;margin-left:260px;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    
+    /* Header */
+    .header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--surface-2);border-bottom:1px solid var(--border-subtle);flex-shrink:0}
+    .header-left{display:flex;align-items:center;gap:20px}
+    .header-title{font-family:var(--font-tech);font-size:1.375rem;font-weight:700}
+    .header-stats{display:flex;gap:20px}
+    .header-stat{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary)}
+    .header-stat strong{color:var(--text-primary);font-weight:600}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .search-box{position:relative}
+    .search-box input{width:240px;padding:10px 14px 10px 38px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:13px}
+    .search-box input::placeholder{color:var(--text-muted)}
+    .search-box input:focus{outline:none;border-color:rgba(139,92,246,0.5)}
+    .search-box-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-muted)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,92,246,0.35)}
+    .btn-secondary{background:var(--surface-4);color:var(--text-primary);border:1px solid var(--border-default)}
+
+    /* Kanban Board */
+    .kanban{display:flex;flex:1;overflow-x:auto;padding:20px;gap:16px}
+    .kanban-column{min-width:300px;width:300px;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;display:flex;flex-direction:column;max-height:calc(100vh - 140px)}
+    .kanban-column-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border-subtle);flex-shrink:0}
+    .kanban-column-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+    .kanban-column-count{font-size:12px;font-weight:700;padding:4px 10px;background:var(--surface-4);border-radius:20px;color:var(--text-secondary)}
+    .kanban-column-add{width:28px;height:28px;background:var(--surface-4);border:none;border-radius:8px;color:var(--text-muted);font-size:16px;cursor:pointer;transition:all 0.15s}
+    .kanban-column-add:hover{background:var(--surface-5);color:var(--text-primary)}
+    .kanban-cards{flex:1;overflow-y:auto;padding:12px}
+    
+    /* Status Colors */
+    .status-checkin .kanban-column-title{color:var(--cyan-400)}
+    .status-checkin .kanban-column-count{background:rgba(34,211,238,0.15);color:var(--cyan-400)}
+    .status-diag .kanban-column-title{color:var(--lavender-400)}
+    .status-diag .kanban-column-count{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .status-waiting .kanban-column-title{color:var(--warning)}
+    .status-waiting .kanban-column-count{background:rgba(245,158,11,0.15);color:var(--warning)}
+    .status-repair .kanban-column-title{color:#60A5FA}
+    .status-repair .kanban-column-count{background:rgba(96,165,250,0.15);color:#60A5FA}
+    .status-ready .kanban-column-title{color:var(--success)}
+    .status-ready .kanban-column-count{background:rgba(34,197,94,0.15);color:var(--success)}
+    .status-pickup .kanban-column-title{color:#F472B6}
+    .status-pickup .kanban-column-count{background:rgba(244,114,182,0.15);color:#F472B6}
+
+    /* Ticket Card */
+    .ticket-card{background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:all 0.15s}
+    .ticket-card:hover{border-color:var(--border-default);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+    .ticket-card.dragging{opacity:0.5;transform:rotate(3deg)}
+    .ticket-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+    .ticket-id{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--lavender-400)}
+    .ticket-priority{width:8px;height:8px;border-radius:50%}
+    .ticket-priority.high{background:var(--danger)}
+    .ticket-priority.medium{background:var(--warning)}
+    .ticket-priority.low{background:var(--success)}
+    .ticket-customer{font-size:14px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ticket-device{font-size:12px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .ticket-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+    .ticket-tag{font-size:10px;font-weight:500;padding:3px 8px;background:var(--surface-4);border-radius:4px;color:var(--text-secondary)}
+    .ticket-tag.urgent{background:rgba(239,68,68,0.15);color:var(--danger)}
+    .ticket-tag.vip{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .ticket-footer{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--border-subtle)}
+    .ticket-amount{font-family:var(--font-mono);font-size:14px;font-weight:700}
+    .ticket-time{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px}
+    .ticket-assignee{width:24px;height:24px;background:var(--surface-5);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600}
+
+    /* Empty State */
+    .empty-column{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;text-align:center;color:var(--text-muted)}
+    .empty-icon{font-size:32px;margin-bottom:12px;opacity:0.5}
+    .empty-text{font-size:13px}
+
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:200}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:20px;width:100%;max-width:600px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-subtle)}
+    .modal-title{font-family:var(--font-tech);font-size:1.25rem;font-weight:700}
+    .modal-close{width:36px;height:36px;background:var(--surface-4);border:none;border-radius:10px;color:var(--text-secondary);font-size:18px;cursor:pointer}
+    .modal-close:hover{background:var(--surface-5);color:var(--text-primary)}
+    .modal-body{flex:1;overflow-y:auto;padding:24px}
+    .modal-footer{padding:16px 24px;border-top:1px solid var(--border-subtle);display:flex;justify-content:flex-end;gap:12px}
+
+    /* Form */
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    .form-group{margin-bottom:16px}
+    .form-label{display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px}
+    .form-input{width:100%;padding:12px 16px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px}
+    .form-input:focus{outline:none;border-color:rgba(139,92,246,0.5)}
+    .form-textarea{min-height:100px;resize:vertical}
+    .form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12'%3E%3Cpath fill='%23a1a1aa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}}
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+                <span>Fixology</span>
+                <span class="sidebar-badge">POS</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main</div>
+                <a href="index.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+                <a href="tickets.html" class="sidebar-link active"><span class="sidebar-link-icon">🎫</span>Tickets<span class="sidebar-link-badge">12</span></a>
+                <a href="customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
+                <a href="inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory</a>
+                <a href="invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Intelligence</div>
+                <a href="diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>AI Diagnostics</a>
+                <a href="imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
+                <a href="autopilot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span>Autopilot</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Operations</div>
+                <a href="calendar.html" class="sidebar-link"><span class="sidebar-link-icon">📅</span>Calendar</a>
+                <a href="timeclock.html" class="sidebar-link"><span class="sidebar-link-icon">⏱️</span>Time Clock</a>
+                <a href="team.html" class="sidebar-link"><span class="sidebar-link-icon">👔</span>Team</a>
+            </div>
+            <div class="sidebar-divider"></div>
+            <a href="settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar" id="user-avatar">F</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="shop-name">Loading...</div>
+                    <div class="sidebar-user-plan" id="shop-plan">Free Plan</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="header-title">🎫 Tickets</h1>
+                <div class="header-stats">
+                    <div class="header-stat"><strong id="total-tickets">12</strong> total</div>
+                    <div class="header-stat"><strong id="today-revenue">$1,247</strong> today</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <span class="search-box-icon">🔍</span>
+                    <input type="text" placeholder="Search tickets..." id="search-input">
+                </div>
+                <button class="btn btn-secondary">📥 Import</button>
+                <button class="btn btn-primary" onclick="openNewTicketModal()">+ New Ticket</button>
+            </div>
+        </header>
+
+        <!-- Kanban Board -->
+        <div class="kanban" id="kanban-board">
+            <!-- Check-in Column -->
+            <div class="kanban-column status-checkin" data-status="checkin">
+                <div class="kanban-column-header">
+                    <div class="kanban-column-title">📥 Check-in</div>
+                    <span class="kanban-column-count">2</span>
+                    <button class="kanban-column-add" onclick="openNewTicketModal('checkin')">+</button>
+                </div>
+                <div class="kanban-cards">
+                    <div class="ticket-card" draggable="true" onclick="openTicketDetail('FX-1251')">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1251</span>
+                            <span class="ticket-priority high"></span>
+                        </div>
+                        <div class="ticket-customer">Jessica Martinez</div>
+                        <div class="ticket-device">📱 iPhone 15 Pro • Screen</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag urgent">Urgent</span>
+                            <span class="ticket-tag">Walk-in</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$299</span>
+                            <span class="ticket-time">⏱️ 15m ago</span>
+                        </div>
+                    </div>
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1250</span>
+                            <span class="ticket-priority medium"></span>
+                        </div>
+                        <div class="ticket-customer">Robert Chen</div>
+                        <div class="ticket-device">💻 MacBook Air M2 • Keyboard</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag">Appointment</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$179</span>
+                            <span class="ticket-time">⏱️ 1h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagnosis Column -->
+            <div class="kanban-column status-diag" data-status="diagnosis">
+                <div class="kanban-column-header">
+                    <div class="kanban-column-title">🧠 Diagnosis</div>
+                    <span class="kanban-column-count">3</span>
+                    <button class="kanban-column-add">+</button>
+                </div>
+                <div class="kanban-cards">
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1249</span>
+                            <span class="ticket-priority high"></span>
+                        </div>
+                        <div class="ticket-customer">Marcus Johnson</div>
+                        <div class="ticket-device">📱 iPhone 14 Pro Max • Screen + Battery</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag vip">VIP</span>
+                            <span class="ticket-tag">AI Diagnosed</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$349</span>
+                            <span class="ticket-time">⏱️ 2h ago</span>
+                        </div>
+                    </div>
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1248</span>
+                            <span class="ticket-priority low"></span>
+                        </div>
+                        <div class="ticket-customer">Sarah Williams</div>
+                        <div class="ticket-device">🎮 PS5 • HDMI Port</div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$175</span>
+                            <span class="ticket-time">⏱️ 3h ago</span>
+                        </div>
+                    </div>
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1247</span>
+                            <span class="ticket-priority medium"></span>
+                        </div>
+                        <div class="ticket-customer">David Park</div>
+                        <div class="ticket-device">📱 Samsung S24 Ultra • Charging</div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$89</span>
+                            <span class="ticket-time">⏱️ 4h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waiting for Parts Column -->
+            <div class="kanban-column status-waiting" data-status="waiting">
+                <div class="kanban-column-header">
+                    <div class="kanban-column-title">📦 Waiting Parts</div>
+                    <span class="kanban-column-count">2</span>
+                    <button class="kanban-column-add">+</button>
+                </div>
+                <div class="kanban-cards">
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1244</span>
+                            <span class="ticket-priority medium"></span>
+                        </div>
+                        <div class="ticket-customer">Emily Davis</div>
+                        <div class="ticket-device">📱 iPhone 13 • Back Glass</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag">ETA: Tomorrow</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$129</span>
+                            <span class="ticket-time">⏱️ 1d ago</span>
+                        </div>
+                    </div>
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1241</span>
+                            <span class="ticket-priority low"></span>
+                        </div>
+                        <div class="ticket-customer">Michael Brown</div>
+                        <div class="ticket-device">💻 Dell XPS 15 • Display</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag">ETA: 3 days</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$399</span>
+                            <span class="ticket-time">⏱️ 2d ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In Repair Column -->
+            <div class="kanban-column status-repair" data-status="repair">
+                <div class="kanban-column-header">
+                    <div class="kanban-column-title">🔧 In Repair</div>
+                    <span class="kanban-column-count">2</span>
+                    <button class="kanban-column-add">+</button>
+                </div>
+                <div class="kanban-cards">
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1246</span>
+                            <span class="ticket-priority high"></span>
+                        </div>
+                        <div class="ticket-customer">Amanda Torres</div>
+                        <div class="ticket-device">📱 iPhone 14 • Screen + Face ID</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag urgent">Rush</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$329</span>
+                            <span class="ticket-time">⏱️ Started 45m ago</span>
+                        </div>
+                    </div>
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1245</span>
+                            <span class="ticket-priority medium"></span>
+                        </div>
+                        <div class="ticket-customer">Kevin Lee</div>
+                        <div class="ticket-device">🎮 Nintendo Switch • Joycon Drift</div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$59</span>
+                            <span class="ticket-time">⏱️ Started 2h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ready for Pickup Column -->
+            <div class="kanban-column status-ready" data-status="ready">
+                <div class="kanban-column-header">
+                    <div class="kanban-column-title">✅ Ready</div>
+                    <span class="kanban-column-count">2</span>
+                    <button class="kanban-column-add">+</button>
+                </div>
+                <div class="kanban-cards">
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1243</span>
+                            <span class="ticket-priority low"></span>
+                        </div>
+                        <div class="ticket-customer">Lisa Anderson</div>
+                        <div class="ticket-device">📱 iPhone 12 • Battery</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag">Notified</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$79</span>
+                            <span class="ticket-time">⏱️ Ready 1h ago</span>
+                        </div>
+                    </div>
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1242</span>
+                            <span class="ticket-priority low"></span>
+                        </div>
+                        <div class="ticket-customer">James Wilson</div>
+                        <div class="ticket-device">💻 iPad Pro 11" • Screen</div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$249</span>
+                            <span class="ticket-time">⏱️ Ready 3h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed/Pickup Column -->
+            <div class="kanban-column status-pickup" data-status="completed">
+                <div class="kanban-column-header">
+                    <div class="kanban-column-title">💰 Closed</div>
+                    <span class="kanban-column-count">1</span>
+                    <button class="kanban-column-add">+</button>
+                </div>
+                <div class="kanban-cards">
+                    <div class="ticket-card" draggable="true">
+                        <div class="ticket-header">
+                            <span class="ticket-id">#FX-1240</span>
+                            <span class="ticket-priority low"></span>
+                        </div>
+                        <div class="ticket-customer">Chris Taylor</div>
+                        <div class="ticket-device">📱 Google Pixel 8 • Screen</div>
+                        <div class="ticket-tags">
+                            <span class="ticket-tag" style="background:rgba(34,197,94,0.15);color:var(--success)">Paid</span>
+                        </div>
+                        <div class="ticket-footer">
+                            <span class="ticket-amount">$199</span>
+                            <span class="ticket-time">💳 Today 2:15 PM</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- New Ticket Modal -->
+    <div class="modal-overlay" id="new-ticket-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">➕ New Ticket</h2>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Customer Name *</label>
+                        <input type="text" class="form-input" placeholder="John Doe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" class="form-input" placeholder="(555) 123-4567">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" placeholder="john@example.com">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Device Type *</label>
+                        <select class="form-input form-select">
+                            <option>Select device...</option>
+                            <option>📱 iPhone</option>
+                            <option>📱 Samsung Galaxy</option>
+                            <option>📱 Google Pixel</option>
+                            <option>💻 MacBook</option>
+                            <option>💻 Laptop (Other)</option>
+                            <option>🎮 PlayStation</option>
+                            <option>🎮 Xbox</option>
+                            <option>🎮 Nintendo Switch</option>
+                            <option>📱 iPad</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Device Model</label>
+                        <input type="text" class="form-input" placeholder="e.g. iPhone 15 Pro Max">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">IMEI / Serial (Optional)</label>
+                    <input type="text" class="form-input" placeholder="Enter IMEI or serial number">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Issue Description *</label>
+                    <textarea class="form-input form-textarea" placeholder="Describe the problem..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select class="form-input form-select">
+                            <option>Normal</option>
+                            <option>High (Rush)</option>
+                            <option>Low</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Estimated Cost</label>
+                        <input type="text" class="form-input" placeholder="$0.00">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary">🧠 AI Diagnose</button>
+                <button class="btn btn-primary" style="background:var(--success)">✓ Create Ticket</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const API_BASE = 'https://final-bice-phi.vercel.app';
+    const token = localStorage.getItem('fixology_shop_token');
+
+    if (!token) {
+        window.location.href = '../shop-login.html';
+    }
+
+    // Load shop info
+    async function loadShopInfo() {
+        try {
+            const response = await fetch(`${API_BASE}/api/shops/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.shop) {
+                document.getElementById('shop-name').textContent = data.shop.shopName || 'Your Shop';
+                document.getElementById('user-avatar').textContent = (data.shop.shopName || 'F')[0].toUpperCase();
+                const planNames = { free: 'Free Plan', basic: '🚀 Basic', pro: '💎 Pro', enterprise: '🏢 Enterprise' };
+                document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
+            }
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }
+
+    // Modal functions
+    function openNewTicketModal(status) {
+        document.getElementById('new-ticket-modal').classList.add('open');
+    }
+
+    function closeModal() {
+        document.getElementById('new-ticket-modal').classList.remove('open');
+    }
+
+    function openTicketDetail(ticketId) {
+        // In a real app, this would open a detail view
+        console.log('Opening ticket:', ticketId);
+    }
+
+    // Close modal on overlay click
+    document.getElementById('new-ticket-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // Drag and drop
+    let draggedCard = null;
+
+    document.querySelectorAll('.ticket-card').forEach(card => {
+        card.addEventListener('dragstart', function(e) {
+            draggedCard = this;
+            this.classList.add('dragging');
+        });
+
+        card.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+            draggedCard = null;
+        });
+    });
+
+    document.querySelectorAll('.kanban-cards').forEach(column => {
+        column.addEventListener('dragover', function(e) {
+            e.preventDefault();
+        });
+
+        column.addEventListener('drop', function(e) {
+            e.preventDefault();
+            if (draggedCard) {
+                this.appendChild(draggedCard);
+                updateColumnCounts();
+            }
+        });
+    });
+
+    function updateColumnCounts() {
+        document.querySelectorAll('.kanban-column').forEach(column => {
+            const count = column.querySelectorAll('.ticket-card').length;
+            column.querySelector('.kanban-column-count').textContent = count;
+        });
+    }
+
+    // Search
+    document.getElementById('search-input').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll('.ticket-card').forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(query) ? 'block' : 'none';
+        });
+    });
+
+    loadShopInfo();
+    </script>
+</body>
+</html>
+

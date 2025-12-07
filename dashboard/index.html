@@ -1,275 +1,458 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard | Fixology</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    :root {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #12121a;
-      --bg-card: rgba(255, 255, 255, 0.03);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --text-primary: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7);
-      --text-muted: rgba(255, 255, 255, 0.5);
-      --accent-purple: #a78bfa;
-      --accent-cyan: #06b6d4;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --gradient-primary: linear-gradient(135deg, #a78bfa 0%, #06b6d4 100%);
-    }
-    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Fixology POS</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-50:#f5f3ff;--lavender-100:#ede9fe;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--surface-5:#232329;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%);--gradient-glow:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(34,211,238,0.1))}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.5;display:flex;min-height:100vh}
     
-    .dashboard { display: flex; min-height: 100vh; }
+    /* Sidebar */
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border-subtle)}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .sidebar-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:9px;font-weight:700;padding:3px 6px;background:var(--lavender-600);border-radius:4px;color:white;margin-left:auto}
+    .sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+    .sidebar-section{margin-bottom:20px}
+    .sidebar-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:8px 12px;margin-bottom:4px}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:13px;font-weight:500;color:var(--text-secondary);border-radius:10px;margin-bottom:2px;transition:all 0.15s;text-decoration:none}
+    .sidebar-link:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-link.active{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .sidebar-link-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-link-badge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;background:var(--lavender-600);border-radius:10px;color:white}
+    .sidebar-link-badge.warning{background:var(--warning)}
+    .sidebar-link-badge.success{background:var(--success)}
+    .sidebar-divider{height:1px;background:var(--border-subtle);margin:12px 0}
+    .sidebar-footer{padding:12px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-3);border-radius:12px;cursor:pointer;transition:all 0.15s}
+    .sidebar-user:hover{background:var(--surface-4)}
+    .sidebar-user-avatar{width:40px;height:40px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+    .sidebar-user-info{flex:1;min-width:0}
+    .sidebar-user-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-user-plan{font-size:11px;color:var(--lavender-400)}
+    .sidebar-user-menu{font-size:16px;color:var(--text-muted)}
+
+    /* Main Content */
+    .main{flex:1;margin-left:260px;display:flex;flex-direction:column;min-height:100vh;background:var(--surface-1)}
     
-    .sidebar {
-      width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-color);
-      padding: 1.5rem; position: fixed; height: 100vh; overflow-y: auto;
-    }
-    .logo { display: flex; align-items: center; gap: 0.75rem; font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-decoration: none; margin-bottom: 2rem; }
-    .logo-icon { width: 40px; height: 40px; background: var(--gradient-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    /* Header */
+    .header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;background:var(--surface-2);border-bottom:1px solid var(--border-subtle);position:sticky;top:0;z-index:50}
+    .header-left{display:flex;align-items:center;gap:20px}
+    .header-greeting h1{font-family:var(--font-tech);font-size:1.5rem;font-weight:700;margin-bottom:2px}
+    .header-greeting p{font-size:13px;color:var(--text-muted)}
+    .header-search{position:relative}
+    .header-search input{width:280px;padding:10px 16px 10px 40px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:13px}
+    .header-search input::placeholder{color:var(--text-muted)}
+    .header-search input:focus{outline:none;border-color:rgba(139,92,246,0.5);box-shadow:0 0 0 3px rgba(139,92,246,0.1)}
+    .header-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-muted)}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .header-btn{width:40px;height:40px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all 0.15s;position:relative}
+    .header-btn:hover{background:var(--surface-4);border-color:var(--border-default)}
+    .header-btn .badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;background:var(--danger);border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,92,246,0.35)}
+    .btn-secondary{background:var(--surface-4);color:var(--text-primary);border:1px solid var(--border-default)}
+    .btn-secondary:hover{background:var(--surface-5)}
+
+    /* Content */
+    .content{flex:1;padding:24px 28px;overflow-y:auto}
     
-    .nav-section { margin-bottom: 1.5rem; }
-    .nav-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.75rem; padding: 0 0.75rem; }
-    .nav-link { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; border-radius: 10px; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; margin-bottom: 0.25rem; }
-    .nav-link:hover { background: var(--bg-card); color: var(--text-primary); }
-    .nav-link.active { background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(6, 182, 212, 0.15)); color: var(--accent-purple); border: 1px solid rgba(167, 139, 250, 0.2); }
+    /* Stats Grid */
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:20px;transition:all 0.2s}
+    .stat-card:hover{border-color:var(--border-default);transform:translateY(-2px)}
+    .stat-card.highlight{background:var(--gradient-glow);border-color:rgba(139,92,246,0.3)}
+    .stat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .stat-icon{width:44px;height:44px;background:var(--surface-4);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+    .stat-card.highlight .stat-icon{background:rgba(139,92,246,0.2)}
+    .stat-trend{font-size:12px;font-weight:600;padding:4px 8px;border-radius:6px}
+    .stat-trend.up{background:rgba(34,197,94,0.15);color:var(--success)}
+    .stat-trend.down{background:rgba(239,68,68,0.15);color:var(--danger)}
+    .stat-value{font-family:var(--font-tech);font-size:2rem;font-weight:700;margin-bottom:4px}
+    .stat-card.highlight .stat-value{background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .stat-label{font-size:13px;color:var(--text-muted)}
+
+    /* Grid Layout */
+    .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
     
-    .user-info { padding: 1rem; background: var(--bg-card); border-radius: 12px; margin-top: auto; border: 1px solid var(--border-color); }
-    .user-name { font-weight: 600; margin-bottom: 0.25rem; }
-    .user-plan { font-size: 0.8125rem; color: var(--accent-cyan); }
-    
-    .main-content { flex: 1; margin-left: 260px; padding: 2rem; }
-    
-    .page-header { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
-    .page-title { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; }
-    .page-subtitle { color: var(--text-secondary); margin-top: 0.25rem; }
-    
-    .quick-actions { display: flex; gap: 1rem; }
-    .btn { padding: 0.75rem 1.5rem; font-size: 0.9375rem; font-weight: 600; border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .btn-primary { background: var(--gradient-primary); color: white; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(167, 139, 250, 0.3); }
-    .btn-secondary { background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-primary); }
-    
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-    .stat-card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; }
-    .stat-card.highlight { background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(6, 182, 212, 0.1)); border-color: rgba(167, 139, 250, 0.3); }
-    .stat-icon { font-size: 2rem; margin-bottom: 1rem; }
-    .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .stat-label { color: var(--text-muted); font-size: 0.875rem; margin-top: 0.25rem; }
-    
-    .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
-    
-    .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px; padding: 1.5rem; }
-    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-    .card-title { font-family: 'Space Grotesk', sans-serif; font-size: 1.25rem; font-weight: 600; }
-    .card-link { color: var(--accent-purple); text-decoration: none; font-size: 0.875rem; }
-    
-    .repair-list { list-style: none; }
-    .repair-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); }
-    .repair-item:last-child { border-bottom: none; }
-    .repair-device { font-weight: 500; }
-    .repair-type { font-size: 0.875rem; color: var(--text-muted); }
-    .repair-status { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-    .status-pending { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
-    .status-progress { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
-    .status-complete { background: rgba(16, 185, 129, 0.15); color: var(--success); }
-    
-    .activity-list { list-style: none; }
-    .activity-item { display: flex; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); }
-    .activity-item:last-child { border-bottom: none; }
-    .activity-icon { width: 36px; height: 36px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .activity-text { flex: 1; }
-    .activity-title { font-size: 0.9375rem; }
-    .activity-time { font-size: 0.8125rem; color: var(--text-muted); }
-    
-    .quick-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
-    .quick-link { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.25rem; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; text-decoration: none; color: var(--text-primary); transition: all 0.2s; }
-    .quick-link:hover { border-color: var(--accent-purple); transform: translateY(-2px); }
-    .quick-link-icon { font-size: 1.5rem; }
-    .quick-link-text { font-size: 0.875rem; font-weight: 500; }
-    
-    @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .content-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 768px) { .sidebar { display: none; } .main-content { margin-left: 0; } .stats-grid { grid-template-columns: 1fr; } }
-  </style>
+    /* Cards */
+    .card{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;overflow:hidden}
+    .card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border-subtle)}
+    .card-title{font-family:var(--font-tech);font-size:1rem;font-weight:600;display:flex;align-items:center;gap:10px}
+    .card-link{font-size:13px;color:var(--lavender-400);text-decoration:none;font-weight:500}
+    .card-link:hover{text-decoration:underline}
+    .card-body{padding:16px 20px}
+
+    /* Ticket Pipeline */
+    .pipeline{display:flex;gap:4px;margin-bottom:16px}
+    .pipeline-stage{flex:1;text-align:center;padding:12px 8px;background:var(--surface-3);border-radius:8px;cursor:pointer;transition:all 0.15s}
+    .pipeline-stage:hover{background:var(--surface-4)}
+    .pipeline-stage.active{background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3)}
+    .pipeline-count{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;margin-bottom:2px}
+    .pipeline-stage.active .pipeline-count{color:var(--lavender-400)}
+    .pipeline-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+
+    /* Ticket List */
+    .ticket-list{display:flex;flex-direction:column;gap:8px}
+    .ticket-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface-3);border-radius:12px;cursor:pointer;transition:all 0.15s}
+    .ticket-item:hover{background:var(--surface-4)}
+    .ticket-avatar{width:40px;height:40px;background:var(--surface-5);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .ticket-info{flex:1;min-width:0}
+    .ticket-customer{font-size:14px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .ticket-device{font-size:12px;color:var(--text-muted)}
+    .ticket-meta{text-align:right}
+    .ticket-amount{font-family:var(--font-mono);font-size:14px;font-weight:600;margin-bottom:2px}
+    .ticket-status{font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase}
+    .status-open{background:rgba(34,211,238,0.15);color:var(--cyan-400)}
+    .status-diag{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .status-waiting{background:rgba(245,158,11,0.15);color:var(--warning)}
+    .status-ready{background:rgba(34,197,94,0.15);color:var(--success)}
+
+    /* AI Insights */
+    .ai-card{background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(34,211,238,0.05));border:1px solid rgba(139,92,246,0.2)}
+    .ai-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--lavender-400);text-transform:uppercase;letter-spacing:0.5px}
+    .ai-insights{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+    .ai-insight{display:flex;align-items:flex-start;gap:12px;padding:14px;background:rgba(0,0,0,0.2);border-radius:10px}
+    .ai-insight-icon{width:32px;height:32px;background:var(--surface-4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .ai-insight-text{flex:1}
+    .ai-insight-title{font-size:13px;font-weight:500;margin-bottom:2px}
+    .ai-insight-desc{font-size:12px;color:var(--text-muted)}
+
+    /* Quick Actions */
+    .quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .quick-action{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 16px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:12px;text-decoration:none;color:var(--text-primary);transition:all 0.15s}
+    .quick-action:hover{background:var(--surface-4);border-color:var(--lavender-500);transform:translateY(-2px)}
+    .quick-action-icon{font-size:24px}
+    .quick-action-text{font-size:13px;font-weight:500}
+
+    /* Activity Feed */
+    .activity-list{display:flex;flex-direction:column}
+    .activity-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border-subtle)}
+    .activity-item:last-child{border-bottom:none}
+    .activity-icon{width:36px;height:36px;background:var(--surface-4);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .activity-content{flex:1}
+    .activity-text{font-size:13px;margin-bottom:2px}
+    .activity-time{font-size:11px;color:var(--text-muted)}
+
+    /* Chart Placeholder */
+    .chart-container{height:200px;display:flex;align-items:flex-end;gap:8px;padding:20px 0}
+    .chart-bar{flex:1;background:var(--gradient-lavender);border-radius:4px 4px 0 0;min-height:20px;transition:all 0.3s}
+    .chart-bar:hover{opacity:0.8}
+
+    @media(max-width:1400px){.stats-grid{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr}}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.stats-grid{grid-template-columns:1fr}}
+    </style>
 </head>
 <body>
-  <div class="dashboard">
+    <!-- Sidebar -->
     <aside class="sidebar">
-      <a href="../index.html" class="logo"><span class="logo-icon">🔧</span><span>Fixology</span></a>
-      
-      <div class="nav-section">
-        <div class="nav-label">Main</div>
-        <a href="index.html" class="nav-link active">🏠 Dashboard</a>
-        <a href="repairs.html" class="nav-link">📋 Repairs</a>
-        <a href="customers.html" class="nav-link">👥 Customers</a>
-        <a href="inventory.html" class="nav-link">📦 Inventory</a>
-        <a href="invoices.html" class="nav-link">💰 Invoices</a>
-      </div>
-      
-      <div class="nav-section">
-        <div class="nav-label">Tools</div>
-        <a href="imei.html" class="nav-link">🔍 IMEI Lookup</a>
-        <a href="diagnostics.html" class="nav-link">🩺 Diagnostics</a>
-        <a href="autopilot.html" class="nav-link">🤖 AI Autopilot</a>
-      </div>
-      
-      <div class="nav-section">
-        <div class="nav-label">Business</div>
-        <a href="websites.html" class="nav-link">🌐 Website</a>
-        <a href="auto-reply.html" class="nav-link">💬 Auto Reply</a>
-        <a href="settings.html" class="nav-link">⚙️ Settings</a>
-      </div>
-      
-      <div class="nav-section">
-        <div class="nav-label">Account</div>
-        <a href="../billing.html" class="nav-link">💳 Billing</a>
-        <a href="../upgrade.html" class="nav-link">⬆️ Upgrade Plan</a>
-        <a href="#" class="nav-link" onclick="logout()">🚪 Logout</a>
-      </div>
-      
-      <div class="user-info" id="user-info">
-        <div class="user-name" id="shop-name">Loading...</div>
-        <div class="user-plan" id="shop-plan">Free Plan</div>
-      </div>
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+                <span>Fixology</span>
+                <span class="sidebar-badge">POS</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main</div>
+                <a href="index.html" class="sidebar-link active"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+                <a href="tickets.html" class="sidebar-link"><span class="sidebar-link-icon">🎫</span>Tickets<span class="sidebar-link-badge">12</span></a>
+                <a href="customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
+                <a href="inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory<span class="sidebar-link-badge warning">3</span></a>
+                <a href="invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Intelligence</div>
+                <a href="diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>AI Diagnostics</a>
+                <a href="imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
+                <a href="autopilot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span>Autopilot</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Operations</div>
+                <a href="calendar.html" class="sidebar-link"><span class="sidebar-link-icon">📅</span>Calendar</a>
+                <a href="timeclock.html" class="sidebar-link"><span class="sidebar-link-icon">⏱️</span>Time Clock</a>
+                <a href="team.html" class="sidebar-link"><span class="sidebar-link-icon">👔</span>Team</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Business</div>
+                <a href="websites.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span>Website</a>
+                <a href="auto-reply.html" class="sidebar-link"><span class="sidebar-link-icon">💬</span>Messages</a>
+                <a href="reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span>Reports</a>
+            </div>
+            <div class="sidebar-divider"></div>
+            <a href="settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
+            <a href="#" class="sidebar-link" onclick="logout()"><span class="sidebar-link-icon">🚪</span>Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user" id="sidebar-user">
+                <div class="sidebar-user-avatar" id="user-avatar">F</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="shop-name">Loading...</div>
+                    <div class="sidebar-user-plan" id="shop-plan">Free Plan</div>
+                </div>
+                <span class="sidebar-user-menu">⋮</span>
+            </div>
+        </div>
     </aside>
 
-    <main class="main-content">
-      <div class="page-header">
-        <div>
-          <h1 class="page-title">👋 Welcome back!</h1>
-          <p class="page-subtitle">Here's what's happening with your shop today</p>
-        </div>
-        <div class="quick-actions">
-          <a href="repairs.html" class="btn btn-primary">➕ New Repair</a>
-          <a href="imei.html" class="btn btn-secondary">🔍 IMEI Check</a>
-        </div>
-      </div>
-
-      <div class="stats-grid">
-        <div class="stat-card highlight">
-          <div class="stat-icon">📋</div>
-          <div class="stat-value" id="stat-repairs">0</div>
-          <div class="stat-label">Active Repairs</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">✅</div>
-          <div class="stat-value" id="stat-completed">0</div>
-          <div class="stat-label">Completed This Month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">💰</div>
-          <div class="stat-value" id="stat-revenue">$0</div>
-          <div class="stat-label">Revenue This Month</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon">🔍</div>
-          <div class="stat-value" id="stat-imei">0</div>
-          <div class="stat-label">IMEI Checks Used</div>
-        </div>
-      </div>
-
-      <div class="content-grid">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="card-title">📋 Recent Repairs</h2>
-            <a href="repairs.html" class="card-link">View All →</a>
-          </div>
-          <ul class="repair-list" id="repairs-list">
-            <li class="repair-item">
-              <div>
-                <div class="repair-device">No repairs yet</div>
-                <div class="repair-type">Start by adding your first repair</div>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <div class="card" style="margin-bottom: 1.5rem;">
-            <div class="card-header">
-              <h2 class="card-title">⚡ Quick Actions</h2>
-            </div>
-            <div class="quick-links">
-              <a href="repairs.html" class="quick-link">
-                <span class="quick-link-icon">➕</span>
-                <span class="quick-link-text">New Repair</span>
-              </a>
-              <a href="imei.html" class="quick-link">
-                <span class="quick-link-icon">🔍</span>
-                <span class="quick-link-text">IMEI Check</span>
-              </a>
-              <a href="invoices.html" class="quick-link">
-                <span class="quick-link-icon">📄</span>
-                <span class="quick-link-text">Create Invoice</span>
-              </a>
-              <a href="websites.html" class="quick-link">
-                <span class="quick-link-icon">🌐</span>
-                <span class="quick-link-text">Edit Website</span>
-              </a>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header">
-              <h2 class="card-title">🕐 Recent Activity</h2>
-            </div>
-            <ul class="activity-list" id="activity-list">
-              <li class="activity-item">
-                <div class="activity-icon">👋</div>
-                <div class="activity-text">
-                  <div class="activity-title">Welcome to Fixology!</div>
-                  <div class="activity-time">Just now</div>
+    <!-- Main Content -->
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <div class="header-greeting">
+                    <h1 id="greeting">Good morning! 👋</h1>
+                    <p id="date-display">Loading...</p>
                 </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+            </div>
+            <div class="header-right">
+                <div class="header-search">
+                    <span class="header-search-icon">🔍</span>
+                    <input type="text" placeholder="Search tickets, customers...">
+                </div>
+                <button class="header-btn" title="Notifications"><span>🔔</span><span class="badge">3</span></button>
+                <a href="tickets.html" class="btn btn-primary">+ New Ticket</a>
+            </div>
+        </header>
 
-  <script>
+        <div class="content">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card highlight">
+                    <div class="stat-header">
+                        <div class="stat-icon">🎫</div>
+                        <span class="stat-trend up">+12%</span>
+                    </div>
+                    <div class="stat-value" id="stat-active">0</div>
+                    <div class="stat-label">Active Tickets</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">✅</div>
+                        <span class="stat-trend up">+8%</span>
+                    </div>
+                    <div class="stat-value" id="stat-completed">0</div>
+                    <div class="stat-label">Completed Today</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">💰</div>
+                        <span class="stat-trend up">+23%</span>
+                    </div>
+                    <div class="stat-value" id="stat-revenue">$0</div>
+                    <div class="stat-label">Today's Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon">⏱️</div>
+                    </div>
+                    <div class="stat-value" id="stat-avgtime">0m</div>
+                    <div class="stat-label">Avg Repair Time</div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Left Column -->
+                <div>
+                    <!-- Ticket Pipeline -->
+                    <div class="card" style="margin-bottom:20px">
+                        <div class="card-header">
+                            <h2 class="card-title">🎫 Ticket Pipeline</h2>
+                            <a href="tickets.html" class="card-link">View Board →</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="pipeline">
+                                <div class="pipeline-stage active">
+                                    <div class="pipeline-count" id="pipe-checkin">0</div>
+                                    <div class="pipeline-label">Check-in</div>
+                                </div>
+                                <div class="pipeline-stage">
+                                    <div class="pipeline-count" id="pipe-diag">0</div>
+                                    <div class="pipeline-label">Diagnosis</div>
+                                </div>
+                                <div class="pipeline-stage">
+                                    <div class="pipeline-count" id="pipe-repair">0</div>
+                                    <div class="pipeline-label">In Repair</div>
+                                </div>
+                                <div class="pipeline-stage">
+                                    <div class="pipeline-count" id="pipe-ready">0</div>
+                                    <div class="pipeline-label">Ready</div>
+                                </div>
+                                <div class="pipeline-stage">
+                                    <div class="pipeline-count" id="pipe-pickup">0</div>
+                                    <div class="pipeline-label">Pickup</div>
+                                </div>
+                            </div>
+                            <div class="ticket-list" id="recent-tickets">
+                                <div class="ticket-item">
+                                    <div class="ticket-avatar">📱</div>
+                                    <div class="ticket-info">
+                                        <div class="ticket-customer">No tickets yet</div>
+                                        <div class="ticket-device">Create your first ticket to get started</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Chart -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">📈 Revenue (Last 7 Days)</h2>
+                            <a href="reports.html" class="card-link">Full Report →</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" id="revenue-chart">
+                                <div class="chart-bar" style="height:60%"></div>
+                                <div class="chart-bar" style="height:75%"></div>
+                                <div class="chart-bar" style="height:45%"></div>
+                                <div class="chart-bar" style="height:90%"></div>
+                                <div class="chart-bar" style="height:65%"></div>
+                                <div class="chart-bar" style="height:80%"></div>
+                                <div class="chart-bar" style="height:100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div>
+                    <!-- AI Insights -->
+                    <div class="card ai-card" style="margin-bottom:20px">
+                        <div class="card-header">
+                            <h2 class="card-title"><span class="ai-badge">🧠 AI Insights</span></h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="ai-insights">
+                                <div class="ai-insight">
+                                    <div class="ai-insight-icon">📊</div>
+                                    <div class="ai-insight-text">
+                                        <div class="ai-insight-title">iPhone screens are your #1 repair</div>
+                                        <div class="ai-insight-desc">68% of repairs this week. Consider bulk ordering.</div>
+                                    </div>
+                                </div>
+                                <div class="ai-insight">
+                                    <div class="ai-insight-icon">⚡</div>
+                                    <div class="ai-insight-text">
+                                        <div class="ai-insight-title">Peak hours: 2-5 PM</div>
+                                        <div class="ai-insight-desc">Schedule more staff during afternoon rush.</div>
+                                    </div>
+                                </div>
+                                <div class="ai-insight">
+                                    <div class="ai-insight-icon">💡</div>
+                                    <div class="ai-insight-text">
+                                        <div class="ai-insight-title">3 parts running low</div>
+                                        <div class="ai-insight-desc">iPhone 14 screens, Samsung S23 batteries.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card" style="margin-bottom:20px">
+                        <div class="card-header">
+                            <h2 class="card-title">⚡ Quick Actions</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="quick-grid">
+                                <a href="tickets.html" class="quick-action">
+                                    <span class="quick-action-icon">🎫</span>
+                                    <span class="quick-action-text">New Ticket</span>
+                                </a>
+                                <a href="imei.html" class="quick-action">
+                                    <span class="quick-action-icon">📱</span>
+                                    <span class="quick-action-text">IMEI Check</span>
+                                </a>
+                                <a href="invoices.html" class="quick-action">
+                                    <span class="quick-action-icon">📄</span>
+                                    <span class="quick-action-text">New Invoice</span>
+                                </a>
+                                <a href="diagnostics.html" class="quick-action">
+                                    <span class="quick-action-icon">🧠</span>
+                                    <span class="quick-action-text">AI Diagnose</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">🕐 Recent Activity</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list" id="activity-list">
+                                <div class="activity-item">
+                                    <div class="activity-icon">👋</div>
+                                    <div class="activity-content">
+                                        <div class="activity-text">Welcome to Fixology POS!</div>
+                                        <div class="activity-time">Just now</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
     const API_BASE = 'https://final-bice-phi.vercel.app';
     const token = localStorage.getItem('fixology_shop_token');
 
     if (!token) {
-      window.location.href = '../shop-login.html';
+        window.location.href = '../shop-login.html';
+    }
+
+    // Set greeting based on time
+    function setGreeting() {
+        const hour = new Date().getHours();
+        const greeting = document.getElementById('greeting');
+        if (hour < 12) greeting.textContent = 'Good morning! ☀️';
+        else if (hour < 17) greeting.textContent = 'Good afternoon! 👋';
+        else greeting.textContent = 'Good evening! 🌙';
+        
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-US', options);
     }
 
     async function loadDashboard() {
-      try {
-        const response = await fetch(`${API_BASE}/api/shops/profile`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
+        try {
+            const response = await fetch(`${API_BASE}/api/shops/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
 
-        if (data.success && data.shop) {
-          document.getElementById('shop-name').textContent = data.shop.shopName || 'Your Shop';
-          
-          const planNames = { free: 'Free Plan', basic: '🚀 Basic Plan', pro: '💎 Pro Plan', enterprise: '🏢 Enterprise' };
-          document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
-          
-          document.getElementById('stat-imei').textContent = data.shop.imeiChecksUsed || 0;
+            if (data.success && data.shop) {
+                document.getElementById('shop-name').textContent = data.shop.shopName || 'Your Shop';
+                document.getElementById('user-avatar').textContent = (data.shop.shopName || 'F')[0].toUpperCase();
+                
+                const planNames = { free: 'Free Plan', basic: '🚀 Basic', pro: '💎 Pro', enterprise: '🏢 Enterprise' };
+                document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
+            }
+        } catch (err) {
+            console.error('Error loading dashboard:', err);
         }
-      } catch (err) {
-        console.error('Error loading dashboard:', err);
-      }
     }
 
     function logout() {
-      localStorage.removeItem('fixology_shop_token');
-      localStorage.removeItem('fixology_token');
-      window.location.href = '../index.html';
+        localStorage.removeItem('fixology_shop_token');
+        localStorage.removeItem('fixology_token');
+        window.location.href = '../index.html';
     }
 
+    setGreeting();
     loadDashboard();
-  </script>
+    </script>
 </body>
 </html>
-
