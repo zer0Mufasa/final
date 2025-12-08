@@ -519,6 +519,22 @@ input, select, textarea {
   color: white;
 }
 
+.ai-chip.dynamic {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.3) 0%, rgba(249, 115, 22, 0.2) 100%);
+  border-color: #f97316;
+  color: #fb923c;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.3);
+  }
+}
+
 .checklist-hint {
   font-size: 12px;
   color: var(--text-muted);
@@ -1063,13 +1079,15 @@ input, select, textarea {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-5);
-  background: white;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   min-width: 300px;
   max-width: 450px;
   animation: slideIn 0.3s ease;
   border-left: 4px solid;
+  backdrop-filter: blur(10px);
 }
 
 @keyframes slideIn {
@@ -1083,14 +1101,30 @@ input, select, textarea {
   }
 }
 
-.toast.success { border-left-color: var(--success); }
-.toast.error { border-left-color: var(--danger); }
-.toast.warning { border-left-color: var(--warning); }
-.toast.info { border-left-color: var(--info); }
+.toast.success { 
+  border-left-color: var(--success); 
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, var(--bg-card) 100%);
+}
+.toast.error { 
+  border-left-color: var(--danger); 
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, var(--bg-card) 100%);
+}
+.toast.warning { 
+  border-left-color: var(--warning); 
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, var(--bg-card) 100%);
+}
+.toast.info { 
+  border-left-color: var(--info); 
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, var(--bg-card) 100%);
+}
 
 .toast-icon {
   font-size: 20px;
 }
+.toast.success .toast-icon { color: var(--success); }
+.toast.error .toast-icon { color: var(--danger); }
+.toast.warning .toast-icon { color: var(--warning); }
+.toast.info .toast-icon { color: var(--info); }
 
 .toast-message {
   flex: 1;
@@ -1099,11 +1133,17 @@ input, select, textarea {
 }
 
 .toast-close {
-  background: none;
+  background: rgba(255, 255, 255, 0.05);
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+.toast-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
 }
 
 /* ============================================
@@ -2387,37 +2427,128 @@ input, select, textarea {
       pricing: { laborCost: 50, partsCost: 0, discount: 0, taxRate: 0.08, deposit: 0 }
     };
 
+  // ============================================
+  // COMPREHENSIVE AI SYMPTOM DETECTION SYSTEM
+  // Covers ALL device types with extensive keywords
+  // ============================================
+  
   const aiSymptomMap = [
-    { id: 'cracked_screen', label: 'Cracked Screen', keywords: ['crack', 'cracked', 'glass', 'broken screen', 'shatter', 'smashed'] },
-    { id: 'no_power', label: "Won't Power On", keywords: ['no power', 'dead', 'wont turn on', 'wont power', 'wont start', 'not turning on', 'doesnt turn on', 'doesnt power', 'not powering', 'wont boot', 'doesnt boot'] },
-    { id: 'no_charge', label: 'Charging Issue', keywords: ['charge', 'charging', 'not charging', 'wont charge', 'doesnt charge', 'port', 'charger'] },
-    { id: 'battery_drain', label: 'Battery Drain', keywords: ['battery', 'drain', 'dies fast', 'low battery', 'draining', 'battery dead', 'battery dying'] },
-    { id: 'water_damage', label: 'Water Damage', keywords: ['water', 'liquid', 'spill', 'wet', 'dropped in water', 'toilet', 'pool'] },
-    { id: 'no_touch', label: 'Touch Not Working', keywords: ['touch', 'digitizer', 'unresponsive', 'touch not working', 'touch screen', 'ghost touch'] },
-    { id: 'no_display', label: 'Display Issue', keywords: ['display', 'screen black', 'no image', 'blank screen', 'black screen', 'no display', 'lines on screen'] },
-    { id: 'speaker', label: 'Speaker Issue', keywords: ['speaker', 'sound', 'quiet', 'no sound', 'audio', 'cant hear', 'muffled'] },
-    { id: 'microphone', label: 'Microphone Issue', keywords: ['microphone', 'mic', 'caller cannot hear', 'cant hear me', 'voice'] },
-    { id: 'camera', label: 'Camera Issue', keywords: ['camera', 'lens', 'photo', 'video', 'blurry', 'camera not working'] },
-    { id: 'buttons', label: 'Button Issue', keywords: ['button', 'volume', 'power button', 'side button', 'home button', 'stuck'] },
-    { id: 'software', label: 'Software Issue', keywords: ['os', 'software', 'slow', 'lag', 'update', 'frozen', 'freeze', 'stuck on logo', 'restart loop'] }
+    // === UNIVERSAL SYMPTOMS (All Devices) ===
+    { id: 'cracked_screen', label: 'Cracked Screen', keywords: ['crack', 'cracked', 'glass', 'broken screen', 'shatter', 'smashed', 'spider web', 'fractured', 'busted screen', 'screen damage'] },
+    { id: 'no_power', label: "Won't Power On", keywords: ['no power', 'dead', 'wont turn on', 'wont power', 'wont start', 'not turning on', 'doesnt turn on', 'doesnt power', 'not powering', 'wont boot', 'doesnt boot', 'completely dead', 'no life', 'black', 'nothing happens', 'wont respond'] },
+    { id: 'no_charge', label: 'Charging Issue', keywords: ['charge', 'charging', 'not charging', 'wont charge', 'doesnt charge', 'port', 'charger', 'slow charge', 'intermittent charging', 'loose port', 'usb port', 'type c', 'lightning'] },
+    { id: 'battery_drain', label: 'Battery Drain', keywords: ['battery', 'drain', 'dies fast', 'low battery', 'draining', 'battery dead', 'battery dying', 'poor battery', 'battery health', 'swollen', 'bulging', 'expanded'] },
+    { id: 'water_damage', label: 'Water Damage', keywords: ['water', 'liquid', 'spill', 'wet', 'dropped in water', 'toilet', 'pool', 'rain', 'moisture', 'humidity', 'condensation', 'drink spill', 'coffee', 'soda'] },
+    { id: 'no_touch', label: 'Touch Not Working', keywords: ['touch', 'digitizer', 'unresponsive', 'touch not working', 'touch screen', 'ghost touch', 'phantom touch', 'touch glitch', 'touchscreen', 'cant tap', 'wont respond to touch'] },
+    { id: 'no_display', label: 'Display Issue', keywords: ['display', 'screen black', 'no image', 'blank screen', 'black screen', 'no display', 'lines on screen', 'flickering', 'dim', 'bright spots', 'dead pixels', 'discolored', 'green tint', 'pink lines', 'vertical lines', 'horizontal lines'] },
+    { id: 'speaker', label: 'Speaker Issue', keywords: ['speaker', 'sound', 'quiet', 'no sound', 'audio', 'cant hear', 'muffled', 'distorted', 'crackling', 'buzzing', 'low volume', 'earpiece', 'loudspeaker'] },
+    { id: 'microphone', label: 'Microphone Issue', keywords: ['microphone', 'mic', 'caller cannot hear', 'cant hear me', 'voice', 'recording', 'voice memo', 'muffled voice', 'no mic'] },
+    { id: 'camera', label: 'Camera Issue', keywords: ['camera', 'lens', 'photo', 'video', 'blurry', 'camera not working', 'front camera', 'rear camera', 'selfie camera', 'flash', 'focus', 'black camera', 'camera app'] },
+    { id: 'buttons', label: 'Button Issue', keywords: ['button', 'volume', 'power button', 'side button', 'home button', 'stuck', 'not clicking', 'loose button', 'broken button', 'volume up', 'volume down', 'mute switch', 'ringer'] },
+    { id: 'software', label: 'Software Issue', keywords: ['os', 'software', 'slow', 'lag', 'update', 'frozen', 'freeze', 'stuck on logo', 'restart loop', 'boot loop', 'apple logo', 'android logo', 'keeps restarting', 'glitch', 'buggy', 'crash', 'app crash'] },
+    { id: 'wifi_issue', label: 'WiFi Issue', keywords: ['wifi', 'wi-fi', 'wireless', 'no wifi', 'wifi not working', 'cant connect', 'keeps disconnecting', 'weak signal', 'network', 'internet'] },
+    { id: 'bluetooth', label: 'Bluetooth Issue', keywords: ['bluetooth', 'bt', 'pairing', 'cant pair', 'wont connect', 'airpods', 'headphones', 'wireless'] },
+    { id: 'face_id', label: 'Face ID/Touch ID', keywords: ['face id', 'faceid', 'touch id', 'touchid', 'fingerprint', 'biometric', 'face recognition', 'not recognizing', 'sensor'] },
+    { id: 'vibration', label: 'Vibration Issue', keywords: ['vibration', 'vibrate', 'haptic', 'no vibration', 'taptic', 'motor'] },
+    { id: 'sim_issue', label: 'SIM Card Issue', keywords: ['sim', 'no sim', 'sim not detected', 'sim error', 'no service', 'no signal', 'cellular', 'mobile data', 'carrier'] },
+    
+    // === GAMING CONSOLE SPECIFIC (PS5, PS4, Xbox, Nintendo Switch) ===
+    { id: 'hdmi', label: 'HDMI Port Issue', keywords: ['hdmi', 'hdmi port', 'no video', 'no picture', 'no signal', 'tv not detecting', 'blank tv', 'hdmi broken', 'hdmi bent', 'hdmi pins', 'video output'] },
+    { id: 'disc_drive', label: 'Disc Drive Issue', keywords: ['disc', 'disk', 'cd', 'dvd', 'blu-ray', 'bluray', 'wont read', 'wont accept', 'eject', 'stuck disc', 'grinding', 'disc error', 'unrecognized disc', 'dirty disc'] },
+    { id: 'overheating', label: 'Overheating', keywords: ['overheating', 'hot', 'overheat', 'thermal', 'heat', 'fan loud', 'loud fan', 'shuts down', 'thermal paste', 'cooling', 'burns', 'too hot'] },
+    { id: 'controller', label: 'Controller Issue', keywords: ['controller', 'joystick', 'analog', 'drift', 'stick drift', 'dualshock', 'dualsense', 'joycon', 'joy-con', 'drifting', 'buttons stuck', 'controller not working', 'wont pair', 'L3', 'R3', 'thumbstick'] },
+    { id: 'power_supply', label: 'Power Supply Issue', keywords: ['power supply', 'psu', 'no power', 'clicking', 'beeping', 'power brick', 'ac adapter', 'wall plug'] },
+    { id: 'blue_light', label: 'Blue Light of Death', keywords: ['blue light', 'blod', 'pulsing blue', 'blue light of death', 'blue pulse'] },
+    { id: 'white_light', label: 'White Light of Death', keywords: ['white light', 'wlod', 'white light of death', 'solid white'] },
+    { id: 'red_ring', label: 'Red Ring/Light', keywords: ['red ring', 'rrod', 'red light', 'red ring of death', 'three red'] },
+    { id: 'gpu_issue', label: 'GPU/Graphics Issue', keywords: ['gpu', 'graphics', 'artifacts', 'visual glitch', 'screen tearing', 'graphical issues', 'corrupted graphics', 'checkerboard', 'green screen'] },
+    { id: 'ssd_hdd', label: 'Storage Issue', keywords: ['ssd', 'hdd', 'hard drive', 'storage', 'full storage', 'corrupted', 'wont save', 'save data', 'internal storage', 'memory'] },
+    { id: 'dock_issue', label: 'Dock Issue', keywords: ['dock', 'docking station', 'tv mode', 'wont dock', 'not charging in dock', 'switch dock'] },
+    { id: 'joycon_rail', label: 'Joy-Con Rail Issue', keywords: ['joycon rail', 'joy-con rail', 'rail broken', 'wont click', 'loose joycon', 'sliding off', 'not connecting'] },
+    
+    // === LAPTOP/COMPUTER SPECIFIC ===
+    { id: 'keyboard', label: 'Keyboard Issue', keywords: ['keyboard', 'keys', 'typing', 'key not working', 'sticky keys', 'double typing', 'keyboard broken', 'spacebar', 'enter key', 'backspace'] },
+    { id: 'trackpad', label: 'Trackpad Issue', keywords: ['trackpad', 'touchpad', 'mouse pad', 'cursor', 'clicking', 'gestures', 'not tracking', 'jumping cursor'] },
+    { id: 'hinge', label: 'Hinge Issue', keywords: ['hinge', 'screen hinge', 'broken hinge', 'loose screen', 'wobbly', 'wont stay open', 'cracked hinge'] },
+    { id: 'fan_issue', label: 'Fan Issue', keywords: ['fan', 'loud fan', 'fan noise', 'fan not spinning', 'cooling fan', 'noisy', 'rattling'] },
+    { id: 'motherboard', label: 'Motherboard Issue', keywords: ['motherboard', 'logic board', 'mainboard', 'dead motherboard', 'fried', 'short circuit', 'no post'] },
+    { id: 'ram_issue', label: 'RAM Issue', keywords: ['ram', 'memory', 'blue screen', 'bsod', 'random restart', 'slow computer', 'memory error'] },
+    { id: 'usb_port', label: 'USB Port Issue', keywords: ['usb', 'usb port', 'usb not working', 'loose usb', 'bent usb', 'usb a', 'usb c'] },
+    { id: 'dc_jack', label: 'DC Jack Issue', keywords: ['dc jack', 'power jack', 'charging port', 'barrel plug', 'loose connection', 'wiggle to charge'] },
+    { id: 'virus_malware', label: 'Virus/Malware', keywords: ['virus', 'malware', 'infected', 'popup', 'adware', 'ransomware', 'hacked', 'suspicious', 'trojan', 'spyware'] },
+    { id: 'data_recovery', label: 'Data Recovery', keywords: ['data', 'recovery', 'lost files', 'deleted', 'backup', 'photos', 'documents', 'retrieve', 'restore data'] },
+    
+    // === TABLET SPECIFIC ===
+    { id: 'bent_frame', label: 'Bent Frame', keywords: ['bent', 'frame', 'warped', 'curved', 'dent', 'body damage'] },
+    { id: 'apple_pencil', label: 'Apple Pencil Issue', keywords: ['apple pencil', 'pencil', 'stylus', 'pen', 'wont pair', 'not writing', 'pen not working'] },
+    { id: 'smart_connector', label: 'Smart Connector Issue', keywords: ['smart connector', 'keyboard connector', 'magic keyboard', 'smart keyboard', 'accessory not working'] },
+    
+    // === SMARTWATCH SPECIFIC ===
+    { id: 'crown', label: 'Crown/Button Issue', keywords: ['crown', 'digital crown', 'side button', 'rotating', 'stuck crown'] },
+    { id: 'heart_rate', label: 'Heart Rate Sensor', keywords: ['heart rate', 'sensor', 'health', 'ecg', 'pulse', 'not reading'] },
+    { id: 'band_issue', label: 'Band Attachment Issue', keywords: ['band', 'strap', 'watch band', 'broken lug', 'wont attach'] },
+    
+    // === EARBUDS/HEADPHONES SPECIFIC ===
+    { id: 'one_side', label: 'One Side Not Working', keywords: ['one side', 'left only', 'right only', 'one ear', 'single earbud', 'mono'] },
+    { id: 'case_issue', label: 'Charging Case Issue', keywords: ['case', 'charging case', 'case not charging', 'lid broken', 'hinge', 'case battery'] },
+    { id: 'anc_issue', label: 'Noise Cancellation Issue', keywords: ['noise cancellation', 'anc', 'noise cancel', 'transparency', 'ambient sound'] }
   ];
 
   const aiChecklistMap = [
-    { check: 'touchWorks', value: 'no', keywords: ['no touch', 'touch not working', 'touch screen', 'digitizer', 'unresponsive'] },
-    { check: 'powersOn', value: 'no', keywords: ['no power', 'dead', 'wont turn on', 'wont power', 'not turning on', 'doesnt turn on', 'wont boot'] },
-    { check: 'chargingWorks', value: 'no', keywords: ['wont charge', 'not charging', 'doesnt charge', 'charging port'] },
-    { check: 'cameraWorks', value: 'no', keywords: ['camera not working', 'camera broken'] },
-    { check: 'soundWorks', value: 'no', keywords: ['no sound', 'speaker not working', 'no audio'] },
-    { check: 'wifiWorks', value: 'no', keywords: ['wifi not working', 'no wifi', 'wifi broken'] }
+    { check: 'touchWorks', value: 'no', keywords: ['no touch', 'touch not working', 'touch screen', 'digitizer', 'unresponsive', 'ghost touch', 'phantom touch'] },
+    { check: 'powersOn', value: 'no', keywords: ['no power', 'dead', 'wont turn on', 'wont power', 'not turning on', 'doesnt turn on', 'wont boot', 'completely dead', 'nothing happens'] },
+    { check: 'chargingWorks', value: 'no', keywords: ['wont charge', 'not charging', 'doesnt charge', 'charging port', 'loose port', 'intermittent charging'] },
+    { check: 'cameraWorks', value: 'no', keywords: ['camera not working', 'camera broken', 'black camera', 'blurry camera', 'camera app crash'] },
+    { check: 'soundWorks', value: 'no', keywords: ['no sound', 'speaker not working', 'no audio', 'muffled', 'crackling', 'distorted sound'] },
+    { check: 'wifiWorks', value: 'no', keywords: ['wifi not working', 'no wifi', 'wifi broken', 'cant connect', 'keeps disconnecting'] },
+    { check: 'displayWorks', value: 'no', keywords: ['no display', 'black screen', 'no video', 'no picture', 'hdmi not working', 'blank screen'] },
+    { check: 'buttonsWork', value: 'no', keywords: ['button not working', 'stuck button', 'broken button', 'power button', 'volume button'] }
   ];
 
   const aiRepairSuggestions = [
-    { type: 'screen_replacement', keywords: ['screen', 'glass', 'display', 'digitizer'] },
-    { type: 'battery_replacement', keywords: ['battery', 'dies', 'drain'] },
-    { type: 'charging_port', keywords: ['charge', 'charging', 'port'] },
-    { type: 'water_damage', keywords: ['water', 'liquid'] },
-    { type: 'software', keywords: ['software', 'slow', 'lag'] }
+    { type: 'screen_replacement', keywords: ['screen', 'glass', 'display', 'digitizer', 'lcd', 'oled', 'cracked', 'shattered'] },
+    { type: 'battery_replacement', keywords: ['battery', 'dies', 'drain', 'swollen', 'bulging', 'poor battery'] },
+    { type: 'charging_port', keywords: ['charge', 'charging', 'port', 'usb', 'lightning', 'type c', 'dc jack'] },
+    { type: 'water_damage', keywords: ['water', 'liquid', 'spill', 'moisture'] },
+    { type: 'software', keywords: ['software', 'slow', 'lag', 'virus', 'malware', 'update', 'restore'] },
+    { type: 'hdmi_repair', keywords: ['hdmi', 'hdmi port', 'no video', 'no signal'] },
+    { type: 'disc_drive_repair', keywords: ['disc', 'disk', 'cd', 'dvd', 'blu-ray', 'wont read'] },
+    { type: 'thermal_paste', keywords: ['overheating', 'hot', 'thermal', 'fan loud', 'shuts down'] },
+    { type: 'controller_repair', keywords: ['controller', 'joystick', 'drift', 'analog stick'] },
+    { type: 'keyboard_repair', keywords: ['keyboard', 'keys', 'typing', 'key not working'] },
+    { type: 'data_recovery', keywords: ['data', 'recovery', 'files', 'photos', 'backup'] },
+    { type: 'motherboard_repair', keywords: ['motherboard', 'logic board', 'no power', 'dead'] }
   ];
+  
+  // Dynamic symptom generator - creates symptoms on the fly if not found in predefined list
+  function generateDynamicSymptom(text) {
+    const words = text.toLowerCase().split(/\s+/);
+    const issues = ['issue', 'problem', 'broken', 'not working', 'doesnt work', 'wont work', 'dead', 'damaged'];
+    const components = ['screen', 'battery', 'port', 'button', 'speaker', 'camera', 'mic', 'keyboard', 'trackpad', 
+                        'hdmi', 'usb', 'wifi', 'bluetooth', 'fan', 'hinge', 'glass', 'frame', 'dock', 'controller',
+                        'joystick', 'disc', 'drive', 'sensor', 'antenna', 'board', 'chip', 'connector'];
+    
+    for (let comp of components) {
+      if (text.toLowerCase().includes(comp)) {
+        for (let issue of issues) {
+          if (text.toLowerCase().includes(issue)) {
+            return {
+              id: `dynamic_${comp}_${Date.now()}`,
+              label: `${comp.charAt(0).toUpperCase() + comp.slice(1)} Issue`,
+              isDynamic: true
+            };
+          }
+        }
+        // If component mentioned but no explicit issue word, still flag it
+        return {
+          id: `dynamic_${comp}_${Date.now()}`,
+          label: `${comp.charAt(0).toUpperCase() + comp.slice(1)} Problem`,
+          isDynamic: true
+        };
+      }
+    }
+    return null;
+  }
 
     let currentStep = 1;
     const totalSteps = 5;
@@ -2747,11 +2878,29 @@ input, select, textarea {
       desc.addEventListener('blur', updateDescriptionIntelligence);
     }
 
+    // Store dynamically generated symptoms
+    let dynamicSymptoms = [];
+    
     function updateDescriptionIntelligence() {
       const text = (document.getElementById('issue-description').value || '').toLowerCase();
+      
+      // Find matches from predefined symptoms
       const matchedSymptoms = aiSymptomMap
         .filter(s => s.keywords.some(k => text.includes(k)))
-        .map(s => s.id);
+        .map(s => ({ id: s.id, label: s.label, isDynamic: false }));
+
+      // Try to generate dynamic symptoms for unmatched patterns
+      const dynamicSymptom = generateDynamicSymptom(text);
+      if (dynamicSymptom && !matchedSymptoms.some(m => m.label.toLowerCase() === dynamicSymptom.label.toLowerCase())) {
+        // Check if we already have this dynamic symptom
+        const existingDynamic = dynamicSymptoms.find(d => d.label === dynamicSymptom.label);
+        if (!existingDynamic) {
+          dynamicSymptoms.push(dynamicSymptom);
+          // Add the dynamic symptom chip to the UI
+          addDynamicSymptomChip(dynamicSymptom);
+        }
+        matchedSymptoms.push(dynamicSymptom);
+      }
 
       const matchedChecks = aiChecklistMap.filter(rule =>
         rule.keywords.some(k => text.includes(k))
@@ -2762,8 +2911,10 @@ input, select, textarea {
       const checklistHint = document.getElementById('ai-checklist-hints');
 
       // AUTO-SELECT symptoms as user types (immediate feedback)
-      matchedSymptoms.forEach(symptomId => {
-        toggleSymptom(symptomId, true);
+      matchedSymptoms.forEach(symptom => {
+        if (!symptom.isDynamic) {
+          toggleSymptom(symptom.id, true);
+        }
       });
 
       // AUTO-SET checklist values based on description
@@ -2778,9 +2929,10 @@ input, select, textarea {
 
       wrapper.style.display = 'block';
       chipWrap.innerHTML = `<div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 8px;">✨ AI detected and auto-selected:</div>` + 
-        matchedSymptoms.map(id => {
-          const meta = aiSymptomMap.find(s => s.id === id);
-          return `<span class="ai-chip active" style="cursor: default;">${meta?.label || id}</span>`;
+        matchedSymptoms.map(symptom => {
+          const isActive = symptom.isDynamic ? 'dynamic' : 'active';
+          const icon = symptom.isDynamic ? '🔮' : '✓';
+          return `<span class="ai-chip ${isActive}" style="cursor: default;">${icon} ${symptom.label}</span>`;
         }).join('');
 
       checklistHint.textContent = matchedChecks.length
@@ -2795,6 +2947,39 @@ input, select, textarea {
           ticketData.repair.type = repairHit.type;
         }
       }
+    }
+    
+    // Add a dynamically generated symptom chip to the symptoms grid
+    function addDynamicSymptomChip(symptom) {
+      const container = document.querySelector('.symptoms-grid');
+      if (!container) return;
+      
+      // Check if already exists
+      if (document.querySelector(`[data-symptom="${symptom.id}"]`)) return;
+      
+      const chip = document.createElement('div');
+      chip.className = 'symptom-chip active';
+      chip.dataset.symptom = symptom.id;
+      chip.innerHTML = `<span class="symptom-icon">🔮</span><span>${symptom.label}</span>`;
+      chip.style.background = 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(124, 58, 237, 0.2) 100%)';
+      chip.style.borderColor = 'var(--accent-primary)';
+      chip.style.animation = 'pulse-glow 2s ease-in-out infinite';
+      
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('active');
+        const idx = ticketData.issue.symptoms.indexOf(symptom.id);
+        if (chip.classList.contains('active')) {
+          if (idx === -1) ticketData.issue.symptoms.push(symptom.id);
+        } else {
+          if (idx > -1) ticketData.issue.symptoms.splice(idx, 1);
+        }
+      });
+      
+      // Add to beginning
+      container.insertBefore(chip, container.firstChild);
+      
+      // Auto-select it
+      ticketData.issue.symptoms.push(symptom.id);
     }
 
     // Model/brand intelligence -> parts & pricing
