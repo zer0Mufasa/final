@@ -22,35 +22,48 @@
       background: #08080c;
     }
     
-    /* Force Dark Scrollbars */
+    /* Force Dark Scrollbars on ALL elements */
     * {
-      scrollbar-width: thin !important;
-      scrollbar-color: #8b5cf6 #0a0a0f !important;
+      scrollbar-width: thin;
+      scrollbar-color: #8b5cf6 #1a1a24;
     }
     
-    ::-webkit-scrollbar {
-      width: 10px !important;
-      height: 10px !important;
-      background: #0a0a0f !important;
+    *::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
     
-    ::-webkit-scrollbar-track {
-      background: #0a0a0f !important;
-      border-radius: 5px !important;
+    *::-webkit-scrollbar-track {
+      background: #1a1a24;
     }
     
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #8b5cf6, #6d28d9) !important;
-      border-radius: 5px !important;
-      border: 2px solid #0a0a0f !important;
+    *::-webkit-scrollbar-thumb {
+      background: #8b5cf6;
+      border-radius: 4px;
     }
     
-    ::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, #a78bfa, #8b5cf6) !important;
+    *::-webkit-scrollbar-thumb:hover {
+      background: #a78bfa;
     }
     
-    ::-webkit-scrollbar-corner {
-      background: #0a0a0f !important;
+    *::-webkit-scrollbar-corner {
+      background: #1a1a24;
+    }
+    
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    html::-webkit-scrollbar-track,
+    body::-webkit-scrollbar-track {
+      background: #08080c;
+    }
+    
+    html::-webkit-scrollbar-thumb,
+    body::-webkit-scrollbar-thumb {
+      background: #8b5cf6;
+      border-radius: 4px;
     }
 
     /* Tickets Page Specific */

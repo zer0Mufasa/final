@@ -1613,41 +1613,69 @@ input, select, textarea {
       margin-bottom: var(--space-5);
     }
     
-    /* Dark Scrollbars - Global - FORCE DARK */
+    /* Dark Scrollbars - FORCE on all elements */
     * {
-      scrollbar-width: thin !important;
-      scrollbar-color: #8b5cf6 #0a0a0f !important;
+      scrollbar-width: thin;
+      scrollbar-color: #8b5cf6 #1a1a24;
     }
     
-    ::-webkit-scrollbar {
-      width: 10px !important;
-      height: 10px !important;
-      background: #0a0a0f !important;
+    /* Webkit (Chrome, Edge, Safari) */
+    *::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
     }
     
-    ::-webkit-scrollbar-track {
-      background: #0a0a0f !important;
-      border-radius: 5px !important;
+    *::-webkit-scrollbar-track {
+      background: #1a1a24;
     }
     
-    ::-webkit-scrollbar-thumb {
-      background: linear-gradient(180deg, #8b5cf6, #6d28d9) !important;
-      border-radius: 5px !important;
-      border: 2px solid #0a0a0f !important;
+    *::-webkit-scrollbar-thumb {
+      background: #8b5cf6;
+      border-radius: 4px;
     }
     
-    ::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, #a78bfa, #8b5cf6) !important;
+    *::-webkit-scrollbar-thumb:hover {
+      background: #a78bfa;
     }
     
-    ::-webkit-scrollbar-corner {
-      background: #0a0a0f !important;
+    *::-webkit-scrollbar-corner {
+      background: #1a1a24;
     }
     
-    /* Also target specific scrollable elements */
-    select, .form-select, .parts-list, .customer-search-results {
-      scrollbar-width: thin !important;
-      scrollbar-color: #8b5cf6 #0a0a0f !important;
+    /* Make sure html/body also use dark scrollbar */
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    html::-webkit-scrollbar-track,
+    body::-webkit-scrollbar-track {
+      background: #08080c;
+    }
+    
+    html::-webkit-scrollbar-thumb,
+    body::-webkit-scrollbar-thumb {
+      background: #8b5cf6;
+      border-radius: 4px;
+    }
+    
+    /* Main scrollable content area */
+    .pos-content::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .pos-content::-webkit-scrollbar-track {
+      background: #08080c;
+    }
+    
+    .pos-content::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
+      border-radius: 4px;
+    }
+    
+    .pos-content::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #a78bfa 0%, #8b5cf6 100%);
     }
     
     .device-type-btn {
@@ -2360,27 +2388,27 @@ input, select, textarea {
     };
 
   const aiSymptomMap = [
-    { id: 'cracked_screen', label: 'Cracked Screen', keywords: ['crack', 'glass', 'broken screen', 'shatter'] },
-    { id: 'no_power', label: 'Won’t Power On', keywords: ['no power', 'dead', 'won\'t turn on'] },
-    { id: 'no_charge', label: 'Charging Issue', keywords: ['charge', 'charging', 'not charging', 'port'] },
-    { id: 'battery_drain', label: 'Battery Drain', keywords: ['battery', 'drain', 'dies fast', 'low battery'] },
-    { id: 'water_damage', label: 'Water Damage', keywords: ['water', 'liquid', 'spill'] },
-    { id: 'no_touch', label: 'Touch Not Working', keywords: ['touch', 'digitizer', 'unresponsive'] },
-    { id: 'no_display', label: 'Display Issue', keywords: ['display', 'screen black', 'no image'] },
-    { id: 'speaker', label: 'Speaker Issue', keywords: ['speaker', 'sound', 'quiet'] },
-    { id: 'microphone', label: 'Microphone Issue', keywords: ['microphone', 'mic', 'caller cannot hear'] },
-    { id: 'camera', label: 'Camera Issue', keywords: ['camera', 'lens', 'photo', 'video'] },
-    { id: 'buttons', label: 'Button Issue', keywords: ['button', 'volume', 'power button'] },
-    { id: 'software', label: 'Software Issue', keywords: ['os', 'software', 'slow', 'lag', 'update'] }
+    { id: 'cracked_screen', label: 'Cracked Screen', keywords: ['crack', 'cracked', 'glass', 'broken screen', 'shatter', 'smashed'] },
+    { id: 'no_power', label: 'Won't Power On', keywords: ['no power', 'dead', 'wont turn on', 'wont power', 'wont start', 'not turning on', 'doesnt turn on', 'doesnt power', 'not powering', 'wont boot', 'doesnt boot'] },
+    { id: 'no_charge', label: 'Charging Issue', keywords: ['charge', 'charging', 'not charging', 'wont charge', 'doesnt charge', 'port', 'charger'] },
+    { id: 'battery_drain', label: 'Battery Drain', keywords: ['battery', 'drain', 'dies fast', 'low battery', 'draining', 'battery dead', 'battery dying'] },
+    { id: 'water_damage', label: 'Water Damage', keywords: ['water', 'liquid', 'spill', 'wet', 'dropped in water', 'toilet', 'pool'] },
+    { id: 'no_touch', label: 'Touch Not Working', keywords: ['touch', 'digitizer', 'unresponsive', 'touch not working', 'touch screen', 'ghost touch'] },
+    { id: 'no_display', label: 'Display Issue', keywords: ['display', 'screen black', 'no image', 'blank screen', 'black screen', 'no display', 'lines on screen'] },
+    { id: 'speaker', label: 'Speaker Issue', keywords: ['speaker', 'sound', 'quiet', 'no sound', 'audio', 'cant hear', 'muffled'] },
+    { id: 'microphone', label: 'Microphone Issue', keywords: ['microphone', 'mic', 'caller cannot hear', 'cant hear me', 'voice'] },
+    { id: 'camera', label: 'Camera Issue', keywords: ['camera', 'lens', 'photo', 'video', 'blurry', 'camera not working'] },
+    { id: 'buttons', label: 'Button Issue', keywords: ['button', 'volume', 'power button', 'side button', 'home button', 'stuck'] },
+    { id: 'software', label: 'Software Issue', keywords: ['os', 'software', 'slow', 'lag', 'update', 'frozen', 'freeze', 'stuck on logo', 'restart loop'] }
   ];
 
   const aiChecklistMap = [
-    { check: 'touchWorks', value: 'no', keywords: ['no touch', 'touch', 'digitizer'] },
-    { check: 'powersOn', value: 'no', keywords: ['no power', 'dead', 'won\'t turn on'] },
-    { check: 'chargingWorks', value: 'no', keywords: ['charge', 'charging', 'port'] },
-    { check: 'cameraWorks', value: 'no', keywords: ['camera'] },
-    { check: 'soundWorks', value: 'no', keywords: ['speaker', 'sound'] },
-    { check: 'wifiWorks', value: 'no', keywords: ['wifi', 'wi-fi', 'network'] }
+    { check: 'touchWorks', value: 'no', keywords: ['no touch', 'touch not working', 'touch screen', 'digitizer', 'unresponsive'] },
+    { check: 'powersOn', value: 'no', keywords: ['no power', 'dead', 'wont turn on', 'wont power', 'not turning on', 'doesnt turn on', 'wont boot'] },
+    { check: 'chargingWorks', value: 'no', keywords: ['wont charge', 'not charging', 'doesnt charge', 'charging port'] },
+    { check: 'cameraWorks', value: 'no', keywords: ['camera not working', 'camera broken'] },
+    { check: 'soundWorks', value: 'no', keywords: ['no sound', 'speaker not working', 'no audio'] },
+    { check: 'wifiWorks', value: 'no', keywords: ['wifi not working', 'no wifi', 'wifi broken'] }
   ];
 
   const aiRepairSuggestions = [
