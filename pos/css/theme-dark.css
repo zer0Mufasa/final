@@ -1,0 +1,283 @@
+:root {
+  /* Lavender dark theme overrides */
+  --primary: #b794f6;
+  --primary-dark: #7c3aed;
+  --primary-light: #c7a6ff;
+  --secondary: #120d22;
+  --accent: #9f7aea;
+
+  --bg-body: #090613;
+  --bg-card: #0f0b1d;
+  --bg-sidebar: #090714;
+  --bg-sidebar-hover: #120e22;
+  --bg-input: #120d20;
+
+  --text-primary: #f2ecff;
+  --text-secondary: #c4bce6;
+  --text-muted: #9086b4;
+  --text-inverse: #0f0a1f;
+
+  --border-color: #1c162d;
+  --border-focus: #b794f6;
+
+  --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --shadow-card-hover: 0 14px 40px rgba(0, 0, 0, 0.45);
+
+  --status-new: linear-gradient(180deg, #60a5fa, #2563eb);
+  --status-diagnosed: linear-gradient(180deg, #a78bfa, #7c3aed);
+  --status-waiting: linear-gradient(180deg, #fbbf24, #d97706);
+  --status-repair: linear-gradient(180deg, #818cf8, #4338ca);
+  --status-ready: linear-gradient(180deg, #34d399, #0f766e);
+  --status-picked: linear-gradient(180deg, #9ca3af, #4b5563);
+  --status-cancelled: linear-gradient(180deg, #f87171, #b91c1c);
+}
+
+body {
+  background: radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.08), transparent 25%),
+              radial-gradient(circle at 80% 0%, rgba(96, 165, 250, 0.07), transparent 30%),
+              var(--bg-body);
+  color: var(--text-primary);
+}
+
+.pos-main {
+  background: transparent;
+}
+
+.pos-header {
+  background: #0c0918;
+  border-color: var(--border-color);
+}
+
+.pos-header,
+.card,
+.info-card,
+.pricing-summary,
+.modal,
+.table {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  box-shadow: var(--shadow-card);
+}
+
+.pos-header {
+  background: #0c0918 !important;
+  border-color: var(--border-color) !important;
+}
+
+.section-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-card);
+}
+
+.section-card .section-header {
+  background: #110c1f !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+.section-card .section-header h3,
+.section-card .section-header a {
+  color: var(--text-primary) !important;
+}
+
+.section-card .section-body {
+  background: transparent !important;
+  color: var(--text-primary);
+}
+
+.pos-content {
+  background: transparent;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  background: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.btn-secondary {
+  background: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.btn-ghost {
+  color: var(--text-secondary);
+}
+
+.table th {
+  background: #130f25;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.table tr:hover td {
+  background: rgba(183, 148, 246, 0.08);
+}
+
+.table td {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-color) !important;
+}
+
+.table tr {
+  background: transparent !important;
+}
+
+.stat-card,
+.quick-actions .card,
+.quick-actions,
+.pipeline-stage,
+.status-pipeline .stage,
+.ticket-card,
+.kanban-column,
+.pricing-table,
+.empty-state,
+.status-pipeline,
+.recent-tickets,
+.low-stock {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card .value,
+.stat-card .label,
+.pipeline-stage .count,
+.pipeline-stage .label,
+.status-pipeline .stage .count,
+.status-pipeline .stage .label {
+  color: var(--text-primary);
+}
+
+.status-pipeline .stage {
+  box-shadow: var(--shadow-card);
+}
+
+.pipeline-stage {
+  background: #120d20 !important;
+}
+
+.ticket-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.customer-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-card);
+}
+
+.quick-action {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.quick-action .icon,
+.quick-action .label {
+  color: var(--text-primary) !important;
+}
+
+#low-stock-section {
+  background: var(--bg-card) !important;
+}
+
+#low-stock-section .section-header {
+  background: #151025 !important;
+  border-color: var(--border-color) !important;
+}
+
+#low-stock-section .section-header h3 {
+  color: var(--text-primary) !important;
+}
+
+.status-pill,
+.ticket-card::before,
+.kanban-ticket::before {
+  box-shadow: 0 0 18px rgba(183, 148, 246, 0.35);
+}
+
+/* Focus mode for ticket screens */
+body.focus-mode .pos-sidebar {
+  display: none;
+}
+
+body.focus-mode .pos-main {
+  margin-left: 0;
+}
+
+body.focus-mode .pos-content {
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.focus-indicator {
+  background: rgba(183, 148, 246, 0.12);
+  border: 1px solid rgba(183, 148, 246, 0.35);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* AI suggestions */
+.ai-hints {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  background: rgba(183, 148, 246, 0.08);
+  border: 1px dashed rgba(183, 148, 246, 0.3);
+  border-radius: var(--radius-md);
+}
+
+.ai-hints h4 {
+  margin-bottom: var(--space-2);
+  color: var(--text-secondary);
+}
+
+.ai-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-chip {
+  border: 1px solid rgba(183, 148, 246, 0.4);
+  background: rgba(183, 148, 246, 0.15);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+
+.ai-chip:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+}
+
+.ai-chip.active {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  border-color: transparent;
+}
+
+.checklist-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+

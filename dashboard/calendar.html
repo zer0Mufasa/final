@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar | Fixology POS</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-50:#f5f3ff;--lavender-100:#ede9fe;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--surface-5:#232329;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%);--gradient-glow:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(34,211,238,0.1))}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.5;display:flex;min-height:100vh}
+    
+    /* Sidebar */
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border-subtle)}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .sidebar-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:9px;font-weight:700;padding:3px 6px;background:var(--lavender-600);border-radius:4px;color:white;margin-left:auto}
+    .sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+    .sidebar-section{margin-bottom:20px}
+    .sidebar-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:8px 12px;margin-bottom:4px}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:13px;font-weight:500;color:var(--text-secondary);border-radius:10px;margin-bottom:2px;transition:all 0.15s;text-decoration:none}
+    .sidebar-link:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-link.active{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .sidebar-link-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-link-badge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;background:var(--lavender-600);border-radius:10px;color:white}
+    .sidebar-link-badge.warning{background:var(--warning)}
+    .sidebar-link-badge.success{background:var(--success)}
+    .sidebar-divider{height:1px;background:var(--border-subtle);margin:12px 0}
+    .sidebar-footer{padding:12px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-3);border-radius:12px;cursor:pointer;transition:all 0.15s}
+    .sidebar-user:hover{background:var(--surface-4)}
+    .sidebar-user-avatar{width:40px;height:40px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+    .sidebar-user-info{flex:1;min-width:0}
+    .sidebar-user-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-user-plan{font-size:11px;color:var(--lavender-400)}
+    .sidebar-user-menu{font-size:16px;color:var(--text-muted)}
+
+    /* Main Content */
+    .main{flex:1;margin-left:260px;display:flex;flex-direction:column;min-height:100vh;background:var(--surface-1)}
+    
+    /* Header */
+    .header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;background:var(--surface-2);border-bottom:1px solid var(--border-subtle);position:sticky;top:0;z-index:50}
+    .header-left{display:flex;align-items:center;gap:20px}
+    .header-title{font-family:var(--font-tech);font-size:1.5rem;font-weight:700}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,92,246,0.35)}
+    .btn-secondary{background:var(--surface-4);color:var(--text-primary);border:1px solid var(--border-default)}
+    .btn-secondary:hover{background:var(--surface-5)}
+
+    /* Content */
+    .content{flex:1;padding:24px 28px;overflow-y:auto}
+    
+    /* Calendar */
+    .calendar-container{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:24px}
+    .calendar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .calendar-nav{display:flex;align-items:center;gap:12px}
+    .calendar-nav-btn{width:36px;height:36px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s}
+    .calendar-nav-btn:hover{background:var(--surface-4)}
+    .calendar-month{font-family:var(--font-tech);font-size:1.25rem;font-weight:600}
+    .calendar-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px}
+    .calendar-weekday{text-align:center;font-size:12px;font-weight:600;color:var(--text-muted);padding:8px}
+    .calendar-days{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .calendar-day{aspect-ratio:1;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:8px;display:flex;flex-direction:column;padding:8px;cursor:pointer;transition:all 0.15s;position:relative}
+    .calendar-day:hover{background:var(--surface-4);border-color:var(--lavender-500)}
+    .calendar-day.other-month{opacity:0.3}
+    .calendar-day.today{border-color:var(--lavender-500);background:rgba(139,92,246,0.1)}
+    .calendar-day-number{font-size:14px;font-weight:600;margin-bottom:4px}
+    .calendar-day-events{display:flex;flex-direction:column;gap:2px;flex:1;overflow:hidden}
+    .calendar-event{height:4px;background:var(--lavender-500);border-radius:2px;font-size:8px}
+    .calendar-event.multiple{background:var(--cyan-400)}
+    .calendar-event.urgent{background:var(--danger)}
+    
+    /* Events List */
+    .events-sidebar{width:320px;background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:20px;margin-left:20px}
+    .events-title{font-family:var(--font-tech);font-size:1rem;font-weight:600;margin-bottom:16px}
+    .event-item{display:flex;gap:12px;padding:12px;background:var(--surface-3);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+    .event-item:hover{background:var(--surface-4)}
+    .event-time{font-family:var(--font-mono);font-size:12px;color:var(--lavender-400);min-width:60px}
+    .event-content{flex:1}
+    .event-title{font-size:13px;font-weight:500;margin-bottom:2px}
+    .event-desc{font-size:11px;color:var(--text-muted)}
+    
+    .grid-2{display:grid;grid-template-columns:1fr 320px;gap:20px}
+    
+    @media(max-width:1200px){.grid-2{grid-template-columns:1fr}.events-sidebar{width:100%;margin-left:0;margin-top:20px}}
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}}
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+                <span>Fixology</span>
+                <span class="sidebar-badge">POS</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main</div>
+                <a href="/dashboard/index.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+                <a href="/dashboard/tickets.html" class="sidebar-link"><span class="sidebar-link-icon">🎫</span>Tickets<span class="sidebar-link-badge">12</span></a>
+                <a href="/dashboard/customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
+                <a href="/dashboard/inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory<span class="sidebar-link-badge warning">3</span></a>
+                <a href="/dashboard/invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Intelligence</div>
+                <a href="/dashboard/diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>AI Diagnostics</a>
+                <a href="/dashboard/imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
+                <a href="/dashboard/autopilot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span>Autopilot</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Operations</div>
+                <a href="/dashboard/calendar.html" class="sidebar-link active"><span class="sidebar-link-icon">📅</span>Calendar</a>
+                <a href="/dashboard/timeclock.html" class="sidebar-link"><span class="sidebar-link-icon">⏱️</span>Time Clock</a>
+                <a href="/dashboard/team.html" class="sidebar-link"><span class="sidebar-link-icon">👔</span>Team</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Business</div>
+                <a href="/dashboard/websites.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span>Website</a>
+                <a href="/dashboard/auto-reply.html" class="sidebar-link"><span class="sidebar-link-icon">💬</span>Messages</a>
+                <a href="/dashboard/reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span>Reports</a>
+            </div>
+            <div class="sidebar-divider"></div>
+            <a href="/dashboard/settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
+            <a href="#" class="sidebar-link" onclick="logout()"><span class="sidebar-link-icon">🚪</span>Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user" id="sidebar-user">
+                <div class="sidebar-user-avatar" id="user-avatar">F</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="shop-name">Loading...</div>
+                    <div class="sidebar-user-plan" id="shop-plan">Free Plan</div>
+                </div>
+                <span class="sidebar-user-menu">⋮</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="header-title">📅 Calendar</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary">Today</button>
+                <button class="btn btn-primary">+ New Event</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="grid-2">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button class="calendar-nav-btn">←</button>
+                            <h2 class="calendar-month" id="current-month">December 2025</h2>
+                            <button class="calendar-nav-btn">→</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary" style="margin-right:8px">Month</button>
+                            <button class="btn btn-secondary">Week</button>
+                        </div>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <div class="calendar-weekday">Sun</div>
+                        <div class="calendar-weekday">Mon</div>
+                        <div class="calendar-weekday">Tue</div>
+                        <div class="calendar-weekday">Wed</div>
+                        <div class="calendar-weekday">Thu</div>
+                        <div class="calendar-weekday">Fri</div>
+                        <div class="calendar-weekday">Sat</div>
+                    </div>
+                    <div class="calendar-days" id="calendar-days">
+                        <!-- Calendar days will be generated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="events-sidebar">
+                    <h3 class="events-title">Upcoming Events</h3>
+                    <div id="events-list">
+                        <div class="event-item">
+                            <div class="event-time">10:00</div>
+                            <div class="event-content">
+                                <div class="event-title">Team Meeting</div>
+                                <div class="event-desc">Weekly sync</div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">14:00</div>
+                            <div class="event-content">
+                                <div class="event-title">Customer Appointment</div>
+                                <div class="event-desc">iPhone repair pickup</div>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">16:30</div>
+                            <div class="event-content">
+                                <div class="event-title">Inventory Check</div>
+                                <div class="event-desc">Weekly stock review</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    const API_BASE = 'https://final-bice-phi.vercel.app';
+    const token = localStorage.getItem('fixology_shop_token');
+
+    if (!token) {
+        window.location.href = '../shop-login.html';
+    }
+
+    function generateCalendar() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+        
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        document.getElementById('current-month').textContent = `${monthNames[month]} ${year}`;
+        
+        const calendarDays = document.getElementById('calendar-days');
+        calendarDays.innerHTML = '';
+        
+        // Previous month days
+        const prevMonth = new Date(year, month, 0);
+        const prevMonthDays = prevMonth.getDate();
+        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+            const day = document.createElement('div');
+            day.className = 'calendar-day other-month';
+            day.innerHTML = `<div class="calendar-day-number">${prevMonthDays - i}</div>`;
+            calendarDays.appendChild(day);
+        }
+        
+        // Current month days
+        for (let i = 1; i <= daysInMonth; i++) {
+            const day = document.createElement('div');
+            const isToday = i === now.getDate() && month === now.getMonth() && year === now.getFullYear();
+            day.className = `calendar-day ${isToday ? 'today' : ''}`;
+            day.innerHTML = `<div class="calendar-day-number">${i}</div><div class="calendar-day-events"></div>`;
+            calendarDays.appendChild(day);
+        }
+        
+        // Next month days
+        const remainingDays = 42 - (startingDayOfWeek + daysInMonth);
+        for (let i = 1; i <= remainingDays; i++) {
+            const day = document.createElement('div');
+            day.className = 'calendar-day other-month';
+            day.innerHTML = `<div class="calendar-day-number">${i}</div>`;
+            calendarDays.appendChild(day);
+        }
+    }
+
+    async function loadUser() {
+        try {
+            const response = await fetch(`${API_BASE}/api/shops/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.shop) {
+                document.getElementById('shop-name').textContent = data.shop.shopName || 'Your Shop';
+                document.getElementById('user-avatar').textContent = (data.shop.shopName || 'F')[0].toUpperCase();
+                const planNames = { free: 'Free Plan', basic: '🚀 Basic', pro: '💎 Pro', enterprise: '🏢 Enterprise' };
+                document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
+            }
+        } catch (err) {
+            console.error('Error loading user:', err);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('fixology_shop_token');
+        localStorage.removeItem('fixology_token');
+        window.location.href = '../index.html';
+    }
+
+    generateCalendar();
+    loadUser();
+    </script>
+</body>
+</html>

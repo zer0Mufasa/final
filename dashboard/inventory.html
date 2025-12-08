@@ -92,76 +92,25 @@
                 <div class="topbar-right">
                     <button class="btn btn-warning">⚠️ 3 Low Stock</button>
                     <button class="btn btn-secondary">Import</button>
-                    <button class="btn btn-primary">+ Add Part</button>
+                    <button class="btn btn-primary" onclick="openAddInventoryModal()">+ Add Part</button>
                 </div>
             </header>
             <div class="content">
-                <div class="alerts">
-                    <div class="alert"><span class="alert-icon">⚠️</span><div class="alert-text"><strong>iPhone 14 Pro Screens</strong> — Only 2 left in stock. Reorder recommended.</div><span class="alert-action">Order Now →</span></div>
+                <div class="alerts" id="low-stock-banner" style="display:none">
+                    <!-- Low stock alerts will be populated by JS -->
                 </div>
                 <div class="stats-row">
-                    <div class="stat-card"><div class="stat-value">847</div><div class="stat-label">Total Parts</div></div>
-                    <div class="stat-card"><div class="stat-value">$24,520</div><div class="stat-label">Inventory Value</div></div>
-                    <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Low Stock Items</div></div>
-                    <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">On Order</div></div>
+                    <div class="stat-card"><div class="stat-value" id="stat-total-parts">0</div><div class="stat-label">Total Parts</div></div>
+                    <div class="stat-card"><div class="stat-value" id="stat-inventory-value">$0</div><div class="stat-label">Inventory Value</div></div>
+                    <div class="stat-card"><div class="stat-value" id="stat-low-stock">0</div><div class="stat-label">Low Stock Items</div></div>
+                    <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">On Order</div></div>
                 </div>
                 <div class="inventory-table">
                     <table class="table">
                         <thead><tr><th>Part</th><th>Category</th><th>Stock</th><th>Cost</th><th>Price</th><th>Supplier</th><th></th></tr></thead>
-                        <tbody>
+                        <tbody id="inventory-table-body">
                             <tr>
-                                <td><div class="part-info"><div class="part-icon">📱</div><div><div class="part-name">iPhone 14 Pro Screen (OLED)</div><div class="part-sku">SKU: IP14P-SCR-001</div></div></div></td>
-                                <td>Screens</td>
-                                <td><div class="stock-level"><div class="stock-bar"><div class="stock-fill low"></div></div><span class="stock-count low">2</span></div></td>
-                                <td>$89.00</td>
-                                <td class="price">$149.00</td>
-                                <td class="supplier">MobileParts Pro</td>
-                                <td><button class="reorder-btn urgent">Reorder</button></td>
-                            </tr>
-                            <tr>
-                                <td><div class="part-info"><div class="part-icon">🔋</div><div><div class="part-name">iPhone 13 Battery</div><div class="part-sku">SKU: IP13-BAT-001</div></div></div></td>
-                                <td>Batteries</td>
-                                <td><div class="stock-level"><div class="stock-bar"><div class="stock-fill high"></div></div><span class="stock-count">24</span></div></td>
-                                <td>$18.00</td>
-                                <td class="price">$49.00</td>
-                                <td class="supplier">BatteryWorld</td>
-                                <td><button class="reorder-btn">Reorder</button></td>
-                            </tr>
-                            <tr>
-                                <td><div class="part-info"><div class="part-icon">📱</div><div><div class="part-name">Samsung S23 Screen (AMOLED)</div><div class="part-sku">SKU: SS23-SCR-001</div></div></div></td>
-                                <td>Screens</td>
-                                <td><div class="stock-level"><div class="stock-bar"><div class="stock-fill medium"></div></div><span class="stock-count">8</span></div></td>
-                                <td>$110.00</td>
-                                <td class="price">$189.00</td>
-                                <td class="supplier">MobileParts Pro</td>
-                                <td><button class="reorder-btn">Reorder</button></td>
-                            </tr>
-                            <tr>
-                                <td><div class="part-info"><div class="part-icon">🔌</div><div><div class="part-name">iPhone Charging Port (Lightning)</div><div class="part-sku">SKU: IP-CHP-001</div></div></div></td>
-                                <td>Ports</td>
-                                <td><div class="stock-level"><div class="stock-bar"><div class="stock-fill high"></div></div><span class="stock-count">32</span></div></td>
-                                <td>$8.00</td>
-                                <td class="price">$39.00</td>
-                                <td class="supplier">TechParts Direct</td>
-                                <td><button class="reorder-btn">Reorder</button></td>
-                            </tr>
-                            <tr>
-                                <td><div class="part-info"><div class="part-icon">🎮</div><div><div class="part-name">PS5 HDMI Port</div><div class="part-sku">SKU: PS5-HDMI-001</div></div></div></td>
-                                <td>Ports</td>
-                                <td><div class="stock-level"><div class="stock-bar"><div class="stock-fill low"></div></div><span class="stock-count low">3</span></div></td>
-                                <td>$12.00</td>
-                                <td class="price">$89.00</td>
-                                <td class="supplier">ConsoleFixParts</td>
-                                <td><button class="reorder-btn urgent">Reorder</button></td>
-                            </tr>
-                            <tr>
-                                <td><div class="part-info"><div class="part-icon">💻</div><div><div class="part-name">MacBook Pro Keyboard (2021+)</div><div class="part-sku">SKU: MBP-KB-001</div></div></div></td>
-                                <td>Keyboards</td>
-                                <td><div class="stock-level"><div class="stock-bar"><div class="stock-fill medium"></div></div><span class="stock-count">6</span></div></td>
-                                <td>$85.00</td>
-                                <td class="price">$199.00</td>
-                                <td class="supplier">AppleParts Plus</td>
-                                <td><button class="reorder-btn">Reorder</button></td>
+                                <td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">Loading inventory...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -169,5 +118,62 @@
             </div>
         </main>
     </div>
+
+
+    <!-- Inventory Modal -->
+    <div class="modal-overlay" id="inventory-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+        <div class="modal" style="background:var(--surface-2);border-radius:16px;padding:0;max-width:600px;width:90%;max-height:90vh;overflow-y:auto">
+            <div style="padding:20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between">
+                <h3 style="font-size:1.25rem;font-weight:600" id="modal-title">Add Inventory Item</h3>
+                <button onclick="window.FixologyApp.closeModal('inventory-modal')" style="background:none;border:none;color:var(--text-secondary);font-size:24px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px">×</button>
+            </div>
+            <form id="inventory-form" style="padding:20px">
+                <input type="hidden" name="item_id" id="item-id">
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Name *</label>
+                    <input type="text" name="name" id="item-name" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">SKU *</label>
+                    <input type="text" name="sku" id="item-sku" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Category</label>
+                    <input type="text" name="category" id="item-category" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Cost Price *</label>
+                        <input type="number" name="cost_price" id="item-cost" step="0.01" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Sell Price *</label>
+                        <input type="number" name="sell_price" id="item-sell" step="0.01" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Current Stock</label>
+                        <input type="number" name="current_stock" id="item-stock" value="0" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Min Stock</label>
+                        <input type="number" name="min_stock" id="item-min-stock" value="5" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                    </div>
+                </div>
+                <div style="margin-bottom:24px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Supplier</label>
+                    <input type="text" name="supplier" id="item-supplier" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end">
+                    <button type="button" onclick="window.FixologyApp.closeModal('inventory-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/inventory.js"></script>
 </body>
 </html>

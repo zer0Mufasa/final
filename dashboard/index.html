@@ -164,32 +164,32 @@
         <nav class="sidebar-nav">
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Main</div>
-                <a href="index.html" class="sidebar-link active"><span class="sidebar-link-icon">📊</span>Dashboard</a>
-                <a href="tickets.html" class="sidebar-link"><span class="sidebar-link-icon">🎫</span>Tickets<span class="sidebar-link-badge">12</span></a>
-                <a href="customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
-                <a href="inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory<span class="sidebar-link-badge warning">3</span></a>
-                <a href="invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
+                <a href="/dashboard/index.html" class="sidebar-link active"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+                <a href="/dashboard/tickets.html" class="sidebar-link"><span class="sidebar-link-icon">🎫</span>Tickets<span class="sidebar-link-badge">12</span></a>
+                <a href="/dashboard/customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
+                <a href="/dashboard/inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory<span class="sidebar-link-badge warning">3</span></a>
+                <a href="/dashboard/invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
             </div>
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Intelligence</div>
-                <a href="diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>AI Diagnostics</a>
-                <a href="imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
-                <a href="autopilot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span>Autopilot</a>
+                <a href="/dashboard/diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>AI Diagnostics</a>
+                <a href="/dashboard/imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
+                <a href="/dashboard/autopilot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span>Autopilot</a>
             </div>
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Operations</div>
-                <a href="calendar.html" class="sidebar-link"><span class="sidebar-link-icon">📅</span>Calendar</a>
-                <a href="timeclock.html" class="sidebar-link"><span class="sidebar-link-icon">⏱️</span>Time Clock</a>
-                <a href="team.html" class="sidebar-link"><span class="sidebar-link-icon">👔</span>Team</a>
+                <a href="/dashboard/calendar.html" class="sidebar-link"><span class="sidebar-link-icon">📅</span>Calendar</a>
+                <a href="/dashboard/timeclock.html" class="sidebar-link"><span class="sidebar-link-icon">⏱️</span>Time Clock</a>
+                <a href="/dashboard/team.html" class="sidebar-link"><span class="sidebar-link-icon">👔</span>Team</a>
             </div>
             <div class="sidebar-section">
                 <div class="sidebar-section-title">Business</div>
-                <a href="websites.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span>Website</a>
-                <a href="auto-reply.html" class="sidebar-link"><span class="sidebar-link-icon">💬</span>Messages</a>
-                <a href="reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span>Reports</a>
+                <a href="/dashboard/websites.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span>Website</a>
+                <a href="/dashboard/auto-reply.html" class="sidebar-link"><span class="sidebar-link-icon">💬</span>Messages</a>
+                <a href="/dashboard/reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span>Reports</a>
             </div>
             <div class="sidebar-divider"></div>
-            <a href="settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
+            <a href="/dashboard/settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
             <a href="#" class="sidebar-link" onclick="logout()"><span class="sidebar-link-icon">🚪</span>Logout</a>
         </nav>
         <div class="sidebar-footer">
@@ -219,7 +219,7 @@
                     <input type="text" placeholder="Search tickets, customers...">
                 </div>
                 <button class="header-btn" title="Notifications"><span>🔔</span><span class="badge">3</span></button>
-                <a href="tickets.html" class="btn btn-primary">+ New Ticket</a>
+                <button class="btn btn-primary" onclick="openNewTicketModal()">+ New Ticket</button>
             </div>
         </header>
 
@@ -406,6 +406,57 @@
         </div>
     </main>
 
+    <!-- New Ticket Modal -->
+    <div class="modal-overlay" id="new-ticket-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+        <div class="modal" style="background:var(--surface-2);border-radius:16px;padding:0;max-width:600px;width:90%;max-height:90vh;overflow-y:auto">
+            <div class="card-header">
+                <h3 style="font-family:var(--font-tech);font-size:1.25rem;font-weight:600">Create New Ticket</h3>
+                <button onclick="closeNewTicketModal()" style="background:none;border:none;color:var(--text-secondary);font-size:24px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:all 0.15s" onmouseover="this.style.background='var(--surface-3)'" onmouseout="this.style.background='none'">×</button>
+            </div>
+            <form id="new-ticket-form" style="padding:20px">
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Customer Name</label>
+                    <input type="text" name="customer_name" class="form-input" placeholder="John Doe" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Phone</label>
+                    <input type="tel" name="customer_phone" class="form-input" placeholder="(555) 123-4567" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Device Type</label>
+                    <input type="text" name="device_type" class="form-input" placeholder="iPhone 14 Pro Max" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Issue Description</label>
+                    <textarea name="device_issue" class="form-input" placeholder="Screen cracked, won't turn on..." required rows="3" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;resize:vertical"></textarea>
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Priority</label>
+                    <select name="priority" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                        <option value="low">Low</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Quoted Price</label>
+                    <input type="number" name="quoted_price" class="form-input" placeholder="0.00" step="0.01" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:24px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Notes</label>
+                    <textarea name="notes" class="form-input" placeholder="Additional notes..." rows="2" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;resize:vertical"></textarea>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end">
+                    <button type="button" onclick="closeNewTicketModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/dashboard.js"></script>
     <script>
     const API_BASE = 'https://final-bice-phi.vercel.app';
     const token = localStorage.getItem('fixology_shop_token');
@@ -426,7 +477,7 @@
         document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-US', options);
     }
 
-    async function loadDashboard() {
+    async function loadUser() {
         try {
             const response = await fetch(`${API_BASE}/api/shops/profile`, {
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -441,7 +492,7 @@
                 document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
             }
         } catch (err) {
-            console.error('Error loading dashboard:', err);
+            console.error('Error loading user:', err);
         }
     }
 
@@ -452,7 +503,7 @@
     }
 
     setGreeting();
-    loadDashboard();
+    loadUser();
     </script>
 </body>
 </html>

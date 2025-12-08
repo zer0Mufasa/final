@@ -81,7 +81,7 @@
                 <div class="topbar-left"><h1>Invoices</h1></div>
                 <div class="topbar-right">
                     <button class="btn btn-secondary">Export</button>
-                    <button class="btn btn-primary">+ Create Invoice</button>
+                    <button class="btn btn-primary" onclick="openNewInvoiceModal()">+ Create Invoice</button>
                 </div>
             </header>
             <div class="content">
@@ -101,7 +101,7 @@
                 <div class="invoices-table">
                     <table class="table">
                         <thead><tr><th>Invoice</th><th>Customer</th><th>Service</th><th>Date</th><th>Due Date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
-                        <tbody>
+                        <tbody id="invoices-table-body">
                             <tr>
                                 <td><span class="invoice-id">INV-1247</span></td>
                                 <td>Sarah Mitchell</td>
@@ -168,5 +168,8 @@
             </div>
         </main>
     </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/invoices.js"></script>
 </body>
 </html>
