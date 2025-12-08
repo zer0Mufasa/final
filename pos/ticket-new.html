@@ -1605,29 +1605,41 @@ input, select, textarea {
       margin-bottom: var(--space-5);
     }
     
-    /* Dark Scrollbars - Global */
+    /* Dark Scrollbars - Global - FORCE DARK */
+    * {
+      scrollbar-width: thin !important;
+      scrollbar-color: #8b5cf6 #0a0a0f !important;
+    }
+    
     ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
+      width: 10px !important;
+      height: 10px !important;
+      background: #0a0a0f !important;
     }
     
     ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 4px;
+      background: #0a0a0f !important;
+      border-radius: 5px !important;
     }
     
     ::-webkit-scrollbar-thumb {
-      background: rgba(139, 92, 246, 0.3);
-      border-radius: 4px;
+      background: linear-gradient(180deg, #8b5cf6, #6d28d9) !important;
+      border-radius: 5px !important;
+      border: 2px solid #0a0a0f !important;
     }
     
     ::-webkit-scrollbar-thumb:hover {
-      background: rgba(139, 92, 246, 0.5);
+      background: linear-gradient(180deg, #a78bfa, #8b5cf6) !important;
     }
     
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(139, 92, 246, 0.3) rgba(255, 255, 255, 0.02);
+    ::-webkit-scrollbar-corner {
+      background: #0a0a0f !important;
+    }
+    
+    /* Also target specific scrollable elements */
+    select, .form-select, .parts-list, .customer-search-results {
+      scrollbar-width: thin !important;
+      scrollbar-color: #8b5cf6 #0a0a0f !important;
     }
     
     .device-type-btn {
@@ -2685,7 +2697,18 @@ input, select, textarea {
     function setupDescriptionAI() {
       const desc = document.getElementById('issue-description');
       if (!desc) return;
-      desc.addEventListener('input', POS.debounce(updateDescriptionIntelligence, 200));
+      
+      // Use native debounce instead of POS.debounce
+      let debounceTimer;
+      desc.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          updateDescriptionIntelligence();
+        }, 300);
+      });
+      
+      // Also trigger on blur for immediate effect
+      desc.addEventListener('blur', updateDescriptionIntelligence);
     }
 
     function updateDescriptionIntelligence() {

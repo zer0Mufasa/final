@@ -17,6 +17,37 @@
     .pos-content {
       background: #08080c;
     }
+    
+    /* Force Dark Scrollbars */
+    * {
+      scrollbar-width: thin !important;
+      scrollbar-color: #8b5cf6 #0a0a0f !important;
+    }
+    
+    ::-webkit-scrollbar {
+      width: 10px !important;
+      height: 10px !important;
+      background: #0a0a0f !important;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #0a0a0f !important;
+      border-radius: 5px !important;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #8b5cf6, #6d28d9) !important;
+      border-radius: 5px !important;
+      border: 2px solid #0a0a0f !important;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #a78bfa, #8b5cf6) !important;
+    }
+    
+    ::-webkit-scrollbar-corner {
+      background: #0a0a0f !important;
+    }
 
     /* Tickets Page Specific */
     .tickets-header {
