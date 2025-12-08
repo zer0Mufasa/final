@@ -648,6 +648,8 @@
     <!-- FAB -->
     <button class="fab" title="New Ticket" onclick="openNewTicket()">+</button>
 
+    <script src="js/app.js"></script>
+    <script src="js/tickets.js"></script>
     <script>
     function openDetail(el) {
         document.getElementById('detail-overlay').classList.add('open');
@@ -660,7 +662,10 @@
     }
 
     function openNewTicket() {
-        alert('New Ticket form coming soon!');
+        window.location.href = 'index.html';
+        setTimeout(() => {
+            if (window.openNewTicketModal) window.openNewTicketModal();
+        }, 100);
     }
 
     // Load shop info
@@ -678,8 +683,10 @@
             });
             const data = await response.json();
             if (data.success && data.shop) {
-                document.getElementById('shop-name').textContent = data.shop.shopName || 'Fixology';
-                document.getElementById('user-avatar').textContent = (data.shop.shopName || 'F')[0].toUpperCase();
+                const shopNameEl = document.getElementById('shop-name');
+                const avatarEl = document.getElementById('user-avatar');
+                if (shopNameEl) shopNameEl.textContent = data.shop.shopName || 'Fixology';
+                if (avatarEl) avatarEl.textContent = (data.shop.shopName || 'F')[0].toUpperCase();
             }
         } catch (err) {
             console.error('Error:', err);

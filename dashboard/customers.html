@@ -81,7 +81,7 @@
                 <div class="topbar-left"><h1>Customers</h1></div>
                 <div class="topbar-right">
                     <button class="btn btn-secondary">Export</button>
-                    <button class="btn btn-primary">+ Add Customer</button>
+                    <button class="btn btn-primary" onclick="openAddCustomerModal()">+ Add Customer</button>
                 </div>
             </header>
             <div class="content">
@@ -92,11 +92,11 @@
                     <div class="stat-card"><div class="stat-value">$142</div><div class="stat-label">Avg. Lifetime Value</div></div>
                 </div>
                 <div class="search-filters">
-                    <div class="search-box"><span>🔍</span><input type="text" placeholder="Search customers..."></div>
-                    <select class="filter-select"><option>All Customers</option><option>VIP</option><option>New</option><option>Inactive</option></select>
+                    <div class="search-box"><span>🔍</span><input type="text" placeholder="Search customers..." id="customer-search"></div>
+                    <select class="filter-select" onchange="filterByStatus(this.value)"><option value="all">All Customers</option><option value="active">Active</option><option value="vip">VIP</option><option value="inactive">Inactive</option></select>
                     <select class="filter-select"><option>Sort: Recent</option><option>Sort: Name</option><option>Sort: Spend</option></select>
                 </div>
-                <div class="customers-grid">
+                <div class="customers-grid" id="customers-grid">
                     <div class="customer-card">
                         <div class="customer-header"><div class="customer-avatar">SM</div><div><div class="customer-name">Sarah Mitchell</div><div class="customer-email">sarah.m@email.com</div></div></div>
                         <div class="customer-stats"><div class="customer-stat"><div class="customer-stat-value">12</div><div class="customer-stat-label">Repairs</div></div><div class="customer-stat"><div class="customer-stat-value">$847</div><div class="customer-stat-label">Spent</div></div><div class="customer-stat"><div class="customer-stat-value">4.9</div><div class="customer-stat-label">Rating</div></div></div>
@@ -131,5 +131,49 @@
             </div>
         </main>
     </div>
+
+    <!-- Customer Modal -->
+    <div class="modal-overlay" id="customer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+        <div class="modal" style="background:var(--surface-2);border-radius:16px;padding:0;max-width:600px;width:90%;max-height:90vh;overflow-y:auto">
+            <div style="padding:20px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between">
+                <h3 style="font-size:1.25rem;font-weight:600" id="modal-title">Add Customer</h3>
+                <button onclick="window.FixologyApp.closeModal('customer-modal')" style="background:none;border:none;color:var(--text-secondary);font-size:24px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px">×</button>
+            </div>
+            <form id="customer-form" style="padding:20px">
+                <input type="hidden" name="customer_id" id="customer-id">
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">First Name *</label>
+                    <input type="text" name="first_name" id="customer-first-name" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Last Name *</label>
+                    <input type="text" name="last_name" id="customer-last-name" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Phone *</label>
+                    <input type="tel" name="phone" id="customer-phone" required style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Email</label>
+                    <input type="email" name="email" id="customer-email" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px">
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Address</label>
+                    <textarea name="address" id="customer-address" rows="2" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;resize:vertical"></textarea>
+                </div>
+                <div style="margin-bottom:24px">
+                    <label style="display:block;font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:8px">Notes</label>
+                    <textarea name="notes" id="customer-notes" rows="3" style="width:100%;padding:10px 14px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-primary);font-size:14px;resize:vertical"></textarea>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-end">
+                    <button type="button" onclick="window.FixologyApp.closeModal('customer-modal')" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Customer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/customers.js"></script>
 </body>
 </html>

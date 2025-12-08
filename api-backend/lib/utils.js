@@ -158,6 +158,24 @@ function sendError(res, message, statusCode = 400, details = null) {
   res.status(statusCode).json(response);
 }
 
+// Extract ID from URL or query
+function extractId(req) {
+  // Try query parameter first
+  if (req.query && req.query.id) {
+    return req.query.id;
+  }
+  // Try to extract from URL path
+  if (req.url) {
+    const parts = req.url.split('/').filter(p => p && !p.includes('?'));
+    const lastPart = parts[parts.length - 1];
+    // If last part is not the endpoint name, it might be an ID
+    if (lastPart && lastPart.length > 10 && !lastPart.includes('.')) {
+      return lastPart.split('?')[0];
+    }
+  }
+  return null;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // EXPORTS
 // ═══════════════════════════════════════════════════════════════════
@@ -176,6 +194,7 @@ module.exports = {
   validateRequired,
   sanitizeInput,
   sendSuccess,
-  sendError
+  sendError,
+  extractId
 };
 
