@@ -59,6 +59,11 @@ body {
   box-shadow: var(--shadow-card);
 }
 
+.pos-header {
+  background: #0c0918 !important;
+  border-color: var(--border-color) !important;
+}
+
 .section-card {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-color) !important;
@@ -99,9 +104,9 @@ body {
 }
 
 .btn-secondary {
-  background: var(--bg-input);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+  background: var(--bg-input) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
 }
 
 .btn-ghost {
@@ -161,6 +166,17 @@ body {
 
 .pipeline-stage {
   background: #120d20 !important;
+}
+
+.ticket-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.customer-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-card);
 }
 
 .quick-action {
