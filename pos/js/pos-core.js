@@ -107,6 +107,7 @@ const POS = {
     if (!container) {
       container = document.createElement('div');
       container.className = 'toast-container';
+      container.style.cssText = 'position: fixed; top: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 12px;';
       document.body.appendChild(container);
     }
 
@@ -116,13 +117,38 @@ const POS = {
       warning: '⚠️',
       info: 'ℹ️'
     };
+    
+    // Type-specific colors
+    const colors = {
+      success: { bg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, #12121a 100%)', border: '#10b981' },
+      error: { bg: 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, #12121a 100%)', border: '#ef4444' },
+      warning: { bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.25) 0%, #12121a 100%)', border: '#f59e0b' },
+      info: { bg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.25) 0%, #12121a 100%)', border: '#3b82f6' }
+    };
+    const color = colors[type] || colors.info;
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    toast.style.cssText = `
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: ${color.bg};
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-left: 4px solid ${color.border};
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      min-width: 300px;
+      max-width: 450px;
+      animation: toastIn 0.3s ease;
+      backdrop-filter: blur(10px);
+      color: #fff;
+    `;
     toast.innerHTML = `
-      <span class="toast-icon">${icons[type]}</span>
-      <span class="toast-message">${message}</span>
-      <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+      <span style="font-size: 20px;">${icons[type]}</span>
+      <span style="flex: 1; font-size: 14px; color: #fff;">${message}</span>
+      <button style="background: rgba(255,255,255,0.1); border: none; color: #a1a1aa; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-size: 16px;" onclick="this.parentElement.remove()">×</button>
     `;
 
     container.appendChild(toast);
