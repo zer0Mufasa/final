@@ -2453,15 +2453,17 @@ input, select, textarea {
     { id: 'sim_issue', label: 'SIM Card Issue', keywords: ['sim', 'no sim', 'sim not detected', 'sim error', 'no service', 'no signal', 'cellular', 'mobile data', 'carrier'] },
     
     // === GAMING CONSOLE SPECIFIC (PS5, PS4, Xbox, Nintendo Switch) ===
-    { id: 'hdmi', label: 'HDMI Port Issue', keywords: ['hdmi', 'hdmi port', 'no video', 'no picture', 'no signal', 'tv not detecting', 'blank tv', 'hdmi broken', 'hdmi bent', 'hdmi pins', 'video output'] },
+    { id: 'hdmi', label: 'HDMI Port Issue', keywords: ['hdmi', 'hdmi port', 'no video', 'no picture', 'no signal', 'tv not detecting', 'blank tv', 'hdmi broken', 'hdmi bent', 'hdmi pins', 'video output', 'nothing on tv', 'nothing on monitor', 'nothing on screen', 'no output', 'monitor blank', 'tv blank', 'black tv', 'tv black', 'monitor black'] },
     { id: 'disc_drive', label: 'Disc Drive Issue', keywords: ['disc', 'disk', 'cd', 'dvd', 'blu-ray', 'bluray', 'wont read', 'wont accept', 'eject', 'stuck disc', 'grinding', 'disc error', 'unrecognized disc', 'dirty disc'] },
     { id: 'overheating', label: 'Overheating', keywords: ['overheating', 'hot', 'overheat', 'thermal', 'heat', 'fan loud', 'loud fan', 'shuts down', 'thermal paste', 'cooling', 'burns', 'too hot'] },
     { id: 'controller', label: 'Controller Issue', keywords: ['controller', 'joystick', 'analog', 'drift', 'stick drift', 'dualshock', 'dualsense', 'joycon', 'joy-con', 'drifting', 'buttons stuck', 'controller not working', 'wont pair', 'L3', 'R3', 'thumbstick'] },
-    { id: 'power_supply', label: 'Power Supply Issue', keywords: ['power supply', 'psu', 'no power', 'clicking', 'beeping', 'power brick', 'ac adapter', 'wall plug'] },
+    { id: 'power_supply', label: 'Power Supply Issue', keywords: ['power supply', 'psu', 'clicking', 'power brick', 'ac adapter', 'wall plug'] },
+    { id: 'beep_codes', label: 'Beep Code / POST Issue', keywords: ['beep', 'beeps', 'beeping', 'one beep', 'two beeps', 'three beeps', 'beep once', 'beeps once', 'post', 'post error', 'startup beep'] },
     { id: 'blue_light', label: 'Blue Light of Death', keywords: ['blue light', 'blod', 'pulsing blue', 'blue light of death', 'blue pulse'] },
     { id: 'white_light', label: 'White Light of Death', keywords: ['white light', 'wlod', 'white light of death', 'solid white'] },
     { id: 'red_ring', label: 'Red Ring/Light', keywords: ['red ring', 'rrod', 'red light', 'red ring of death', 'three red'] },
-    { id: 'gpu_issue', label: 'GPU/Graphics Issue', keywords: ['gpu', 'graphics', 'artifacts', 'visual glitch', 'screen tearing', 'graphical issues', 'corrupted graphics', 'checkerboard', 'green screen'] },
+    { id: 'gpu_issue', label: 'GPU/Graphics Issue', keywords: ['gpu', 'graphics', 'artifacts', 'visual glitch', 'screen tearing', 'graphical issues', 'corrupted graphics', 'checkerboard', 'green screen', 'nothing on screen', 'nothing on monitor', 'no video output', 'apu'] },
+    { id: 'no_video_output', label: 'No Video Output', keywords: ['nothing on monitor', 'nothing on screen', 'nothing on tv', 'no video', 'no picture', 'blank screen', 'black screen on tv', 'tv shows nothing', 'monitor shows nothing'] },
     { id: 'ssd_hdd', label: 'Storage Issue', keywords: ['ssd', 'hdd', 'hard drive', 'storage', 'full storage', 'corrupted', 'wont save', 'save data', 'internal storage', 'memory'] },
     { id: 'dock_issue', label: 'Dock Issue', keywords: ['dock', 'docking station', 'tv mode', 'wont dock', 'not charging in dock', 'switch dock'] },
     { id: 'joycon_rail', label: 'Joy-Con Rail Issue', keywords: ['joycon rail', 'joy-con rail', 'rail broken', 'wont click', 'loose joycon', 'sliding off', 'not connecting'] },
@@ -2471,7 +2473,7 @@ input, select, textarea {
     { id: 'trackpad', label: 'Trackpad Issue', keywords: ['trackpad', 'touchpad', 'mouse pad', 'cursor', 'clicking', 'gestures', 'not tracking', 'jumping cursor'] },
     { id: 'hinge', label: 'Hinge Issue', keywords: ['hinge', 'screen hinge', 'broken hinge', 'loose screen', 'wobbly', 'wont stay open', 'cracked hinge'] },
     { id: 'fan_issue', label: 'Fan Issue', keywords: ['fan', 'loud fan', 'fan noise', 'fan not spinning', 'cooling fan', 'noisy', 'rattling'] },
-    { id: 'motherboard', label: 'Motherboard Issue', keywords: ['motherboard', 'logic board', 'mainboard', 'dead motherboard', 'fried', 'short circuit', 'no post'] },
+    { id: 'motherboard', label: 'Motherboard Issue', keywords: ['motherboard', 'logic board', 'mainboard', 'dead motherboard', 'fried', 'short circuit', 'no post', 'could be motherboard', 'maybe motherboard', 'mobo', 'main board', 'board issue', 'board problem', 'internal board', 'apu issue'] },
     { id: 'ram_issue', label: 'RAM Issue', keywords: ['ram', 'memory', 'blue screen', 'bsod', 'random restart', 'slow computer', 'memory error'] },
     { id: 'usb_port', label: 'USB Port Issue', keywords: ['usb', 'usb port', 'usb not working', 'loose usb', 'bent usb', 'usb a', 'usb c'] },
     { id: 'dc_jack', label: 'DC Jack Issue', keywords: ['dc jack', 'power jack', 'charging port', 'barrel plug', 'loose connection', 'wiggle to charge'] },
@@ -2497,11 +2499,13 @@ input, select, textarea {
   const aiChecklistMap = [
     { check: 'touchWorks', value: 'no', keywords: ['no touch', 'touch not working', 'touch screen', 'digitizer', 'unresponsive', 'ghost touch', 'phantom touch'] },
     { check: 'powersOn', value: 'no', keywords: ['no power', 'dead', 'wont turn on', 'wont power', 'not turning on', 'doesnt turn on', 'wont boot', 'completely dead', 'nothing happens'] },
+    { check: 'powersOn', value: 'yes', keywords: ['turns on', 'powers on', 'beeps', 'beeps once', 'light comes on', 'fan spins'] },
     { check: 'chargingWorks', value: 'no', keywords: ['wont charge', 'not charging', 'doesnt charge', 'charging port', 'loose port', 'intermittent charging'] },
     { check: 'cameraWorks', value: 'no', keywords: ['camera not working', 'camera broken', 'black camera', 'blurry camera', 'camera app crash'] },
     { check: 'soundWorks', value: 'no', keywords: ['no sound', 'speaker not working', 'no audio', 'muffled', 'crackling', 'distorted sound'] },
+    { check: 'soundWorks', value: 'yes', keywords: ['beeps', 'beeping', 'makes sound', 'plays audio', 'sound works'] },
     { check: 'wifiWorks', value: 'no', keywords: ['wifi not working', 'no wifi', 'wifi broken', 'cant connect', 'keeps disconnecting'] },
-    { check: 'displayWorks', value: 'no', keywords: ['no display', 'black screen', 'no video', 'no picture', 'hdmi not working', 'blank screen'] },
+    { check: 'displayWorks', value: 'no', keywords: ['no display', 'black screen', 'no video', 'no picture', 'hdmi not working', 'blank screen', 'nothing on screen', 'nothing on monitor', 'nothing on tv', 'monitor black', 'tv black'] },
     { check: 'buttonsWork', value: 'no', keywords: ['button not working', 'stuck button', 'broken button', 'power button', 'volume button'] }
   ];
 
