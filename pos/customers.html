@@ -7,15 +7,24 @@
   <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
   <link rel="stylesheet" href="css/pos.css">
   <style>
-    /* Force Dark Theme */
+    /* Force Dark Theme - Hardcoded */
+    :root {
+      --bg-dark: #08080c;
+      --purple: #8b5cf6;
+      --purple-light: #a78bfa;
+      --purple-glow: rgba(139, 92, 246, 0.3);
+      --green: #10b981;
+      --blue: #3b82f6;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+    }
+    
     html, body {
       background: #08080c !important;
+      color: #ffffff;
     }
-    .pos-main {
+    .pos-app, .pos-main, .pos-content {
       background: #08080c !important;
-    }
-    .pos-content {
-      background: #08080c;
     }
 
     /* Customers Page Specific */
@@ -31,19 +40,19 @@
       padding: 14px 20px;
       border-radius: 14px;
       background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border-light);
-      color: var(--text-primary);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ffffff;
       font-size: 14px;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
     }
 
     .search-box:focus {
       outline: none;
-      border-color: var(--purple);
+      border-color: #8b5cf6;
       box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1), 0 0 30px rgba(139, 92, 246, 0.1);
     }
 
-    .search-box::placeholder { color: var(--text-muted); }
+    .search-box::placeholder { color: rgba(255, 255, 255, 0.35); }
 
     /* Stats Row */
     .stats-row {
@@ -54,13 +63,13 @@
     }
 
     .mini-stat {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      background: linear-gradient(165deg, #12121a 0%, #0a0a0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: 16px;
       padding: 20px;
       position: relative;
       overflow: hidden;
-      transition: var(--transition-smooth);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .mini-stat::before {
@@ -70,16 +79,16 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--stat-color, var(--purple)), transparent);
+      background: linear-gradient(90deg, transparent, var(--stat-color, #8b5cf6), transparent);
       opacity: 0;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
     }
 
     .mini-stat:hover::before { opacity: 1; }
 
     .mini-stat:hover {
       transform: translateY(-4px);
-      border-color: var(--border-accent);
+      border-color: rgba(139, 92, 246, 0.2);
       box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
     }
 
@@ -94,17 +103,17 @@
       font-size: 20px;
       margin-bottom: 12px;
       position: relative;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
     }
 
     .mini-stat-ring {
       position: absolute;
       inset: -4px;
-      border: 2px solid var(--stat-color, var(--purple));
+      border: 2px solid var(--stat-color, #8b5cf6);
       border-radius: 16px;
       opacity: 0;
       transform: rotate(0deg);
-      transition: var(--transition-smooth);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .mini-stat:hover .mini-stat-ring {
@@ -118,12 +127,12 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 24px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #ffffff;
     }
 
     .mini-stat-label {
       font-size: 13px;
-      color: var(--text-muted);
+      color: rgba(255, 255, 255, 0.35);
     }
 
     /* Customer Grid */
@@ -134,12 +143,12 @@
     }
 
     .customer-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      background: linear-gradient(165deg, #12121a 0%, #0a0a0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: 20px;
       padding: 24px;
       cursor: pointer;
-      transition: var(--transition-smooth);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
     }
@@ -151,15 +160,15 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, var(--purple), transparent);
+      background: linear-gradient(90deg, #8b5cf6, transparent);
       opacity: 0;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
     }
 
     .customer-card:hover::before { opacity: 1; }
 
     .customer-card:hover {
-      border-color: var(--border-accent);
+      border-color: rgba(139, 92, 246, 0.2);
       transform: translateY(-6px);
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
     }
@@ -171,10 +180,10 @@
       width: 100px;
       height: 100px;
       border-radius: 50%;
-      background: var(--purple);
+      background: #8b5cf6;
       filter: blur(50px);
       opacity: 0;
-      transition: var(--transition-smooth);
+      transition: all 0.4s ease;
     }
 
     .customer-card:hover .customer-card-glow { opacity: 0.15; }
@@ -190,7 +199,7 @@
       width: 56px;
       height: 56px;
       border-radius: 16px;
-      background: linear-gradient(135deg, var(--purple), var(--purple-dark));
+      background: linear-gradient(135deg, #8b5cf6, #6d28d9);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -198,18 +207,18 @@
       font-weight: 700;
       color: white;
       position: relative;
-      box-shadow: 0 6px 20px var(--purple-glow);
-      transition: var(--transition-normal);
+      box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
+      transition: all 0.3s ease;
     }
 
     .avatar-ring {
       position: absolute;
       inset: -5px;
-      border: 2px solid var(--purple);
+      border: 2px solid #8b5cf6;
       border-radius: 20px;
       opacity: 0.3;
       transform: rotate(0deg);
-      transition: var(--transition-smooth);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .customer-card:hover .avatar-ring {

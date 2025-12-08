@@ -7,15 +7,25 @@
   <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
   <link rel="stylesheet" href="css/pos.css">
   <style>
-    /* Force Dark Theme */
+    /* Force Dark Theme - Hardcoded */
+    :root {
+      --bg-dark: #08080c;
+      --bg-card-dark: linear-gradient(165deg, #12121a 0%, #0a0a0f 100%);
+      --border-dark: rgba(255, 255, 255, 0.04);
+      --border-accent: rgba(139, 92, 246, 0.2);
+      --text-white: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.35);
+      --purple: #8b5cf6;
+      --purple-light: #a78bfa;
+      --purple-glow: rgba(139, 92, 246, 0.3);
+    }
+    
     html, body {
       background: #08080c !important;
+      color: #ffffff;
     }
-    .pos-main {
+    .pos-app, .pos-main, .pos-content {
       background: #08080c !important;
-    }
-    .pos-content {
-      background: #08080c;
     }
 
     /* Dashboard Specific */
@@ -33,19 +43,19 @@
     .welcome-title {
       font-size: 36px;
       font-weight: 800;
-      color: var(--text-primary);
+      color: #ffffff;
       margin-bottom: 8px;
     }
 
     .welcome-title span {
-      background: linear-gradient(135deg, var(--purple-light), var(--purple));
+      background: linear-gradient(135deg, #a78bfa, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .welcome-sub {
       font-size: 16px;
-      color: var(--text-muted);
+      color: rgba(255, 255, 255, 0.35);
     }
 
     /* Quick Action Cards */
@@ -57,15 +67,15 @@
     }
 
     .action-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      background: linear-gradient(165deg, #12121a 0%, #0a0a0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: 16px;
       padding: 20px;
       cursor: pointer;
-      transition: var(--transition-smooth);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       text-align: center;
       text-decoration: none;
-      color: var(--text-primary);
+      color: #ffffff;
       position: relative;
       overflow: hidden;
     }
@@ -76,14 +86,14 @@
       inset: 0;
       background: linear-gradient(135deg, var(--accent-color), transparent);
       opacity: 0;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
     }
 
     .action-card:hover::before { opacity: 0.1; }
 
     .action-card:hover {
       transform: translateY(-6px);
-      border-color: var(--border-accent);
+      border-color: rgba(139, 92, 246, 0.2);
       box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3), 0 0 40px var(--accent-glow);
     }
 
@@ -139,7 +149,7 @@
     .section-title {
       font-size: 20px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #ffffff;
     }
 
     /* Recent Tickets */
@@ -150,15 +160,15 @@
     }
 
     .ticket-row {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      background: linear-gradient(165deg, #12121a 0%, #0a0a0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: 16px;
       padding: 16px 20px;
       display: flex;
       align-items: center;
       gap: 16px;
       cursor: pointer;
-      transition: var(--transition-normal);
+      transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
     }
@@ -170,12 +180,12 @@
       top: 0;
       bottom: 0;
       width: 4px;
-      background: var(--status-color, var(--purple));
-      transition: var(--transition-normal);
+      background: var(--status-color, #8b5cf6);
+      transition: all 0.3s ease;
     }
 
     .ticket-row:hover {
-      border-color: var(--border-accent);
+      border-color: rgba(139, 92, 246, 0.2);
       transform: translateX(8px);
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
     }
@@ -186,7 +196,7 @@
       font-family: 'JetBrains Mono', monospace;
       font-size: 13px;
       font-weight: 600;
-      color: var(--purple-light);
+      color: #a78bfa;
       min-width: 120px;
     }
 
@@ -196,13 +206,13 @@
     }
 
     .ticket-customer {
-      color: var(--text-secondary);
+      color: rgba(255, 255, 255, 0.6);
       min-width: 150px;
     }
 
     .ticket-time {
       font-size: 12px;
-      color: var(--text-muted);
+      color: rgba(255, 255, 255, 0.35);
       min-width: 80px;
     }
 
@@ -215,12 +225,12 @@
 
     .pipeline-bar {
       flex: 1;
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+      background: linear-gradient(165deg, #12121a 0%, #0a0a0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
       border-radius: 16px;
       padding: 20px;
       text-align: center;
-      transition: var(--transition-smooth);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
     }
@@ -234,7 +244,7 @@
       height: var(--fill-height, 0%);
       background: linear-gradient(180deg, var(--bar-color) 0%, transparent 100%);
       opacity: 0.15;
-      transition: var(--transition-smooth);
+      transition: all 0.4s ease;
     }
 
     .pipeline-bar:hover {
@@ -254,7 +264,7 @@
 
     .pipeline-label {
       font-size: 12px;
-      color: var(--text-muted);
+      color: rgba(255, 255, 255, 0.35);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
