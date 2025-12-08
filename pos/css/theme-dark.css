@@ -3,21 +3,21 @@
   --primary: #b794f6;
   --primary-dark: #7c3aed;
   --primary-light: #c7a6ff;
-  --secondary: #2a2347;
+  --secondary: #1d1730;
   --accent: #9f7aea;
 
-  --bg-body: #0f0a1f;
-  --bg-card: #16112b;
-  --bg-sidebar: #120e24;
-  --bg-sidebar-hover: #1c1634;
-  --bg-input: #1d1732;
+  --bg-body: #0b0817;
+  --bg-card: #141026;
+  --bg-sidebar: #0c091a;
+  --bg-sidebar-hover: #15102a;
+  --bg-input: #1a142c;
 
-  --text-primary: #e7e4ff;
-  --text-secondary: #c0b8e6;
-  --text-muted: #8e86b5;
+  --text-primary: #f3edff;
+  --text-secondary: #c8c1ec;
+  --text-muted: #9c92c7;
   --text-inverse: #0f0a1f;
 
-  --border-color: #2b2146;
+  --border-color: #211a36;
   --border-focus: #b794f6;
 
   --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -37,6 +37,15 @@ body {
               radial-gradient(circle at 80% 0%, rgba(96, 165, 250, 0.07), transparent 30%),
               var(--bg-body);
   color: var(--text-primary);
+}
+
+.pos-main {
+  background: transparent;
+}
+
+.pos-header {
+  background: #0e0a1d;
+  border-color: var(--border-color);
 }
 
 .pos-header,
@@ -83,6 +92,33 @@ body {
 
 .table tr:hover td {
   background: rgba(183, 148, 246, 0.08);
+}
+
+.stat-card,
+.quick-actions .card,
+.pipeline-stage,
+.status-pipeline .stage,
+.ticket-card,
+.kanban-column,
+.pricing-table,
+.empty-state {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.stat-card .value,
+.stat-card .label,
+.pipeline-stage .count,
+.pipeline-stage .label,
+.status-pipeline .stage .count,
+.status-pipeline .stage .label {
+  color: var(--text-primary);
+}
+
+.status-pipeline .stage {
+  box-shadow: var(--shadow-card);
 }
 
 .status-pill,
