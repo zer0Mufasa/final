@@ -730,6 +730,9 @@
         return `
             <div class="fx-error">
                 ${message}
+                <div style="margin-top:12px;font-size:12px;opacity:0.8">
+                    Can't chat? Email us at <a href="mailto:repair@fixologyai.com" style="color:#A78BFA">repair@fixologyai.com</a>
+                </div>
             </div>
         `;
     }

@@ -5,6 +5,16 @@
   ],
   "routes": [
     {
+      "src": "/api/contact",
+      "dest": "/api/contact.js",
+      "methods": ["POST", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      }
+    },
+    {
       "src": "/api/imei-check",
       "dest": "/api/imei-check.js",
       "methods": ["GET", "POST", "OPTIONS"],
