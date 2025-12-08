@@ -110,7 +110,14 @@
   padding: 0;
 }
 
-html, body {
+html {
+  height: 100%;
+  overflow: hidden;
+  /* Force dark scrollbar on Windows */
+  color-scheme: dark;
+}
+
+body {
   height: 100%;
   overflow: hidden;
 }
@@ -404,6 +411,7 @@ input, select, textarea {
   overflow: auto;
   padding: var(--space-6);
   background: #08080c;
+  color-scheme: dark;
 }
 
 /* ============================================

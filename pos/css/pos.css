@@ -86,7 +86,14 @@
   background: rgba(8, 8, 12, 0.8) !important;
 }
 
-html, body {
+html {
+  height: 100%;
+  overflow: hidden;
+  /* Force dark scrollbar on Windows/Chrome */
+  color-scheme: dark;
+}
+
+body {
   height: 100%;
   overflow: hidden;
 }
