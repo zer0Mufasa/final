@@ -1666,6 +1666,7 @@ input, select, textarea {
       margin-bottom: var(--space-3);
     }
   </style>
+<link rel="stylesheet" href="/pos/css/theme-dark.css">
 </head>
 <body>
   <div class="pos-app">
@@ -1851,6 +1852,11 @@ input, select, textarea {
                 <div class="form-group">
                   <label class="form-label">Customer's Description *</label>
                   <textarea class="form-input form-textarea" id="issue-description" placeholder="Describe the problem in the customer's words..."></textarea>
+                </div>
+                <div class="ai-hints" id="ai-hints" style="display:none;">
+                  <h4>Suggested symptoms & checks</h4>
+                  <div class="ai-suggestions" id="ai-suggested-symptoms"></div>
+                  <div class="checklist-hint" id="ai-checklist-hints"></div>
                 </div>
 
                 <label class="form-label">Common Symptoms (click to select)</label>
@@ -2085,9 +2091,43 @@ input, select, textarea {
       pricing: { laborCost: 50, partsCost: 0, discount: 0, taxRate: 0.08, deposit: 0 }
     };
 
+  const aiSymptomMap = [
+    { id: 'cracked_screen', label: 'Cracked Screen', keywords: ['crack', 'glass', 'broken screen', 'shatter'] },
+    { id: 'no_power', label: 'Won’t Power On', keywords: ['no power', 'dead', 'won\'t turn on'] },
+    { id: 'no_charge', label: 'Charging Issue', keywords: ['charge', 'charging', 'not charging', 'port'] },
+    { id: 'battery_drain', label: 'Battery Drain', keywords: ['battery', 'drain', 'dies fast', 'low battery'] },
+    { id: 'water_damage', label: 'Water Damage', keywords: ['water', 'liquid', 'spill'] },
+    { id: 'no_touch', label: 'Touch Not Working', keywords: ['touch', 'digitizer', 'unresponsive'] },
+    { id: 'no_display', label: 'Display Issue', keywords: ['display', 'screen black', 'no image'] },
+    { id: 'speaker', label: 'Speaker Issue', keywords: ['speaker', 'sound', 'quiet'] },
+    { id: 'microphone', label: 'Microphone Issue', keywords: ['microphone', 'mic', 'caller cannot hear'] },
+    { id: 'camera', label: 'Camera Issue', keywords: ['camera', 'lens', 'photo', 'video'] },
+    { id: 'buttons', label: 'Button Issue', keywords: ['button', 'volume', 'power button'] },
+    { id: 'software', label: 'Software Issue', keywords: ['os', 'software', 'slow', 'lag', 'update'] }
+  ];
+
+  const aiChecklistMap = [
+    { check: 'touchWorks', value: 'no', keywords: ['no touch', 'touch', 'digitizer'] },
+    { check: 'powersOn', value: 'no', keywords: ['no power', 'dead', 'won\'t turn on'] },
+    { check: 'chargingWorks', value: 'no', keywords: ['charge', 'charging', 'port'] },
+    { check: 'cameraWorks', value: 'no', keywords: ['camera'] },
+    { check: 'soundWorks', value: 'no', keywords: ['speaker', 'sound'] },
+    { check: 'wifiWorks', value: 'no', keywords: ['wifi', 'wi-fi', 'network'] }
+  ];
+
+  const aiRepairSuggestions = [
+    { type: 'screen_replacement', keywords: ['screen', 'glass', 'display', 'digitizer'] },
+    { type: 'battery_replacement', keywords: ['battery', 'dies', 'drain'] },
+    { type: 'charging_port', keywords: ['charge', 'charging', 'port'] },
+    { type: 'water_damage', keywords: ['water', 'liquid'] },
+    { type: 'software', keywords: ['software', 'slow', 'lag'] }
+  ];
+
     let currentStep = 1;
     const totalSteps = 5;
     let selectedParts = [];
+  let autoParts = new Set();
+  let repairManuallySelected = false;
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
@@ -2099,6 +2139,8 @@ input, select, textarea {
       setupPricingListeners();
       setupSignaturePad();
       setupNavigation();
+      setupDescriptionAI();
+      setupModelIntelligence();
       updatePricingSummary();
       
       // Check for prefill customer from customers page
@@ -2345,15 +2387,23 @@ input, select, textarea {
     function setupSymptomChips() {
       document.querySelectorAll('.symptom-chip').forEach(chip => {
         chip.addEventListener('click', () => {
-          chip.classList.toggle('active');
-          const symptom = chip.dataset.symptom;
-          if (chip.classList.contains('active')) {
-            ticketData.issue.symptoms.push(symptom);
-          } else {
-            ticketData.issue.symptoms = ticketData.issue.symptoms.filter(s => s !== symptom);
-          }
+          toggleSymptom(chip.dataset.symptom);
         });
       });
+    }
+
+    function toggleSymptom(symptomId, forceActive = undefined) {
+      const chip = document.querySelector(`.symptom-chip[data-symptom="${symptomId}"]`);
+      if (!chip) return;
+      const shouldActivate = forceActive !== undefined ? forceActive : !chip.classList.contains('active');
+      chip.classList.toggle('active', shouldActivate);
+      if (shouldActivate) {
+        if (!ticketData.issue.symptoms.includes(symptomId)) {
+          ticketData.issue.symptoms.push(symptomId);
+        }
+      } else {
+        ticketData.issue.symptoms = ticketData.issue.symptoms.filter(s => s !== symptomId);
+      }
     }
 
     // Checklist
@@ -2364,16 +2414,143 @@ input, select, textarea {
 
         item.querySelectorAll('.checklist-toggle').forEach(toggle => {
           toggle.addEventListener('click', () => {
-            // Clear all active classes
-            item.querySelectorAll('.checklist-toggle').forEach(t => {
-              t.classList.remove('active-yes', 'active-no', 'active-unknown');
-            });
-            
-            const value = toggle.dataset.value;
-            toggle.classList.add(`active-${value}`);
-            ticketData.issue.checklist[checkName] = value;
+            setChecklistValue(checkName, toggle.dataset.value);
           });
         });
+      });
+    }
+
+    function setChecklistValue(checkName, value) {
+      const item = document.querySelector(`.checklist-item[data-check="${checkName}"]`);
+      if (!item) return;
+      item.querySelectorAll('.checklist-toggle').forEach(t => {
+        t.classList.remove('active-yes', 'active-no', 'active-unknown');
+      });
+      const target = item.querySelector(`.checklist-toggle[data-value="${value}"]`);
+      if (target) {
+        target.classList.add(`active-${value}`);
+      }
+      ticketData.issue.checklist[checkName] = value;
+    }
+
+    // AI Suggestions from description
+    function setupDescriptionAI() {
+      const desc = document.getElementById('issue-description');
+      if (!desc) return;
+      desc.addEventListener('input', POS.debounce(updateDescriptionIntelligence, 200));
+    }
+
+    function updateDescriptionIntelligence() {
+      const text = (document.getElementById('issue-description').value || '').toLowerCase();
+      const matchedSymptoms = aiSymptomMap
+        .filter(s => s.keywords.some(k => text.includes(k)))
+        .map(s => s.id);
+
+      const matchedChecks = aiChecklistMap.filter(rule =>
+        rule.keywords.some(k => text.includes(k))
+      );
+
+      const wrapper = document.getElementById('ai-hints');
+      const chipWrap = document.getElementById('ai-suggested-symptoms');
+      const checklistHint = document.getElementById('ai-checklist-hints');
+
+      if (!matchedSymptoms.length && !matchedChecks.length) {
+        wrapper.style.display = 'none';
+        chipWrap.innerHTML = '';
+        checklistHint.textContent = '';
+        return;
+      }
+
+      wrapper.style.display = 'block';
+      chipWrap.innerHTML = matchedSymptoms.map(id => {
+        const meta = aiSymptomMap.find(s => s.id === id);
+        return `<button type="button" class="ai-chip" data-symptom="${id}">${meta?.label || id}</button>`;
+      }).join('');
+
+      chipWrap.querySelectorAll('.ai-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          toggleSymptom(btn.dataset.symptom, true);
+          btn.classList.add('active');
+        });
+      });
+
+      matchedChecks.forEach(rule => setChecklistValue(rule.check, rule.value));
+      checklistHint.textContent = matchedChecks.length
+        ? `Checklist auto-set: ${matchedChecks.map(c => `${c.check} → ${c.value}`).join(', ')}`
+        : '';
+
+      // Suggest repair type if user hasn't chosen
+      if (!repairManuallySelected) {
+        const repairHit = aiRepairSuggestions.find(r => r.keywords.some(k => text.includes(k)));
+        if (repairHit) {
+          document.getElementById('repair-type').value = repairHit.type;
+          ticketData.repair.type = repairHit.type;
+        }
+      }
+    }
+
+    // Model/brand intelligence -> parts & pricing
+    function setupModelIntelligence() {
+      const brandInput = document.getElementById('device-brand');
+      const modelInput = document.getElementById('device-model');
+
+      [brandInput, modelInput].forEach(input => {
+        input.addEventListener('input', POS.debounce(applyModelDefaults, 200));
+        input.addEventListener('change', POS.debounce(applyModelDefaults, 200));
+      });
+
+      document.getElementById('repair-type').addEventListener('change', () => {
+        repairManuallySelected = true;
+      });
+    }
+
+    function applyModelDefaults() {
+      const brand = (document.getElementById('device-brand').value || '').trim();
+      const model = (document.getElementById('device-model').value || '').trim();
+      if (!brand && !model) return;
+
+      // Remove previous auto parts
+      if (autoParts.size) {
+        selectedParts = selectedParts.filter(p => !autoParts.has(p.id));
+        autoParts.clear();
+      }
+
+      const inventory = POS_DATA.getInventory();
+      const normBrand = normalizeText(brand);
+      const normModel = normalizeText(model);
+
+      const matches = inventory.filter(part => {
+        const name = normalizeText(part.name || '');
+        return (normModel && name.includes(normModel)) || (normBrand && name.includes(normBrand));
+      });
+
+      matches.slice(0, 2).forEach(part => {
+        autoParts.add(part.id);
+        if (!selectedParts.find(p => p.id === part.id)) {
+          selectedParts.push({ ...part, quantity: 1 });
+        }
+      });
+
+      if (matches.length) {
+        const laborInput = document.getElementById('labor-cost');
+        const current = parseFloat(laborInput.value) || 0;
+        laborInput.value = Math.max(current, 60);
+      }
+
+      syncPartsSelectionUI();
+      updatePricingSummary();
+    }
+
+    function normalizeText(text) {
+      return (text || '').toLowerCase().replace(/[^a-z0-9]/g, ' ').trim();
+    }
+
+    function syncPartsSelectionUI() {
+      document.querySelectorAll('.part-item').forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const selected = selectedParts.some(p => p.id === item.dataset.id);
+        checkbox.checked = selected;
+        item.classList.toggle('selected', selected);
       });
     }
 
@@ -2399,17 +2576,24 @@ input, select, textarea {
       `).join('');
 
       partsList.querySelectorAll('.part-item').forEach(item => {
+        const checkbox = item.querySelector('input');
+        const partId = item.dataset.id;
+        const alreadySelected = selectedParts.some(p => p.id === partId);
+        checkbox.checked = alreadySelected;
+        item.classList.toggle('selected', alreadySelected);
+
         item.addEventListener('click', () => {
-          const checkbox = item.querySelector('input');
           checkbox.checked = !checkbox.checked;
           item.classList.toggle('selected', checkbox.checked);
 
-          const partId = item.dataset.id;
           if (checkbox.checked) {
             const part = POS_DATA.getPart(partId);
-            selectedParts.push({ ...part, quantity: 1 });
+            if (part && !selectedParts.find(p => p.id === partId)) {
+              selectedParts.push({ ...part, quantity: 1 });
+            }
           } else {
             selectedParts = selectedParts.filter(p => p.id !== partId);
+            autoParts.delete(partId);
           }
           updatePricingSummary();
         });

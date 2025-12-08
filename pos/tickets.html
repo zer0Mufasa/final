@@ -1317,6 +1317,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/pos/css/theme-dark.css">
 </head>
 <body>
   <div class="pos-app">
@@ -1406,6 +1407,7 @@
             <button class="view-toggle-btn active" data-view="kanban">Board</button>
             <button class="view-toggle-btn" data-view="list">List</button>
           </div>
+          <button class="btn btn-ghost btn-sm" id="focus-toggle">🌙 Focus</button>
           <a href="ticket-new.html" class="btn btn-primary">+ New Ticket</a>
         </div>
       </header>
@@ -1470,12 +1472,14 @@
     let currentView = 'kanban';
     let currentFilter = 'all';
     let searchQuery = '';
+    let focusMode = localStorage.getItem('pos_focus_mode') === '1';
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
       loadTickets();
       setupEventListeners();
       updateStats();
+      applyFocusMode();
     });
 
     function setupEventListeners() {
@@ -1504,6 +1508,23 @@
         searchQuery = e.target.value;
         renderTickets();
       }, 300));
+
+      // Focus toggle
+      document.getElementById('focus-toggle').addEventListener('click', toggleFocusMode);
+    }
+
+    function toggleFocusMode() {
+      focusMode = !focusMode;
+      localStorage.setItem('pos_focus_mode', focusMode ? '1' : '0');
+      applyFocusMode();
+    }
+
+    function applyFocusMode() {
+      document.body.classList.toggle('focus-mode', focusMode);
+      const btn = document.getElementById('focus-toggle');
+      if (btn) {
+        btn.textContent = focusMode ? '☀️ Exit Focus' : '🌙 Focus';
+      }
     }
 
     function loadTickets() {

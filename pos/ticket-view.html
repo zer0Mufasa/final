@@ -1509,6 +1509,7 @@ input, select, textarea {
       }
     }
   </style>
+  <link rel="stylesheet" href="/pos/css/theme-dark.css">
 </head>
 <body>
   <div class="pos-app">
@@ -1538,6 +1539,7 @@ input, select, textarea {
           <h1 class="header-title" id="ticket-id">Loading...</h1>
         </div>
         <div class="header-right">
+          <button class="btn btn-ghost btn-sm" id="focus-toggle">🌙 Focus</button>
           <div class="dropdown">
             <button class="btn btn-secondary dropdown-toggle">🖨️ Print</button>
             <div class="dropdown-menu">
@@ -1779,6 +1781,7 @@ input, select, textarea {
   <script>
     let ticket = null;
     let ticketId = null;
+    let focusMode = localStorage.getItem('pos_focus_mode') === '1';
 
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
@@ -1791,6 +1794,7 @@ input, select, textarea {
       
       loadTicket();
       setupEventListeners();
+      applyFocusMode();
     });
 
     function loadTicket() {
@@ -1831,6 +1835,25 @@ input, select, textarea {
           document.getElementById('change-display').style.display = 'none';
         }
       });
+
+      const focusBtn = document.getElementById('focus-toggle');
+      if (focusBtn) {
+        focusBtn.addEventListener('click', toggleFocusMode);
+      }
+    }
+
+    function toggleFocusMode() {
+      focusMode = !focusMode;
+      localStorage.setItem('pos_focus_mode', focusMode ? '1' : '0');
+      applyFocusMode();
+    }
+
+    function applyFocusMode() {
+      document.body.classList.toggle('focus-mode', focusMode);
+      const btn = document.getElementById('focus-toggle');
+      if (btn) {
+        btn.textContent = focusMode ? '☀️ Exit Focus' : '🌙 Focus';
+      }
     }
 
     function renderTicket() {
