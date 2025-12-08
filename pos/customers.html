@@ -93,10 +93,9 @@
     }
 
     .mini-stat-icon {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.05));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -104,7 +103,13 @@
       margin-bottom: 12px;
       position: relative;
       transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     }
+    
+    .mini-stat-icon.gradient-purple { background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #7c3aed 100%); }
+    .mini-stat-icon.gradient-blue { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 50%, #0284c7 100%); }
+    .mini-stat-icon.gradient-yellow { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%); }
+    .mini-stat-icon.gradient-green { background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%); }
 
     .mini-stat-ring {
       position: absolute;
@@ -374,33 +379,29 @@
       <div class="pos-content">
         <!-- Stats -->
         <div class="stats-row">
-          <div class="mini-stat" style="--stat-color: #8b5cf6;">
-            <div class="mini-stat-icon">
-              <div class="mini-stat-ring"></div>
+          <div class="mini-stat animate-in" style="--stat-color: #8b5cf6;">
+            <div class="mini-stat-icon gradient-purple">
               👥
             </div>
             <div class="mini-stat-value" id="stat-total">0</div>
             <div class="mini-stat-label">Total Customers</div>
           </div>
-          <div class="mini-stat" style="--stat-color: #10b981;">
-            <div class="mini-stat-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05));">
-              <div class="mini-stat-ring"></div>
+          <div class="mini-stat animate-in" style="--stat-color: #10b981;">
+            <div class="mini-stat-icon gradient-green">
               🔄
             </div>
             <div class="mini-stat-value" id="stat-returning">0</div>
             <div class="mini-stat-label">Returning</div>
           </div>
-          <div class="mini-stat" style="--stat-color: #3b82f6;">
-            <div class="mini-stat-icon" style="background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.05));">
-              <div class="mini-stat-ring"></div>
+          <div class="mini-stat animate-in" style="--stat-color: #3b82f6;">
+            <div class="mini-stat-icon gradient-blue">
               ✨
             </div>
             <div class="mini-stat-value" id="stat-new">0</div>
             <div class="mini-stat-label">New This Month</div>
           </div>
-          <div class="mini-stat" style="--stat-color: #f59e0b;">
-            <div class="mini-stat-icon" style="background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05));">
-              <div class="mini-stat-ring"></div>
+          <div class="mini-stat animate-in" style="--stat-color: #f59e0b;">
+            <div class="mini-stat-icon gradient-yellow">
               ⭐
             </div>
             <div class="mini-stat-value" id="stat-vip">0</div>

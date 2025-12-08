@@ -503,10 +503,9 @@
 
         <!-- Stats Grid -->
         <div class="dashboard-grid">
-          <div class="stat-card" style="--accent-color: #10b981;">
-            <div class="stat-glow"></div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(16,185,129,0.3), rgba(16,185,129,0.1));">
-              <div class="stat-icon-ring" style="border-color: #10b981;"></div>
+          <div class="stat-card animate-in" style="--accent-color: #10b981;">
+            <div class="stat-glow" style="background: #10b981;"></div>
+            <div class="gradient-icon gradient-green" style="width:56px;height:56px;border-radius:14px;margin-bottom:16px;">
               🎫
             </div>
             <div class="stat-value" id="active-tickets">0</div>
@@ -514,10 +513,9 @@
             <div class="stat-change positive">↑ 12% from yesterday</div>
           </div>
 
-          <div class="stat-card" style="--accent-color: #3b82f6;">
-            <div class="stat-glow"></div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(59,130,246,0.1));">
-              <div class="stat-icon-ring" style="border-color: #3b82f6;"></div>
+          <div class="stat-card animate-in" style="--accent-color: #3b82f6;">
+            <div class="stat-glow" style="background: #3b82f6;"></div>
+            <div class="gradient-icon gradient-blue" style="width:56px;height:56px;border-radius:14px;margin-bottom:16px;">
               ✅
             </div>
             <div class="stat-value" id="completed-today">0</div>
@@ -525,10 +523,9 @@
             <div class="stat-change positive">↑ 8% from yesterday</div>
           </div>
 
-          <div class="stat-card" style="--accent-color: #8b5cf6;">
-            <div class="stat-glow"></div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(139,92,246,0.1));">
-              <div class="stat-icon-ring" style="border-color: #8b5cf6;"></div>
+          <div class="stat-card animate-in" style="--accent-color: #8b5cf6;">
+            <div class="stat-glow" style="background: #8b5cf6;"></div>
+            <div class="gradient-icon gradient-purple" style="width:56px;height:56px;border-radius:14px;margin-bottom:16px;">
               💰
             </div>
             <div class="stat-value" id="revenue-today">$0</div>
@@ -536,10 +533,9 @@
             <div class="stat-change positive">↑ 24% from yesterday</div>
           </div>
 
-          <div class="stat-card" style="--accent-color: #f59e0b;">
-            <div class="stat-glow"></div>
-            <div class="stat-icon" style="background: linear-gradient(135deg, rgba(245,158,11,0.3), rgba(245,158,11,0.1));">
-              <div class="stat-icon-ring" style="border-color: #f59e0b;"></div>
+          <div class="stat-card animate-in" style="--accent-color: #f59e0b;">
+            <div class="stat-glow" style="background: #f59e0b;"></div>
+            <div class="gradient-icon gradient-yellow" style="width:56px;height:56px;border-radius:14px;margin-bottom:16px;">
               📱
             </div>
             <div class="stat-value" id="imei-checks">0</div>
@@ -553,32 +549,20 @@
           <h2 class="section-title">Quick Actions</h2>
         </div>
         <div class="quick-actions">
-          <a href="ticket-new.html" class="action-card new-ticket">
-            <div class="action-icon">
-              <div class="action-icon-ring"></div>
-              ➕
-            </div>
+          <a href="ticket-new.html" class="quick-action-card green animate-in">
+            <div class="action-icon gradient-icon gradient-green">➕</div>
             <div class="action-label">New Ticket</div>
           </a>
-          <a href="customers.html" class="action-card customers">
-            <div class="action-icon">
-              <div class="action-icon-ring"></div>
-              👤
-            </div>
+          <a href="customers.html" class="quick-action-card blue animate-in">
+            <div class="action-icon gradient-icon gradient-blue">👤</div>
             <div class="action-label">Add Customer</div>
           </a>
-          <a href="inventory.html" class="action-card inventory">
-            <div class="action-icon">
-              <div class="action-icon-ring"></div>
-              📦
-            </div>
+          <a href="inventory.html" class="quick-action-card orange animate-in">
+            <div class="action-icon gradient-icon gradient-orange">📦</div>
             <div class="action-label">Inventory</div>
           </a>
-          <a href="../imei.html" class="action-card imei">
-            <div class="action-icon">
-              <div class="action-icon-ring"></div>
-              🔍
-            </div>
+          <a href="../imei.html" class="quick-action-card purple animate-in">
+            <div class="action-icon gradient-icon gradient-purple">🔍</div>
             <div class="action-label">IMEI Check</div>
           </a>
         </div>
