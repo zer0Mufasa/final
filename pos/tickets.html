@@ -195,6 +195,34 @@
     .kanban-column.ready { --col-color: #10b981; }
     .kanban-column.closed { --col-color: #6b7280; }
 
+    /* Drag and Drop Styles */
+    .ticket-card {
+      cursor: grab;
+    }
+    
+    .ticket-card.dragging {
+      opacity: 0.5;
+      transform: rotate(3deg);
+      cursor: grabbing;
+      box-shadow: 0 20px 50px rgba(139, 92, 246, 0.4);
+    }
+    
+    .kanban-column.drag-over {
+      background: rgba(139, 92, 246, 0.1);
+      border-color: var(--purple) !important;
+      box-shadow: 0 0 30px var(--purple-glow);
+    }
+    
+    .kanban-column.drag-over .column-cards {
+      border: 2px dashed var(--purple);
+      border-radius: 12px;
+      min-height: 100px;
+    }
+    
+    .column-cards {
+      transition: all 0.2s ease;
+    }
+
     /* Ticket Card */
     .ticket-card {
       background: linear-gradient(165deg, #1a1a24 0%, #12121a 100%);
@@ -750,7 +778,100 @@
       setupSearch();
       setupFilters();
       setupDragScroll();
+      setupDragAndDrop();
     });
+
+    // Drag and Drop Functionality
+    let draggedTicketId = null;
+
+    function handleDragStart(e) {
+      draggedTicketId = e.target.dataset.ticketId;
+      e.target.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedTicketId);
+      
+      // Slight delay to allow the dragging class to apply
+      setTimeout(() => {
+        e.target.style.opacity = '0.5';
+      }, 0);
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+      e.target.style.opacity = '1';
+      draggedTicketId = null;
+      
+      // Remove drag-over from all columns
+      document.querySelectorAll('.kanban-column').forEach(col => {
+        col.classList.remove('drag-over');
+      });
+    }
+
+    function setupDragAndDrop() {
+      const columns = document.querySelectorAll('.kanban-column');
+      
+      columns.forEach(column => {
+        column.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          column.classList.add('drag-over');
+        });
+
+        column.addEventListener('dragleave', (e) => {
+          // Only remove if leaving the column entirely
+          if (!column.contains(e.relatedTarget)) {
+            column.classList.remove('drag-over');
+          }
+        });
+
+        column.addEventListener('drop', (e) => {
+          e.preventDefault();
+          column.classList.remove('drag-over');
+          
+          const ticketId = e.dataTransfer.getData('text/plain');
+          if (!ticketId) return;
+
+          // Get new status from column class
+          const columnClasses = column.classList;
+          let newStatus = 'new';
+          
+          if (columnClasses.contains('new')) newStatus = 'new';
+          else if (columnClasses.contains('diagnosed')) newStatus = 'diagnosed';
+          else if (columnClasses.contains('waiting')) newStatus = 'waiting_parts';
+          else if (columnClasses.contains('repair')) newStatus = 'in_repair';
+          else if (columnClasses.contains('ready')) newStatus = 'ready';
+          else if (columnClasses.contains('closed')) newStatus = 'picked_up';
+
+          // Update ticket status
+          updateTicketStatus(ticketId, newStatus);
+        });
+      });
+    }
+
+    function updateTicketStatus(ticketId, newStatus) {
+      const tickets = POS_DATA.getTickets();
+      const ticket = tickets.find(t => t.id === ticketId);
+      
+      if (ticket && ticket.status !== newStatus) {
+        const oldStatus = ticket.status;
+        ticket.status = newStatus;
+        ticket.updatedAt = new Date().toISOString();
+        
+        // Save updated ticket
+        POS_DATA.saveTicket(ticket);
+        
+        // Add activity log
+        POS_DATA.addActivity(ticketId, `Status changed: ${oldStatus} → ${newStatus}`, 'User');
+        
+        // Show toast
+        if (typeof POS !== 'undefined' && POS.success) {
+          POS.success(`Ticket moved to ${newStatus.replace('_', ' ')}`);
+        }
+        
+        // Reload tickets
+        loadTickets();
+      }
+    }
 
     function setupSearch() {
       document.getElementById('search-input').addEventListener('input', POS.debounce(loadTickets, 300));
@@ -869,7 +990,8 @@
       if (t.customer?.vip) tags.push('<span class="ticket-tag vip">VIP</span>');
 
       return `
-        <div class="ticket-card" onclick="openDetail('${t.id}')">
+        <div class="ticket-card" draggable="true" data-ticket-id="${t.id}" onclick="openDetail('${t.id}')"
+             ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)">
           <div class="ticket-card-header">
             <div class="ticket-card-id">${t.id}</div>
             <div class="ticket-card-time">${timeAgo(t.createdAt)}</div>

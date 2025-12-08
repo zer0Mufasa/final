@@ -297,11 +297,36 @@ body {
   scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
 }
 
-.pos-content::-webkit-scrollbar { width: 6px; }
-.pos-content::-webkit-scrollbar-track { background: transparent; }
+/* Dark Scrollbars - Global */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.5);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.3) rgba(255, 255, 255, 0.02);
+}
+
+.pos-content::-webkit-scrollbar { width: 8px; }
+.pos-content::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
 .pos-content::-webkit-scrollbar-thumb { 
   background: rgba(139, 92, 246, 0.3); 
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 /* ========== BUTTONS ========== */

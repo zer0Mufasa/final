@@ -1600,9 +1600,34 @@ input, select, textarea {
     /* Device Type Selector - Dark with Gradients */
     .device-types {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: var(--space-3);
       margin-bottom: var(--space-5);
+    }
+    
+    /* Dark Scrollbars - Global */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(139, 92, 246, 0.3);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(139, 92, 246, 0.5);
+    }
+    
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(139, 92, 246, 0.3) rgba(255, 255, 255, 0.02);
     }
     
     .device-type-btn {
@@ -2009,6 +2034,10 @@ input, select, textarea {
                   <button type="button" class="device-type-btn" data-type="console">
                     <span class="icon">🎮</span>
                     <span class="label">Console</span>
+                  </button>
+                  <button type="button" class="device-type-btn" data-type="other">
+                    <span class="icon">📟</span>
+                    <span class="label">Other</span>
                   </button>
                 </div>
 
@@ -2673,6 +2702,14 @@ input, select, textarea {
       const chipWrap = document.getElementById('ai-suggested-symptoms');
       const checklistHint = document.getElementById('ai-checklist-hints');
 
+      // AUTO-SELECT symptoms as user types (immediate feedback)
+      matchedSymptoms.forEach(symptomId => {
+        toggleSymptom(symptomId, true);
+      });
+
+      // AUTO-SET checklist values based on description
+      matchedChecks.forEach(rule => setChecklistValue(rule.check, rule.value));
+
       if (!matchedSymptoms.length && !matchedChecks.length) {
         wrapper.style.display = 'none';
         chipWrap.innerHTML = '';
@@ -2681,21 +2718,14 @@ input, select, textarea {
       }
 
       wrapper.style.display = 'block';
-      chipWrap.innerHTML = matchedSymptoms.map(id => {
-        const meta = aiSymptomMap.find(s => s.id === id);
-        return `<button type="button" class="ai-chip" data-symptom="${id}">${meta?.label || id}</button>`;
-      }).join('');
+      chipWrap.innerHTML = `<div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 8px;">✨ AI detected and auto-selected:</div>` + 
+        matchedSymptoms.map(id => {
+          const meta = aiSymptomMap.find(s => s.id === id);
+          return `<span class="ai-chip active" style="cursor: default;">${meta?.label || id}</span>`;
+        }).join('');
 
-      chipWrap.querySelectorAll('.ai-chip').forEach(btn => {
-        btn.addEventListener('click', () => {
-          toggleSymptom(btn.dataset.symptom, true);
-          btn.classList.add('active');
-        });
-      });
-
-      matchedChecks.forEach(rule => setChecklistValue(rule.check, rule.value));
       checklistHint.textContent = matchedChecks.length
-        ? `Checklist auto-set: ${matchedChecks.map(c => `${c.check} → ${c.value}`).join(', ')}`
+        ? `✓ Checklist auto-set: ${matchedChecks.map(c => `${c.check} → ${c.value}`).join(', ')}`
         : '';
 
       // Suggest repair type if user hasn't chosen
@@ -2714,8 +2744,14 @@ input, select, textarea {
       const modelInput = document.getElementById('device-model');
 
       [brandInput, modelInput].forEach(input => {
-        input.addEventListener('input', POS.debounce(applyModelDefaults, 200));
-        input.addEventListener('change', POS.debounce(applyModelDefaults, 200));
+        input.addEventListener('input', POS.debounce(() => {
+          applyModelDefaults();
+          loadPartsInventory(); // Reload parts filtered by device
+        }, 200));
+        input.addEventListener('change', POS.debounce(() => {
+          applyModelDefaults();
+          loadPartsInventory(); // Reload parts filtered by device
+        }, 200));
       });
 
       document.getElementById('repair-type').addEventListener('change', () => {
@@ -2773,24 +2809,50 @@ input, select, textarea {
       });
     }
 
-    // Parts Inventory
+    // Parts Inventory - with device model filtering
     function loadPartsInventory() {
       const inventory = POS_DATA.getInventory();
       const partsList = document.getElementById('parts-list');
       
-      if (inventory.length === 0) {
+      // Get current device model for filtering
+      const deviceModel = (document.getElementById('device-model')?.value || '').toLowerCase();
+      const deviceBrand = (document.getElementById('device-brand')?.value || '').toLowerCase();
+      
+      // Filter parts based on device model/brand
+      let filteredInventory = inventory;
+      if (deviceModel || deviceBrand) {
+        filteredInventory = inventory.filter(part => {
+          const partName = (part.name || '').toLowerCase();
+          // If we have a model like "iPhone 14 Pro Max", match parts with "14" or "iphone 14"
+          const modelMatch = deviceModel && (
+            partName.includes(deviceModel) || 
+            partName.includes(deviceModel.replace(/\s+/g, '')) ||
+            // Match partial model numbers (e.g., "14" matches "iPhone 14 Screen")
+            deviceModel.split(' ').some(word => word.length > 1 && partName.includes(word))
+          );
+          const brandMatch = deviceBrand && partName.includes(deviceBrand);
+          return modelMatch || brandMatch;
+        });
+        
+        // If no matches found, show all parts
+        if (filteredInventory.length === 0) {
+          filteredInventory = inventory;
+        }
+      }
+      
+      if (filteredInventory.length === 0) {
         partsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-muted);">No parts in inventory</div>';
         return;
       }
 
-      partsList.innerHTML = inventory.map(part => `
+      partsList.innerHTML = filteredInventory.map(part => `
         <div class="part-item" data-id="${part.id}">
-          <input type="checkbox" style="width: 18px; height: 18px;">
+          <input type="checkbox" style="width: 18px; height: 18px; accent-color: var(--primary);">
           <div style="flex: 1;">
             <strong>${part.name}</strong>
             <div style="font-size: 12px; color: var(--text-muted);">Stock: ${part.stock || 0}</div>
           </div>
-          <div style="font-family: var(--font-mono); font-weight: 600;">$${part.price?.toFixed(2)}</div>
+          <div style="font-family: var(--font-mono); font-weight: 600; color: #4ade80;">$${part.price?.toFixed(2)}</div>
         </div>
       `).join('');
 
