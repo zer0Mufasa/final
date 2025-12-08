@@ -1,0 +1,569 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// PLATFORM LEVEL (Fixology owns these)
+// ============================================================
+
+model PlatformAdmin {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String       @map("password_hash")
+  name         String
+  role         PlatformRole @default(SUPPORT)
+  avatarUrl    String?      @map("avatar_url")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@map("platform_admins")
+}
+
+enum PlatformRole {
+  SUPER_ADMIN // Mufasa - god mode
+  SUPPORT     // Customer support
+  BILLING     // Billing/finance
+}
+
+// ============================================================
+// SHOP LEVEL (Each repair shop)
+// ============================================================
+
+model Shop {
+  id       String  @id @default(cuid())
+  name     String
+  slug     String  @unique // fixologyai.com/shop/[slug]
+  email    String
+  phone    String?
+  address  String?
+  city     String?
+  state    String?
+  zip      String?
+  country  String  @default("US")
+  timezone String  @default("America/Chicago")
+  currency String  @default("USD")
+  logoUrl  String? @map("logo_url")
+
+  // Subscription
+  plan                 SubscriptionPlan @default(FREE)
+  stripeCustomerId     String?          @unique @map("stripe_customer_id")
+  stripeSubscriptionId String?          @unique @map("stripe_subscription_id")
+  status               ShopStatus       @default(TRIAL)
+  trialEndsAt          DateTime?        @map("trial_ends_at")
+
+  // Feature flags (JSON for flexibility)
+  features Json @default("{\"max_tickets\": 25, \"max_users\": 1, \"max_customers\": 100, \"sms\": false, \"ai\": false, \"workflows\": false}")
+
+  // Metadata
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users        ShopUser[]
+  customers    Customer[]
+  tickets      Ticket[]
+  inventory    InventoryItem[]
+  invoices     Invoice[]
+  messages     Message[]
+  appointments Appointment[]
+  workflows    Workflow[]
+
+  @@map("shops")
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+enum ShopStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  CANCELLED
+}
+
+model ShopUser {
+  id           String     @id @default(cuid())
+  shopId       String     @map("shop_id")
+  email        String
+  passwordHash String     @map("password_hash")
+  name         String
+  role         ShopRole   @default(TECHNICIAN)
+  phone        String?
+  avatarUrl    String?    @map("avatar_url")
+  permissions  Json       @default("{}")
+  status       UserStatus @default(ACTIVE)
+  lastLoginAt  DateTime?  @map("last_login_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  shop           Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  tickets        Ticket[] @relation("AssignedTechnician")
+  createdTickets Ticket[] @relation("TicketCreator")
+  timeEntries    TimeEntry[]
+
+  @@unique([shopId, email])
+  @@map("shop_users")
+}
+
+enum ShopRole {
+  OWNER      // Full access, billing
+  MANAGER    // Full access except billing
+  TECHNICIAN // Tickets, inventory, customers
+  FRONT_DESK // Intake, customers, basic tickets
+}
+
+enum UserStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+// ============================================================
+// SHOP DATA (All have shop_id for isolation)
+// ============================================================
+
+model Customer {
+  id     String @id @default(cuid())
+  shopId String @map("shop_id")
+
+  // Contact info
+  firstName String  @map("first_name")
+  lastName  String  @map("last_name")
+  email     String?
+  phone     String
+  address   String?
+  city      String?
+  state     String?
+  zip       String?
+
+  // Metadata
+  notes       String?
+  tags        String[]  @default([])
+  isVip       Boolean   @default(false) @map("is_vip")
+  totalSpent  Decimal   @default(0) @map("total_spent") @db.Decimal(10, 2)
+  ticketCount Int       @default(0) @map("ticket_count")
+
+  // Communication preferences
+  smsOptIn   Boolean @default(true) @map("sms_opt_in")
+  emailOptIn Boolean @default(true) @map("email_opt_in")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  tickets  Ticket[]
+  invoices Invoice[]
+  messages Message[]
+
+  @@index([shopId])
+  @@map("customers")
+}
+
+model Ticket {
+  id           String @id @default(cuid())
+  shopId       String @map("shop_id")
+  ticketNumber String @map("ticket_number") // FIX-0001
+
+  // Customer & Device
+  customerId   String  @map("customer_id")
+  deviceType   String  @map("device_type")  // iPhone 14 Pro
+  deviceBrand  String  @map("device_brand") // Apple
+  deviceModel  String? @map("device_model")
+  deviceColor  String? @map("device_color")
+  imei         String?
+  serialNumber String? @map("serial_number")
+  passcode     String?
+
+  // Issue
+  issueDescription String   @map("issue_description")
+  symptoms         String[] @default([])
+  diagnosis        String?
+  resolution       String?
+
+  // Status
+  status   TicketStatus   @default(INTAKE)
+  priority TicketPriority @default(NORMAL)
+
+  // Assignment
+  assignedToId String? @map("assigned_to_id")
+  createdById  String  @map("created_by_id")
+
+  // Pricing
+  estimatedCost Decimal? @map("estimated_cost") @db.Decimal(10, 2)
+  actualCost    Decimal? @map("actual_cost") @db.Decimal(10, 2)
+
+  // Dates
+  intakeAt    DateTime  @default(now()) @map("intake_at")
+  diagnosedAt DateTime? @map("diagnosed_at")
+  repairedAt  DateTime? @map("repaired_at")
+  completedAt DateTime? @map("completed_at")
+  pickedUpAt  DateTime? @map("picked_up_at")
+  dueAt       DateTime? @map("due_at")
+
+  // Waiver
+  waiverSigned    Boolean   @default(false) @map("waiver_signed")
+  waiverSignedAt  DateTime? @map("waiver_signed_at")
+  waiverSignature String?   @map("waiver_signature") // Base64 signature
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop          Shop                  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer      Customer              @relation(fields: [customerId], references: [id])
+  assignedTo    ShopUser?             @relation("AssignedTechnician", fields: [assignedToId], references: [id])
+  createdBy     ShopUser              @relation("TicketCreator", fields: [createdById], references: [id])
+  invoice       Invoice?
+  parts         TicketPart[]
+  notes         TicketNote[]
+  statusHistory TicketStatusHistory[]
+  photos        TicketPhoto[]
+
+  @@unique([shopId, ticketNumber])
+  @@index([shopId])
+  @@index([status])
+  @@map("tickets")
+}
+
+enum TicketStatus {
+  INTAKE
+  DIAGNOSED
+  WAITING_PARTS
+  IN_PROGRESS
+  READY
+  PICKED_UP
+  CANCELLED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model TicketPart {
+  id          String  @id @default(cuid())
+  ticketId    String  @map("ticket_id")
+  inventoryId String  @map("inventory_id")
+  quantity    Int     @default(1)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+
+  ticket    Ticket        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  inventory InventoryItem @relation(fields: [inventoryId], references: [id])
+
+  @@map("ticket_parts")
+}
+
+model TicketNote {
+  id         String   @id @default(cuid())
+  ticketId   String   @map("ticket_id")
+  userId     String   @map("user_id")
+  content    String
+  isInternal Boolean  @default(true) @map("is_internal")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_notes")
+}
+
+model TicketPhoto {
+  id         String   @id @default(cuid())
+  ticketId   String   @map("ticket_id")
+  url        String
+  caption    String?
+  type       String   @default("intake") // intake, diagnosis, completion
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_photos")
+}
+
+model TicketStatusHistory {
+  id          String        @id @default(cuid())
+  ticketId    String        @map("ticket_id")
+  fromStatus  TicketStatus? @map("from_status")
+  toStatus    TicketStatus  @map("to_status")
+  changedById String        @map("changed_by_id")
+  note        String?
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@map("ticket_status_history")
+}
+
+model InventoryItem {
+  id     String @id @default(cuid())
+  shopId String @map("shop_id")
+
+  // Basic info
+  name        String
+  sku         String?
+  description String?
+  category    InventoryCategory
+
+  // Pricing
+  costPrice Decimal? @map("cost_price") @db.Decimal(10, 2)
+  sellPrice Decimal  @map("sell_price") @db.Decimal(10, 2)
+
+  // Stock
+  quantity Int     @default(0)
+  minStock Int     @default(0) @map("min_stock")
+  maxStock Int?    @map("max_stock")
+  location String? // Shelf A, Bin 3, etc.
+
+  // Metadata
+  brand    String?
+  model    String?
+  imageUrl String? @map("image_url")
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop         Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  ticketParts  TicketPart[]
+  invoiceItems InvoiceItem[]
+
+  @@unique([shopId, sku])
+  @@index([shopId])
+  @@map("inventory_items")
+}
+
+enum InventoryCategory {
+  PARTS
+  SERVICES
+  ACCESSORIES
+  DEVICES
+  TOOLS
+  PREPAID
+}
+
+model Invoice {
+  id            String @id @default(cuid())
+  shopId        String @map("shop_id")
+  invoiceNumber String @map("invoice_number") // INV-0001
+
+  customerId String  @map("customer_id")
+  ticketId   String? @unique @map("ticket_id")
+
+  // Amounts
+  subtotal   Decimal @db.Decimal(10, 2)
+  taxRate    Decimal @default(0) @map("tax_rate") @db.Decimal(5, 4)
+  taxAmount  Decimal @default(0) @map("tax_amount") @db.Decimal(10, 2)
+  discount   Decimal @default(0) @db.Decimal(10, 2)
+  total      Decimal @db.Decimal(10, 2)
+  amountPaid Decimal @default(0) @map("amount_paid") @db.Decimal(10, 2)
+  amountDue  Decimal @map("amount_due") @db.Decimal(10, 2)
+
+  // Status
+  status InvoiceStatus @default(DRAFT)
+
+  // Dates
+  issuedAt DateTime? @map("issued_at")
+  dueAt    DateTime? @map("due_at")
+  paidAt   DateTime? @map("paid_at")
+
+  // Payment
+  paymentMethod         PaymentMethod? @map("payment_method")
+  stripePaymentIntentId String?        @map("stripe_payment_intent_id")
+
+  notes String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  shop     Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer      @relation(fields: [customerId], references: [id])
+  ticket   Ticket?       @relation(fields: [ticketId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@unique([shopId, invoiceNumber])
+  @@index([shopId])
+  @@map("invoices")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  VIEWED
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  CHECK
+  OTHER
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String  @map("invoice_id")
+  inventoryId String? @map("inventory_id")
+
+  description String
+  quantity    Int     @default(1)
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+
+  invoice   Invoice        @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  inventory InventoryItem? @relation(fields: [inventoryId], references: [id])
+
+  @@map("invoice_items")
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  invoiceId String        @map("invoice_id")
+  amount    Decimal       @db.Decimal(10, 2)
+  method    PaymentMethod
+  reference String? // Check number, transaction ID, etc.
+  notes     String?
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Message {
+  id         String @id @default(cuid())
+  shopId     String @map("shop_id")
+  customerId String @map("customer_id")
+
+  direction MessageDirection
+  channel   MessageChannel
+  content   String
+
+  // External IDs
+  twilioSid String? @map("twilio_sid")
+
+  status      MessageStatus @default(PENDING)
+  sentAt      DateTime?     @map("sent_at")
+  deliveredAt DateTime?     @map("delivered_at")
+  readAt      DateTime?     @map("read_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  shop     Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([shopId])
+  @@index([customerId])
+  @@map("messages")
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum MessageChannel {
+  SMS
+  EMAIL
+}
+
+enum MessageStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+model Appointment {
+  id         String  @id @default(cuid())
+  shopId     String  @map("shop_id")
+  customerId String? @map("customer_id")
+
+  title       String
+  description String?
+  startTime   DateTime @map("start_time")
+  endTime     DateTime @map("end_time")
+
+  status AppointmentStatus @default(SCHEDULED)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@map("appointments")
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model TimeEntry {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  clockIn      DateTime @map("clock_in")
+  clockOut     DateTime? @map("clock_out")
+  breakMinutes Int       @default(0) @map("break_minutes")
+  notes        String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user ShopUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("time_entries")
+}
+
+model Workflow {
+  id     String @id @default(cuid())
+  shopId String @map("shop_id")
+
+  name        String
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+
+  // Trigger
+  trigger Json // { type: "ticket_status_changed", conditions: {...} }
+
+  // Actions
+  actions Json // [{ type: "send_sms", config: {...} }, ...]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([shopId])
+  @@map("workflows")
+}
+
