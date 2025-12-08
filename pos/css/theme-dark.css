@@ -59,6 +59,28 @@ body {
   box-shadow: var(--shadow-card);
 }
 
+.section-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--shadow-card);
+}
+
+.section-card .section-header {
+  background: #110c1f !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary);
+}
+
+.section-card .section-header h3,
+.section-card .section-header a {
+  color: var(--text-primary) !important;
+}
+
+.section-card .section-body {
+  background: transparent !important;
+  color: var(--text-primary);
+}
+
 .pos-content {
   background: transparent;
 }
@@ -102,8 +124,13 @@ body {
   border-color: var(--border-color) !important;
 }
 
+.table tr {
+  background: transparent !important;
+}
+
 .stat-card,
 .quick-actions .card,
+.quick-actions,
 .pipeline-stage,
 .status-pipeline .stage,
 .ticket-card,
@@ -130,6 +157,34 @@ body {
 
 .status-pipeline .stage {
   box-shadow: var(--shadow-card);
+}
+
+.pipeline-stage {
+  background: #120d20 !important;
+}
+
+.quick-action {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.quick-action .icon,
+.quick-action .label {
+  color: var(--text-primary) !important;
+}
+
+#low-stock-section {
+  background: var(--bg-card) !important;
+}
+
+#low-stock-section .section-header {
+  background: #151025 !important;
+  border-color: var(--border-color) !important;
+}
+
+#low-stock-section .section-header h3 {
+  color: var(--text-primary) !important;
 }
 
 .status-pill,
