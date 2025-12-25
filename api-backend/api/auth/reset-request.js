@@ -5,6 +5,7 @@
 
 const { handleCors, sendSuccess, sendError, validateEmail, sanitizeInput } = require('../../lib/utils');
 const { findUserByEmail, createResetToken } = require('../../lib/auth');
+const { sendPasswordResetEmail } = require('../../lib/email');
 
 module.exports = async function handler(req, res) {
   if (handleCors(req, res)) return;
@@ -34,10 +35,15 @@ module.exports = async function handler(req, res) {
     // Create reset token
     const token = await createResetToken(email, 'user');
 
-    // In production, send email here
-    // For now, just log the token
-    console.log(`Password reset token for ${email}: ${token}`);
-    console.log(`Reset link: https://fixologyai.com/reset-password.html?token=${token}`);
+    // Send password reset email via Resend
+    const emailResult = await sendPasswordResetEmail({ email, token });
+    
+    if (!emailResult.success) {
+      console.error('Failed to send password reset email:', emailResult.error);
+      // Still return success to prevent email enumeration
+    } else {
+      console.log(`Password reset email sent to ${email} via Resend`);
+    }
 
     return sendSuccess(res, {
       message: 'If an account exists with this email, a reset link will be sent.',

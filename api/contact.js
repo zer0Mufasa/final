@@ -1,13 +1,10 @@
 /**
  * Contact Form API Endpoint
- * Sends contact form submissions to repair@fixologyai.com
+ * Sends contact form submissions to repair@fixologyai.com via Resend
  */
 
-const { handleCors, sendSuccess, sendError } = require('../lib/utils');
-const { sendContactEmail } = require('../lib/email');
-
-// Business email configuration
-const BUSINESS_EMAIL = process.env.BUSINESS_EMAIL || 'repair@fixologyai.com';
+const { handleCors, sendSuccess, sendError } = require('./lib/utils');
+const { sendContactEmail } = require('./lib/email');
 
 module.exports = async function handler(req, res) {
   // Handle CORS
@@ -49,7 +46,7 @@ module.exports = async function handler(req, res) {
 
     return sendSuccess(res, {
       message: 'Contact form submitted successfully',
-      email: BUSINESS_EMAIL
+      email: 'repair@fixologyai.com'
     });
 
   } catch (err) {
@@ -57,4 +54,3 @@ module.exports = async function handler(req, res) {
     return sendError(res, 'Failed to submit contact form', 500);
   }
 };
-
