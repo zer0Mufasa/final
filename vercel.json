@@ -1,6 +1,11 @@
 {
-  "buildCommand": null,
+  "buildCommand": "",
   "outputDirectory": ".",
+  "installCommand": "",
+  "rewrites": [
+    { "source": "/(.*)\\.html", "destination": "/$1.html" },
+    { "source": "/", "destination": "/index.html" }
+  ],
   "cleanUrls": false,
   "trailingSlash": false,
   "headers": [
