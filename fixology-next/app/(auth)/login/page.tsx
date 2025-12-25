@@ -1,17 +1,14 @@
 'use client'
 
 // app/(auth)/login/page.tsx
-// Login page for shop users
+// Login page with premium two-column layout
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Logo } from '@/components/shared/logo'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { toast } from '@/components/ui/toaster'
-import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { Mail, Lock, ArrowRight, Zap, TrendingUp, Shield } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from '@/components/ui/toaster'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -22,6 +19,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [rememberMe, setRememberMe] = useState(false)
 
   const validate = () => {
     const newErrors: { email?: string; password?: string } = {}
@@ -76,126 +74,197 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left side - Form */}
-      <div className="flex-1 flex flex-col justify-center px-8 py-12 lg:px-24">
-        <div className="max-w-md w-full mx-auto">
-          <Logo size="lg" className="mb-12" />
-          
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[rgb(var(--text-primary))] mb-2">
-              Welcome back
-            </h1>
-            <p className="text-[rgb(var(--text-muted))]">
-              Sign in to your Fixology account
-            </p>
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex flex-col justify-center px-12 py-16 bg-[#0a0a0f] relative">
+        <Link href="/" className="flex items-center gap-3 mb-12 text-white no-underline group">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] flex items-center justify-center text-xl shadow-lg shadow-purple-500/30">
+            🔧
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              error={errors.email}
-              leftIcon={<Mail className="w-5 h-5" />}
-              autoComplete="email"
-            />
-
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              error={errors.password}
-              leftIcon={<Lock className="w-5 h-5" />}
-              autoComplete="current-password"
-            />
-
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-[rgb(var(--border-subtle))] bg-[rgb(var(--bg-tertiary))] text-[rgb(var(--accent-primary))] focus:ring-[rgb(var(--accent-primary))]/20"
-                />
-                <span className="text-sm text-[rgb(var(--text-secondary))]">
-                  Remember me
-                </span>
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-sm text-[rgb(var(--accent-light))] hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full"
-              loading={loading}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
-            >
-              Sign In
-            </Button>
-          </form>
-
-          <p className="mt-8 text-center text-[rgb(var(--text-muted))]">
-            Don&apos;t have an account?{' '}
-            <Link
-              href="/signup"
-              className="text-[rgb(var(--accent-light))] hover:underline font-medium"
-            >
-              Start free trial
-            </Link>
-          </p>
-        </div>
-      </div>
-
-      {/* Right side - Decorative */}
-      <div className="hidden lg:flex lg:flex-1 relative overflow-hidden bg-gradient-to-br from-purple-900/50 via-purple-800/30 to-bg-primary">
-        {/* Animated background elements */}
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-        </div>
+          <span className="text-2xl font-bold font-['Space_Grotesk'] tracking-tight">Fixology</span>
+        </Link>
         
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center p-12 text-center">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center mb-8 shadow-2xl shadow-purple-500/40">
-            <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10 text-white">
-              <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-            </svg>
+        <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-white mb-4 leading-tight tracking-tight">
+          Built for repair shops.
+        </h1>
+        <p className="text-lg text-white/70 mb-12 leading-relaxed">
+          AI that runs your repair business. Stop guessing. Start diagnosing.
+        </p>
+        
+        <ul className="space-y-6 mb-16">
+          <li className="flex items-center gap-4 text-white">
+            <span className="text-2xl">⚡</span>
+            <span>Faster diagnostics.</span>
+          </li>
+          <li className="flex items-center gap-4 text-white">
+            <span className="text-2xl">📈</span>
+            <span>Smarter inventory.</span>
+          </li>
+          <li className="flex items-center gap-4 text-white">
+            <span className="text-2xl">🛡️</span>
+            <span>Fewer repeat repairs.</span>
+          </li>
+        </ul>
+
+        {/* Social Proof */}
+        <div className="mt-auto bg-[#12121a] border border-white/8 rounded-2xl p-8">
+          <div className="text-xs font-semibold uppercase tracking-wider text-white/50 text-center mb-6">
+            TRUSTED BY REPAIR SHOPS USING AI DAILY
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">
-            Repair Intelligence Platform
-          </h2>
-          <p className="text-purple-200/80 max-w-sm">
-            Manage your repair shop with AI-powered diagnostics, smart ticketing, and real-time insights.
-          </p>
-          
-          {/* Stats */}
-          <div className="mt-12 grid grid-cols-3 gap-8">
+          <div className="grid grid-cols-3 gap-6 text-center">
             <div>
-              <p className="text-3xl font-bold text-white">500+</p>
-              <p className="text-sm text-purple-200/60">Active Shops</p>
+              <div className="text-3xl font-bold font-['Space_Grotesk'] bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] bg-clip-text text-transparent mb-1">
+                500+
+              </div>
+              <div className="text-xs text-white/50">Active Shops</div>
             </div>
             <div>
-              <p className="text-3xl font-bold text-white">50K+</p>
-              <p className="text-sm text-purple-200/60">Repairs</p>
+              <div className="text-3xl font-bold font-['Space_Grotesk'] bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] bg-clip-text text-transparent mb-1">
+                50K+
+              </div>
+              <div className="text-xs text-white/50">Repairs</div>
             </div>
             <div>
-              <p className="text-3xl font-bold text-white">99%</p>
-              <p className="text-sm text-purple-200/60">Uptime</p>
+              <div className="text-3xl font-bold font-['Space_Grotesk'] bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] bg-clip-text text-transparent mb-1">
+                99%
+              </div>
+              <div className="text-xs text-white/50">Uptime</div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Right Panel - Form Card */}
+      <div className="flex items-center justify-center px-6 py-12 lg:px-12 bg-[#0a0a0f]">
+        <div className="w-full max-w-[440px] animate-[fadeInUp_0.5s_ease-out]">
+          <div className="bg-[rgba(18,18,26,0.8)] backdrop-blur-[20px] border border-white/8 rounded-3xl p-12 shadow-2xl relative overflow-hidden">
+            {/* Top gradient line */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#a78bfa] to-transparent opacity-50" />
+            
+            <div id="error-message" className="hidden mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"></div>
+            <div id="success-message" className="hidden mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm"></div>
+
+            <div className="mb-8">
+              <h1 className="text-3xl font-semibold font-['Space_Grotesk'] text-white mb-2 tracking-tight">
+                Welcome back
+              </h1>
+              <p className="text-[0.9375rem] text-white/70 leading-relaxed">
+                Log in to your Fixology dashboard.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
+                  Email
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (errors.email) setErrors({ ...errors, email: undefined })
+                    }}
+                    placeholder="you@example.com"
+                    required
+                    autoComplete="email"
+                    className="w-full pl-11 pr-4 py-3.5 text-base bg-[#0a0a0f] border border-white/8 rounded-[10px] text-white placeholder-white/50 transition-all focus:outline-none focus:border-[#a78bfa] focus:ring-2 focus:ring-[#a78bfa]/15"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (errors.password) setErrors({ ...errors, password: undefined })
+                    }}
+                    placeholder="Your password"
+                    required
+                    autoComplete="current-password"
+                    className="w-full pl-11 pr-4 py-3.5 text-base bg-[#0a0a0f] border border-white/8 rounded-[10px] text-white placeholder-white/50 transition-all focus:outline-none focus:border-[#a78bfa] focus:ring-2 focus:ring-[#a78bfa]/15"
+                  />
+                </div>
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-400">{errors.password}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between mb-5">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded border-white/8 bg-[#0a0a0f] text-[#a78bfa] focus:ring-[#a78bfa]/20 accent-[#a78bfa] cursor-pointer"
+                  />
+                  <span className="text-sm text-white/70">Remember me</span>
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-[#a78bfa] hover:underline transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 px-4 text-base font-semibold bg-gradient-to-r from-[#a78bfa] to-[#06b6d4] border-none rounded-[10px] text-white cursor-pointer transition-all flex items-center justify-center gap-2 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-purple-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {loading ? 'Signing in...' : (
+                  <>
+                    Sign In <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <p className="mt-6 text-center text-[0.9375rem] text-white/70">
+              Don&apos;t have an account?{' '}
+              <Link
+                href="/signup"
+                className="text-[#a78bfa] no-underline font-medium hover:underline transition-colors"
+              >
+                Sign up
+              </Link>
+            </p>
+
+            <div className="flex items-center justify-center gap-2 mt-6 text-xs text-white/50">
+              <span>🔒</span>
+              <span>We never share your data</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }
-
