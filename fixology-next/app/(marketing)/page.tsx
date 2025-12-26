@@ -530,7 +530,7 @@ export default function MarketingPage() {
       const cycleDelay = 12000 + Math.random() * 3000;
       timeoutId = setTimeout(() => {
         if (!mounted || !dxInView) return;
-        setDxIdx((p) => (p + 1) % dxData.length);
+      setDxIdx((p) => (p + 1) % dxData.length);
       }, cycleDelay);
     };
     
@@ -739,14 +739,14 @@ export default function MarketingPage() {
             gap: 24
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }} aria-label="Fixology home">
-                <div style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#a78bfa 0%,#c4b5fd 100%)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>⚡</div>
-                <span style={{ fontWeight: 700, fontSize: 20, color: '#fff', letterSpacing: '-0.02em' }}>Fixology</span>
-              </a>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }} aria-label="Fixology home">
+            <div style={{ width: 38, height: 38, background: 'linear-gradient(135deg,#a78bfa 0%,#c4b5fd 100%)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>⚡</div>
+            <span style={{ fontWeight: 700, fontSize: 20, color: '#fff', letterSpacing: '-0.02em' }}>Fixology</span>
+          </a>
               <span className="trust-pill">
                 ✨ Built for repair shops
               </span>
-            </div>
+          </div>
             <div className="nav-center" style={{ display: 'flex', gap: 4, justifyContent: 'center', alignItems: 'center', minWidth: 0, justifySelf: 'center' }}>
               <a href="#how-it-works" className="nav-link" aria-label="How It Works">How It Works</a>
               <a href="#what-fixology-handles" className="nav-link" aria-label="What Fixology Handles For You">What You Get</a>
@@ -754,7 +754,7 @@ export default function MarketingPage() {
               <a href="#contact" className="nav-link" aria-label="Contact">Contact</a>
             </div>
             <div className="nav-right" style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-              <a href="/login" className="login-link" aria-label="Log in to your account">Log in</a>
+            <a href="/login" className="login-link" aria-label="Log in to your account">Log in</a>
               <Link href="/signup" className="header-cta" aria-label="Get started">
                 Get Started →
               </Link>
@@ -815,9 +815,9 @@ export default function MarketingPage() {
           <div className="wide-container">
             <div className="asymmetric-layout">
               <div className="text-constraint">
-                <div style={{ display: 'inline-block', padding: '8px 18px', background: 'rgba(167,139,250,.15)', borderRadius: 50, marginBottom: 24, border: '1px solid rgba(167,139,250,.3)' }}>
-                  <span style={{ color: '#c4b5fd', fontSize: 13, fontWeight: 500 }}>✨ Repair Intelligence System</span>
-                </div>
+              <div style={{ display: 'inline-block', padding: '8px 18px', background: 'rgba(167,139,250,.15)', borderRadius: 50, marginBottom: 24, border: '1px solid rgba(167,139,250,.3)' }}>
+                <span style={{ color: '#c4b5fd', fontSize: 13, fontWeight: 500 }}>✨ Repair Intelligence System</span>
+              </div>
                 <h1 className="section-title" style={{ fontSize: 'clamp(34px,4.8vw,64px)', marginBottom: 24, textAlign: 'left' }}>Your techs stop guessing.<br /><span style={{ color: '#a78bfa' }}>Your tickets write themselves.</span></h1>
                 <p style={{ fontSize: 20, color: '#c4b5fd', lineHeight: 1.7, marginBottom: 32, maxWidth: 600 }}>Fixology turns messy customer messages into diagnoses, tickets, pricing, inventory actions, and customer updates — automatically.</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 48 }}>
@@ -829,7 +829,7 @@ export default function MarketingPage() {
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 16, color: 'rgba(196,181,253,0.8)' }}>
                       <span style={{ color: '#4ade80' }}>✔</span>
                       <span>{text}</span>
-                    </div>
+              </div>
                   ))}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -927,8 +927,8 @@ export default function MarketingPage() {
                             <span>{currentDx.est.time}</span>
                             <span>•</span>
                             <span>{currentDx.est.price}</span>
-                          </div>
-                        </div>
+                </div>
+              </div>
                       )}
                       {/* Layer 2: Other possibilities - cascade in */}
                       {visibleCauses > 1 && (
@@ -1016,7 +1016,7 @@ export default function MarketingPage() {
                     boxShadow: (dxInView && i === 0) || (tkInView && i === 1) ? '0 0 20px rgba(167,139,250,.4)' : 'none'
                   }}>
                     {i === 0 ? '💬' : i === 1 ? '🔍' : i === 2 ? '🎫' : '💬'}
-                  </div>
+              </div>
                   <div style={{ fontSize: 12, color: '#c4b5fd', marginTop: 8, textAlign: 'center', fontWeight: 500 }}>{step}</div>
                   {i < 3 && (
                     <div style={{
@@ -1031,8 +1031,8 @@ export default function MarketingPage() {
                   )}
                 </div>
               ))}
-            </div>
-          </div>
+                  </div>
+                </div>
         </section>
 
         {/* OUTCOMES */}
@@ -1111,7 +1111,7 @@ export default function MarketingPage() {
                 <div className="glass-card" style={{ padding: 24, border: '1px solid rgba(167,139,250,0.1)' }}>
                   <div style={{ color: '#ef4444', fontSize: 14, fontWeight: 600, marginBottom: 12 }}>✓ Risk Prevention</div>
                   <p style={{ fontSize: 14, color: '#c4b5fd', lineHeight: 1.6 }}>"We caught three blacklisted devices in our first month. Fixology paid for itself by preventing just one bad repair."</p>
-                </div>
+            </div>
               </div>
               <div className={`glass-card demo-container ${imeiPhase === 'querying' ? 'glass-card-active' : ''}`} style={{ minHeight: 520, maxHeight: 520, transform: 'perspective(1000px) rotateY(-2deg)', boxShadow: '0 20px 80px rgba(0,0,0,0.4)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 28px', borderBottom: '1px solid rgba(167,139,250,.15)', background: 'rgba(167,139,250,.05)' }}>
@@ -1147,11 +1147,11 @@ export default function MarketingPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
                         <div style={{ width: 36, height: 36, borderRadius: 10, background: i < currentStep ? 'rgba(74,222,128,.2)' : i === currentStep ? 'linear-gradient(135deg,#a78bfa,#c4b5fd)' : 'rgba(167,139,250,.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 800, color: i < currentStep ? '#4ade80' : i === currentStep ? '#0f0a1a' : '#6b7280' }}>
                           {i < currentStep ? '✓' : step.step}
-                        </div>
+            </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{step.title}</div>
                           {step.warning && i === currentStep && <div style={{ fontSize: 12, color: '#fbbf24', marginTop: 6, fontWeight: 500 }}>⚠️ {step.warning}</div>}
-                        </div>
+              </div>
                         <div style={{ fontSize: 13, color: '#a78bfa', fontWeight: 600, background: 'rgba(167,139,250,0.1)', padding: '4px 10px', borderRadius: 6 }}>⏱️ {step.time}</div>
                       </div>
                     </div>
@@ -1465,7 +1465,7 @@ export default function MarketingPage() {
                 <div className="glass-card" style={{ padding: 24, border: '1px solid rgba(167,139,250,0.1)' }}>
                   <div style={{ color: '#4ade80', fontSize: 14, fontWeight: 600, marginBottom: 12 }}>✓ Zero-Touch Status</div>
                   <p style={{ fontSize: 14, color: '#c4b5fd', lineHeight: 1.6 }}>Fixology monitors the repair status and sends updates precisely when milestones are hit. No manual texting required.</p>
-                </div>
+            </div>
               </div>
               <div className="glass-card demo-container" style={{ padding: 32, minHeight: 480, maxHeight: 480, transform: 'perspective(1000px) rotateY(-2deg)', boxShadow: '0 20px 80px rgba(0,0,0,0.4)' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -1504,10 +1504,10 @@ export default function MarketingPage() {
                         <span style={{ fontSize: 20 }}>{alert.severity === 'high' ? '🚨' : alert.severity === 'medium' ? '⚠️' : '💡'}</span>
                         <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{alert.device}</span>
                         <span style={{ fontSize: 11, padding: '4px 12px', borderRadius: 20, background: alert.severity === 'high' ? 'rgba(239,68,68,.3)' : alert.severity === 'medium' ? 'rgba(251,191,36,.3)' : 'rgba(74,222,128,.3)', color: alert.severity === 'high' ? '#ef4444' : alert.severity === 'medium' ? '#fbbf24' : '#4ade80', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em' }}>{alert.severity}</span>
-                      </div>
+            </div>
                       <p style={{ fontSize: 14, color: '#fff', marginBottom: 10, fontWeight: 500 }}>{alert.issue}</p>
                       <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.7)', fontStyle: 'italic' }}>→ {alert.recommendation}</p>
-                    </div>
+              </div>
                   ))}
                 </div>
                 {visibleAlerts === 0 && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300 }}><div style={{ textAlign: 'center', color: '#6b7280' }}><div style={{ fontSize: 48, marginBottom: 20, opacity: 0.5 }}>🛡️</div><div style={{ fontSize: 16, fontWeight: 500 }}>Scanning for patterns...</div></div></div>}
@@ -1592,7 +1592,7 @@ export default function MarketingPage() {
                     <div style={{ fontSize: 24, marginBottom: 8 }} aria-hidden="true">✓</div>
                     <div style={{ fontSize: 16, fontWeight: 600, color: '#4ade80', marginBottom: 4 }}>Call request sent.</div>
                       <div style={{ fontSize: 13, color: '#c4b5fd', lineHeight: 1.6 }}>
-                        We received your requested time. We’ll confirm the call within 1 business day.
+                        Got it. Check your email. We’ll confirm the call within 1 business day.
                       </div>
                     <button
                       onClick={() => {
@@ -1957,18 +1957,17 @@ export default function MarketingPage() {
                         
                         try {
                           const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                          const res = await fetch('/api/contact/call', {
+                          const res = await fetch('/api/contact', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                              name: scheduleForm.name.trim(),
+                              type: 'call',
+                              source: 'homepage',
+                              fullName: scheduleForm.name.trim(),
                               email: scheduleForm.email.trim(),
                               shopName: scheduleForm.shopName.trim() || '',
                               phone: scheduleForm.phone.replace(/\D/g, ''),
-                              date: selectedDate,
-                              time: selectedTime,
-                              timezone: tz,
-                              notes: '',
+                              date: `${selectedDate} ${selectedTime} (${tz})`,
                               honey: scheduleForm.honey || ''
                             })
                           });
@@ -2062,7 +2061,7 @@ export default function MarketingPage() {
                   <div role="alert" aria-live="polite" style={{ padding: 32, background: 'rgba(74,222,128,.1)', border: '1px solid rgba(74,222,128,.3)', borderRadius: 16, textAlign: 'center', margin: 'auto 0' }}>
                     <div style={{ fontSize: 32, marginBottom: 12 }}>✓</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: '#4ade80', marginBottom: 8 }}>Message received</div>
-                    <div style={{ fontSize: 15, color: '#c4b5fd', lineHeight: 1.6, marginBottom: 24 }}>We'll reply from repair@fixologyai.com<br />within 1 business day.</div>
+                    <div style={{ fontSize: 15, color: '#c4b5fd', lineHeight: 1.6, marginBottom: 24 }}>Got it. Check your email.<br />We’ll reply within 1 business day.</div>
                     <button
                       onClick={() => {
                         setContactSuccess(false);
@@ -2089,10 +2088,19 @@ export default function MarketingPage() {
                     setContactSubmitting(true);
                     setContactError('');
                     try {
-                      const res = await fetch('/api/contact/inquiry', {
+                      const res = await fetch('/api/contact', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(contactForm)
+                        body: JSON.stringify({
+                          type: 'inquiry',
+                          source: 'homepage',
+                          fullName: contactForm.name.trim(),
+                          email: contactForm.email.trim(),
+                          phone: contactForm.phone ? contactForm.phone.replace(/\D/g, '') : undefined,
+                          shopName: contactForm.shopName.trim() || undefined,
+                          message: contactForm.message.trim(),
+                          honey: contactForm.honey || ''
+                        })
                       });
                       const data = await res.json().catch(() => ({}));
                       if (!res.ok || !data.ok) throw new Error(data.error || 'Failed to send inquiry');

@@ -1,55 +1,38 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { handleContact } from '../_handler'
 
-// Form endpoint used by the marketing homepage.
-// Intentionally avoids optional deps like `nodemailer` to prevent Vercel build failures.
+export const runtime = 'nodejs'
 
-const isValidEmail = (email: string) => /\S+@\S+\.\S+/.test(email)
-const isValidPhone = (phone: string) => phone.replace(/\D/g, '').length >= 10
-
+// Backwards-compatible endpoint: maps old payload into unified /api/contact handler.
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json().catch(() => ({}))
+  const body = await request.json().catch(() => ({}))
 
-    // Honeypot: if filled, pretend success (bot).
-    const honey = typeof body?.honey === 'string' ? body.honey.trim() : ''
-    if (honey) {
-      return NextResponse.json({ ok: true, spam: true })
-    }
+  const name = typeof body?.name === 'string' ? body.name.trim() : ''
+  const email = typeof body?.email === 'string' ? body.email.trim() : ''
+  const phone = typeof body?.phone === 'string' ? body.phone.trim() : ''
+  const shopName = typeof body?.shopName === 'string' ? body.shopName.trim() : ''
 
-    const name = typeof body?.name === 'string' ? body.name.trim() : ''
-    const email = typeof body?.email === 'string' ? body.email.trim() : ''
-    const phone = typeof body?.phone === 'string' ? body.phone.trim() : ''
-    const date = typeof body?.date === 'string' ? body.date.trim() : ''
-    const time = typeof body?.time === 'string' ? body.time.trim() : ''
-    const timezone =
-      typeof body?.timezone === 'string' ? body.timezone.trim() : typeof body?.tz === 'string' ? body.tz.trim() : ''
+  const date = typeof body?.date === 'string' ? body.date.trim() : ''
+  const time = typeof body?.time === 'string' ? body.time.trim() : ''
+  const timezone =
+    typeof body?.timezone === 'string'
+      ? body.timezone.trim()
+      : typeof body?.tz === 'string'
+        ? body.tz.trim()
+        : ''
 
-    if (!name) {
-      return NextResponse.json({ ok: false, error: 'Name is required.' }, { status: 400 })
-    }
-    if (!email || !isValidEmail(email)) {
-      return NextResponse.json({ ok: false, error: 'Valid email is required.' }, { status: 400 })
-    }
-    if (!phone || !isValidPhone(phone)) {
-      return NextResponse.json({ ok: false, error: 'Valid phone is required.' }, { status: 400 })
-    }
-    if (!date || !time) {
-      return NextResponse.json({ ok: false, error: 'Date and time are required.' }, { status: 400 })
-    }
-    if (!timezone) {
-      return NextResponse.json({ ok: false, error: 'Timezone is required.' }, { status: 400 })
-    }
+  const combinedDate = [date, time].filter(Boolean).join(' ')
+  const dateWithTz = [combinedDate, timezone ? `(${timezone})` : ''].filter(Boolean).join(' ')
 
-    return NextResponse.json({
-      ok: true,
-      fallback: true,
-      message: 'Call request received. Please email repair@fixologyai.com to confirm.',
-    })
-  } catch (error: any) {
-    return NextResponse.json(
-      { ok: false, error: error?.message || 'Failed to submit call request.' },
-      { status: 500 }
-    )
-  }
+  return handleContact(request, {
+    type: 'call',
+    fullName: name,
+    email,
+    phone,
+    shopName: shopName || undefined,
+    date: dateWithTz || undefined,
+    source: 'homepage',
+    honey: body?.honey,
+  })
 }
 

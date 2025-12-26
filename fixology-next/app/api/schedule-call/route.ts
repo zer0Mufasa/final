@@ -1,33 +1,27 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
+import { handleContact } from '../contact/_handler'
 
-// Legacy endpoint kept for compatibility with older deployments.
-// Intentionally does NOT import nodemailer (avoids Vercel build failures).
+export const runtime = 'nodejs'
 
+// Legacy endpoint kept for compatibility with older clients.
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json().catch(() => ({}))
-    const name = typeof body?.name === 'string' ? body.name.trim() : ''
-    const dateISO = typeof body?.dateISO === 'string' ? body.dateISO.trim() : ''
-    const timeLabel = typeof body?.timeLabel === 'string' ? body.timeLabel.trim() : ''
-    const tz = typeof body?.tz === 'string' ? body.tz.trim() : ''
+  const body = await request.json().catch(() => ({}))
 
-    if (!name || !dateISO || !timeLabel || !tz) {
-      return NextResponse.json(
-        { ok: false, error: 'Missing required fields: name, dateISO, timeLabel, tz.' },
-        { status: 400 }
-      )
-    }
+  const dateISO = typeof body?.dateISO === 'string' ? body.dateISO.trim() : ''
+  const timeLabel = typeof body?.timeLabel === 'string' ? body.timeLabel.trim() : ''
+  const tz = typeof body?.tz === 'string' ? body.tz.trim() : ''
+  const date = [dateISO, timeLabel].filter(Boolean).join(' ')
+  const dateWithTz = [date, tz ? `(${tz})` : ''].filter(Boolean).join(' ')
 
-    return NextResponse.json({
-      ok: true,
-      fallback: true,
-      message: 'Call request received. Please email repair@fixologyai.com to confirm.',
-    })
-  } catch (error: any) {
-    return NextResponse.json(
-      { ok: false, error: error?.message || 'Failed to submit call request.' },
-      { status: 500 }
-    )
-  }
+  return handleContact(request, {
+    type: 'call',
+    fullName: body?.fullName ?? body?.name,
+    email: body?.email,
+    phone: body?.phone,
+    shopName: body?.shopName,
+    date: dateWithTz || undefined,
+    source: body?.source ?? 'legacy:/api/schedule-call',
+    honey: body?.honey,
+  })
 }
 
