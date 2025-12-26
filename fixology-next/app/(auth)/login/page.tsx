@@ -13,7 +13,7 @@ import { toast } from '@/components/ui/toaster'
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirect = searchParams.get('redirect') || '/dashboard/index.html'
+  const redirect = searchParams.get('redirect') || '/dashboard'
   
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
