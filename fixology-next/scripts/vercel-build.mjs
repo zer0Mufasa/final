@@ -18,10 +18,13 @@ function tryMigrateDeploy() {
   const res = spawnSync('npx', ['prisma', 'migrate', 'deploy'], {
     encoding: 'utf8',
     shell: false,
+    timeout: 15000,
+    killSignal: 'SIGKILL',
   })
 
   // Prisma prints errors to stderr; if it fails, we still continue so Vercel can deploy.
-  const status = res.status ?? 1
+  const timedOut = !!(res.error && res.error.code === 'ETIMEDOUT')
+  const status = res.status ?? (timedOut ? 1 : 1)
   if (status === 0) {
     process.stdout.write(res.stdout || '')
     process.stderr.write(res.stderr || '')
@@ -30,12 +33,22 @@ function tryMigrateDeploy() {
 
   const combined = `${res.stdout || ''}\n${res.stderr || ''}`
   const isReachability = combined.includes('P1001') || combined.includes("Can't reach database server")
+  const isAuth = combined.includes('P1000') || combined.includes('Authentication failed')
 
   console.warn('\n⚠ prisma migrate deploy failed during build.')
+  if (timedOut) {
+    console.warn('   Reason: migrate deploy timed out (15s).')
+    console.warn('   This usually means the database connection is stalling/blocked from Vercel, or the pooler is hanging.')
+    console.warn('   Continuing build without migrations for now.\n')
+    return false
+  }
   if (isReachability) {
     console.warn('   Reason: database not reachable from this build environment (P1001).')
     console.warn('   Fix: set DATABASE_URL to the Supabase pooler connection string (port 6543),')
     console.warn('   then trigger a redeploy. Continuing build without migrations for now.\n')
+  } else if (isAuth) {
+    console.warn('   Reason: authentication failed (P1000).')
+    console.warn('   Fix: rotate/update the database password in Vercel DATABASE_URL and redeploy.\n')
   } else {
     console.warn('   Output:\n')
     console.warn(combined.slice(0, 4000))
