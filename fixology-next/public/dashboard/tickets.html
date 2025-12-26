@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Repairs | Fixology</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--cyan-500:#06B6D4;--emerald:#10B981;--amber:#F59E0B;--rose:#F43F5E;--blue:#3B82F6;--purple:#A855F7;--surface-0:#030305;--surface-1:#0A0A0F;--surface-2:#101017;--surface-3:#18181F;--surface-4:#1F1F28;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-glow:rgba(139,92,246,0.3);--glass:rgba(255,255,255,0.03);--glass-border:rgba(255,255,255,0.06)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{font-family:var(--font-sans);background:var(--surface-0);color:var(--text-primary);height:100%;overflow:hidden}
+    body{position:relative}
+    
+    /* Animated Background */
+    .bg-pattern{position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(139,92,246,0.12),transparent),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(6,182,212,0.08),transparent);pointer-events:none;z-index:0}
+    
+    /* App Layout */
+    .app{display:flex;height:100%;position:relative;z-index:1;overflow:hidden}
+    
+    /* ANIMATED SIDEBAR */
+    .sidebar{width:72px;background:linear-gradient(180deg,var(--surface-1),var(--surface-0));border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:width 0.3s cubic-bezier(0.4,0,0.2,1);overflow:hidden}
+    .sidebar:hover{width:260px}
+    .sidebar-header{padding:20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border-subtle);min-height:80px}
+    .sidebar-logo{width:40px;height:40px;background:linear-gradient(135deg,var(--lavender-500),var(--cyan-500));border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 0 25px rgba(139,92,246,0.4)}
+    .sidebar-logo img{width:26px;height:26px;filter:brightness(10)}
+    .sidebar-title{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:linear-gradient(135deg,var(--lavender-400),var(--cyan-400));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;opacity:0;transition:opacity 0.2s 0.1s}
+    .sidebar:hover .sidebar-title{opacity:1}
+    .sidebar-nav{flex:1;padding:16px 14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
+    .sidebar-nav::-webkit-scrollbar{display:none}
+    .nav-section{margin-bottom:16px}
+    .nav-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:8px 14px;white-space:nowrap;opacity:0;transition:opacity 0.2s}
+    .sidebar:hover .nav-section-title{opacity:1}
+    .nav-link{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;color:var(--text-secondary);text-decoration:none;transition:all 0.2s;position:relative;cursor:pointer}
+    .nav-link:hover{background:var(--glass);color:var(--text-primary)}
+    .nav-link.active{background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(6,182,212,0.08));color:var(--lavender-400)}
+    .nav-link.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--lavender-500);border-radius:0 3px 3px 0}
+    .nav-icon{font-size:20px;width:24px;text-align:center;flex-shrink:0}
+    .nav-text{font-size:14px;font-weight:500;white-space:nowrap;opacity:0;transition:opacity 0.2s}
+    .sidebar:hover .nav-text{opacity:1}
+    .nav-badge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;background:var(--lavender-600);border-radius:10px;color:white;opacity:0;transition:opacity 0.2s}
+    .sidebar:hover .nav-badge{opacity:1}
+    .sidebar-footer{padding:16px 14px;border-top:1px solid var(--border-subtle)}
+    .user-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--surface-3);border-radius:12px;cursor:pointer;transition:all 0.2s}
+    .user-btn:hover{background:var(--surface-4)}
+    .user-avatar{width:36px;height:36px;background:linear-gradient(135deg,var(--lavender-600),var(--lavender-400));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+    .user-info{opacity:0;transition:opacity 0.2s;white-space:nowrap}
+    .sidebar:hover .user-info{opacity:1}
+    .user-name{font-size:14px;font-weight:600}
+    .user-plan{font-size:11px;color:var(--lavender-400)}
+
+    /* Main Content */
+    .main{flex:1;margin-left:72px;transition:margin-left 0.3s;display:flex;flex-direction:column;min-height:100vh}
+    
+    /* Header */
+    .header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;background:var(--surface-1);border-bottom:1px solid var(--border-subtle);position:sticky;top:0;z-index:50}
+    .header-left{display:flex;align-items:center;gap:20px}
+    .header-title{font-family:var(--font-tech);font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:12px}
+    .header-title .count{font-size:12px;font-weight:600;padding:4px 12px;background:linear-gradient(135deg,var(--lavender-600),var(--lavender-500));border-radius:20px}
+    .header-stats{display:flex;gap:24px;margin-left:32px}
+    .header-stat{font-size:13px;color:var(--text-muted)}
+    .header-stat strong{color:var(--text-primary);font-weight:600}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .search-box{position:relative}
+    .search-box input{width:260px;padding:11px 16px 11px 42px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:12px;color:var(--text-primary);font-size:13px;transition:all 0.2s}
+    .search-box input::placeholder{color:var(--text-muted)}
+    .search-box input:focus{outline:none;border-color:var(--border-glow);box-shadow:0 0 0 4px rgba(139,92,246,0.1)}
+    .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--text-muted)}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;font-size:13px;font-weight:600;border-radius:12px;border:none;cursor:pointer;transition:all 0.2s;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--lavender-600),var(--lavender-500));color:white;box-shadow:0 4px 20px rgba(139,92,246,0.3)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(139,92,246,0.4)}
+    .btn-secondary{background:var(--surface-3);color:var(--text-primary);border:1px solid var(--border-subtle)}
+
+    /* UNIQUE BOARD DESIGN */
+    .board{flex:1;display:flex;gap:20px;padding:24px;overflow-x:auto;overflow-y:hidden}
+    .board::-webkit-scrollbar{height:8px}
+    .board::-webkit-scrollbar-track{background:var(--surface-2);border-radius:4px}
+    .board::-webkit-scrollbar-thumb{background:var(--surface-4);border-radius:4px}
+    
+    /* Column with unique shape */
+    .column{min-width:320px;width:320px;display:flex;flex-direction:column;height:calc(100vh - 140px)}
+    .column-header{position:relative;padding:20px 20px 16px;background:var(--surface-2);border-radius:20px 20px 0 0;border:1px solid var(--border-subtle);border-bottom:none}
+    .column-header::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:20px 20px 0 0}
+    .column.stage-checkin .column-header::before{background:linear-gradient(90deg,var(--cyan-500),var(--cyan-400))}
+    .column.stage-diag .column-header::before{background:linear-gradient(90deg,var(--lavender-600),var(--lavender-400))}
+    .column.stage-waiting .column-header::before{background:linear-gradient(90deg,var(--amber),#FBBF24)}
+    .column.stage-repair .column-header::before{background:linear-gradient(90deg,var(--blue),#60A5FA)}
+    .column.stage-ready .column-header::before{background:linear-gradient(90deg,var(--emerald),#34D399)}
+    .column.stage-closed .column-header::before{background:linear-gradient(90deg,var(--purple),#C084FC)}
+    .column-title{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600}
+    .column-icon{font-size:18px}
+    .column-count{margin-left:auto;font-size:12px;font-weight:700;padding:4px 10px;background:var(--surface-4);border-radius:20px}
+    .column.stage-checkin .column-count{background:rgba(6,182,212,0.15);color:var(--cyan-400)}
+    .column.stage-diag .column-count{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .column.stage-waiting .column-count{background:rgba(245,158,11,0.15);color:var(--amber)}
+    .column.stage-repair .column-count{background:rgba(59,130,246,0.15);color:var(--blue)}
+    .column.stage-ready .column-count{background:rgba(16,185,129,0.15);color:var(--emerald)}
+    .column.stage-closed .column-count{background:rgba(168,85,247,0.15);color:var(--purple)}
+    
+    .column-body{flex:1;background:var(--surface-2);border:1px solid var(--border-subtle);border-top:none;border-radius:0 0 20px 20px;padding:12px;overflow-y:auto}
+    .column-body::-webkit-scrollbar{width:4px}
+    .column-body::-webkit-scrollbar-thumb{background:var(--surface-4);border-radius:2px}
+
+    /* Unique Ticket Cards */
+    .ticket{background:linear-gradient(145deg,var(--surface-3),var(--surface-2));border:1px solid var(--glass-border);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);position:relative}
+    .ticket::after{content:'';position:absolute;inset:0;border-radius:16px;opacity:0;transition:opacity 0.2s;background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(6,182,212,0.05))}
+    .ticket:hover{transform:translateY(-4px) scale(1.02);border-color:var(--border-glow);box-shadow:0 12px 40px rgba(0,0,0,0.3),0 0 30px rgba(139,92,246,0.1)}
+    .ticket:hover::after{opacity:1}
+    .ticket-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;position:relative;z-index:1}
+    .ticket-id{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--lavender-400)}
+    .ticket-priority{width:8px;height:8px;border-radius:50%;box-shadow:0 0 10px currentColor}
+    .ticket-priority.high{background:var(--rose);color:var(--rose)}
+    .ticket-priority.medium{background:var(--amber);color:var(--amber)}
+    .ticket-priority.low{background:var(--emerald);color:var(--emerald)}
+    .ticket-customer{display:flex;align-items:center;gap:12px;margin-bottom:12px;position:relative;z-index:1}
+    .customer-avatar{width:38px;height:38px;background:linear-gradient(135deg,var(--lavender-600),var(--lavender-400));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0}
+    .customer-name{font-size:14px;font-weight:600}
+    .customer-phone{font-size:11px;color:var(--text-muted)}
+    .ticket-device{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:12px;position:relative;z-index:1}
+    .device-icon{font-size:20px}
+    .device-info{flex:1;min-width:0}
+    .device-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .device-repair{font-size:11px;color:var(--text-muted)}
+    .ticket-footer{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+    .ticket-tags{display:flex;gap:6px}
+    .tag{font-size:9px;font-weight:700;padding:4px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:0.3px}
+    .tag.ai{background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(6,182,212,0.15));color:var(--lavender-400)}
+    .tag.vip{background:rgba(244,63,94,0.2);color:var(--rose)}
+    .tag.rush{background:rgba(245,158,11,0.2);color:var(--amber)}
+    .ticket-amount{font-family:var(--font-mono);font-size:16px;font-weight:700}
+    .ticket-time{font-size:10px;color:var(--text-muted);margin-top:10px;text-align:right;position:relative;z-index:1}
+
+    /* SLIDE-IN DETAIL PANEL */
+    .detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);opacity:0;visibility:hidden;transition:all 0.3s;z-index:200}
+    .detail-overlay.open{opacity:1;visibility:visible}
+    .detail-panel{position:fixed;top:0;right:0;width:500px;height:100vh;background:var(--surface-1);border-left:1px solid var(--border-subtle);display:flex;flex-direction:column;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1),opacity 0.4s;z-index:201;box-shadow:-20px 0 60px rgba(0,0,0,0.5);transform:translateX(100%);opacity:0;pointer-events:none}
+    .detail-panel.open{transform:translateX(0);opacity:1;pointer-events:auto}
+    .detail-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-subtle);background:var(--surface-2)}
+    .detail-header h2{font-family:var(--font-tech);font-size:1.25rem}
+    .detail-actions{display:flex;gap:8px}
+    .action-btn{width:38px;height:38px;background:var(--surface-4);border:1px solid var(--border-subtle);border-radius:10px;color:var(--text-secondary);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+    .action-btn:hover{background:var(--surface-3);color:var(--text-primary);border-color:var(--border-glow)}
+    .action-btn.close{background:transparent;border:none}
+    .action-btn.close:hover{color:var(--rose)}
+    .detail-content{flex:1;overflow-y:auto;padding:24px}
+    .detail-section{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:20px;margin-bottom:16px}
+    .section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .customer-detail{display:flex;align-items:center;gap:14px}
+    .customer-detail .avatar{width:50px;height:50px;background:linear-gradient(135deg,var(--lavender-600),var(--cyan-500));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700}
+    .customer-detail .info h3{font-size:16px;margin-bottom:2px}
+    .customer-detail .info p{font-size:13px;color:var(--text-muted)}
+    .device-detail{display:flex;gap:14px}
+    .device-detail .icon{width:50px;height:50px;background:var(--surface-4);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px}
+    .device-detail .info{flex:1}
+    .device-detail .info h3{font-size:15px;margin-bottom:4px}
+    .device-detail .info p{font-size:12px;color:var(--text-muted);margin-bottom:10px}
+    .badges{display:flex;flex-wrap:wrap;gap:8px}
+    .badge{font-size:11px;font-weight:500;padding:5px 10px;background:var(--surface-4);border-radius:6px}
+    .badge.success{background:rgba(16,185,129,0.15);color:var(--emerald)}
+    .badge.warning{background:rgba(245,158,11,0.15);color:var(--amber)}
+    .ai-box{background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(6,182,212,0.06));border:1px solid rgba(139,92,246,0.2)}
+    .ai-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+    .ai-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--lavender-600),var(--cyan-500));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .ai-title{font-family:var(--font-tech);font-size:13px;color:var(--lavender-400)}
+    .diagnosis-row{display:flex;justify-content:space-between;padding:10px 14px;background:rgba(0,0,0,0.2);border-radius:10px;margin-bottom:8px;font-size:13px}
+    .diagnosis-row:last-child{margin-bottom:0}
+    .confidence{font-family:var(--font-mono);font-weight:700}
+    .confidence.high{color:var(--emerald)}
+    .confidence.medium{color:var(--amber)}
+    .timeline{display:flex;flex-direction:column}
+    .timeline-step{display:flex;gap:14px;padding:14px 0;position:relative}
+    .timeline-step:not(:last-child)::before{content:'';position:absolute;left:13px;top:42px;bottom:0;width:2px;background:var(--surface-4)}
+    .timeline-dot{width:28px;height:28px;background:var(--surface-4);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+    .timeline-step.done .timeline-dot{background:var(--emerald)}
+    .timeline-step.current .timeline-dot{background:linear-gradient(135deg,var(--lavender-600),var(--lavender-400));box-shadow:0 0 15px rgba(139,92,246,0.4)}
+    .timeline-info h4{font-size:13px;font-weight:500;margin-bottom:2px}
+    .timeline-info p{font-size:11px;color:var(--text-muted)}
+    .checkout-box{background:var(--surface-3);border-radius:16px;padding:16px}
+    .checkout-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px}
+    .checkout-row.total{font-size:16px;font-weight:700;padding-top:14px;border-top:1px solid var(--border-subtle);margin-top:8px}
+    .checkout-row.total span:last-child{font-family:var(--font-mono);color:var(--lavender-400)}
+    .detail-footer{padding:16px 24px;border-top:1px solid var(--border-subtle);display:flex;gap:12px}
+    .detail-footer .btn{flex:1;justify-content:center}
+    .btn-success{background:linear-gradient(135deg,#059669,var(--emerald));color:white}
+    .btn-edit{background:var(--surface-3);color:var(--text-primary);border:1px solid var(--border-subtle)}
+    .btn-edit:hover{border-color:var(--lavender-500);background:rgba(139,92,246,0.1)}
+
+    /* FAB */
+    .fab{position:fixed;bottom:28px;right:28px;width:60px;height:60px;background:linear-gradient(135deg,var(--lavender-600),var(--lavender-500));border:none;border-radius:18px;color:white;font-size:28px;cursor:pointer;box-shadow:0 8px 32px rgba(139,92,246,0.4);transition:all 0.2s;z-index:100}
+    .fab:hover{transform:scale(1.1) rotate(90deg);box-shadow:0 12px 40px rgba(139,92,246,0.5)}
+
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    
+    <div class="app">
+        <!-- ANIMATED SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="">
+                </div>
+                <span class="sidebar-title">Fixology</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="index.html" class="nav-link"><span class="nav-icon">📊</span><span class="nav-text">Dashboard</span></a>
+                    <a href="tickets.html" class="nav-link active"><span class="nav-icon">🎫</span><span class="nav-text">Tickets</span><span class="nav-badge">12</span></a>
+                    <a href="customers.html" class="nav-link"><span class="nav-icon">👥</span><span class="nav-text">Customers</span></a>
+                    <a href="inventory.html" class="nav-link"><span class="nav-icon">📦</span><span class="nav-text">Inventory</span></a>
+                    <a href="invoices.html" class="nav-link"><span class="nav-icon">📄</span><span class="nav-text">Invoices</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Intelligence</div>
+                    <a href="diagnostics.html" class="nav-link"><span class="nav-icon">🧠</span><span class="nav-text">AI Diagnostics</span></a>
+                    <a href="imei.html" class="nav-link"><span class="nav-icon">📱</span><span class="nav-text">IMEI Lookup</span></a>
+                    <a href="autopilot.html" class="nav-link"><span class="nav-icon">🤖</span><span class="nav-text">Autopilot</span></a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Operations</div>
+                    <a href="calendar.html" class="nav-link"><span class="nav-icon">📅</span><span class="nav-text">Calendar</span></a>
+                    <a href="team.html" class="nav-link"><span class="nav-icon">👔</span><span class="nav-text">Team</span></a>
+                    <a href="reports.html" class="nav-link"><span class="nav-icon">📈</span><span class="nav-text">Reports</span></a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="settings.html" class="nav-link"><span class="nav-icon">⚙️</span><span class="nav-text">Settings</span></a>
+                <div class="user-btn">
+                    <div class="user-avatar" id="user-avatar">F</div>
+                    <div class="user-info">
+                        <div class="user-name" id="shop-name">Fixology</div>
+                        <div class="user-plan">Pro Plan</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <header class="header">
+                <div class="header-left">
+                    <h1 class="header-title">🎫 Tickets <span class="count">12</span></h1>
+                    <div class="header-stats">
+                        <div class="header-stat"><strong>$2,847</strong> today</div>
+                        <div class="header-stat"><strong>4</strong> completed</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Search tickets...">
+                    </div>
+                    <button class="btn btn-primary" onclick="openNewTicket()">+ New Ticket</button>
+                </div>
+            </header>
+
+            <!-- UNIQUE BOARD -->
+            <div class="board">
+                <!-- Check-in Column -->
+                <div class="column stage-checkin">
+                    <div class="column-header">
+                        <div class="column-title"><span class="column-icon">📥</span> Check-in</div>
+                        <span class="column-count">2</span>
+                    </div>
+                    <div class="column-body">
+                        <div class="ticket" onclick="openDetail(this)" data-id="FX-1251">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1251</span>
+                                <span class="ticket-priority high"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">JM</div>
+                                <div>
+                                    <div class="customer-name">Jessica Martinez</div>
+                                    <div class="customer-phone">(314) 555-0192</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">📱</span>
+                                <div class="device-info">
+                                    <div class="device-name">iPhone 15 Pro Max</div>
+                                    <div class="device-repair">Screen + Face ID</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags">
+                                    <span class="tag rush">⚡ Rush</span>
+                                </div>
+                                <span class="ticket-amount">$349</span>
+                            </div>
+                            <div class="ticket-time">15 min ago</div>
+                        </div>
+                        <div class="ticket" onclick="openDetail(this)">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1250</span>
+                                <span class="ticket-priority medium"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">RC</div>
+                                <div>
+                                    <div class="customer-name">Robert Chen</div>
+                                    <div class="customer-phone">(636) 555-0147</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">💻</span>
+                                <div class="device-info">
+                                    <div class="device-name">MacBook Air M2</div>
+                                    <div class="device-repair">Keyboard</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags"></div>
+                                <span class="ticket-amount">$179</span>
+                            </div>
+                            <div class="ticket-time">1 hour ago</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Diagnosis Column -->
+                <div class="column stage-diag">
+                    <div class="column-header">
+                        <div class="column-title"><span class="column-icon">🧠</span> Diagnosis</div>
+                        <span class="column-count">3</span>
+                    </div>
+                    <div class="column-body">
+                        <div class="ticket" onclick="openDetail(this)">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1249</span>
+                                <span class="ticket-priority high"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">MJ</div>
+                                <div>
+                                    <div class="customer-name">Marcus Johnson</div>
+                                    <div class="customer-phone">(573) 555-0876</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">📱</span>
+                                <div class="device-info">
+                                    <div class="device-name">iPhone 14 Pro Max</div>
+                                    <div class="device-repair">Screen + Battery</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags">
+                                    <span class="tag ai">🧠 AI</span>
+                                    <span class="tag vip">★ VIP</span>
+                                </div>
+                                <span class="ticket-amount">$389</span>
+                            </div>
+                            <div class="ticket-time">2 hours ago</div>
+                        </div>
+                        <div class="ticket" onclick="openDetail(this)">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1248</span>
+                                <span class="ticket-priority low"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">SW</div>
+                                <div>
+                                    <div class="customer-name">Sarah Williams</div>
+                                    <div class="customer-phone">(314) 555-0234</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">🎮</span>
+                                <div class="device-info">
+                                    <div class="device-name">PlayStation 5</div>
+                                    <div class="device-repair">HDMI Port</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags">
+                                    <span class="tag ai">🧠 AI</span>
+                                </div>
+                                <span class="ticket-amount">$175</span>
+                            </div>
+                            <div class="ticket-time">3 hours ago</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Waiting Parts Column -->
+                <div class="column stage-waiting">
+                    <div class="column-header">
+                        <div class="column-title"><span class="column-icon">📦</span> Waiting Parts</div>
+                        <span class="column-count">2</span>
+                    </div>
+                    <div class="column-body">
+                        <div class="ticket" onclick="openDetail(this)">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1244</span>
+                                <span class="ticket-priority medium"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">ED</div>
+                                <div>
+                                    <div class="customer-name">Emily Davis</div>
+                                    <div class="customer-phone">(636) 555-0321</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">📱</span>
+                                <div class="device-info">
+                                    <div class="device-name">iPhone 13</div>
+                                    <div class="device-repair">Back Glass</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags"></div>
+                                <span class="ticket-amount">$129</span>
+                            </div>
+                            <div class="ticket-time">ETA: Tomorrow</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- In Repair Column -->
+                <div class="column stage-repair">
+                    <div class="column-header">
+                        <div class="column-title"><span class="column-icon">🔧</span> In Repair</div>
+                        <span class="column-count">2</span>
+                    </div>
+                    <div class="column-body">
+                        <div class="ticket" onclick="openDetail(this)">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1246</span>
+                                <span class="ticket-priority high"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">AT</div>
+                                <div>
+                                    <div class="customer-name">Amanda Torres</div>
+                                    <div class="customer-phone">(314) 555-0456</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">📱</span>
+                                <div class="device-info">
+                                    <div class="device-name">iPhone 14</div>
+                                    <div class="device-repair">Screen + Face ID</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags">
+                                    <span class="tag rush">⚡ Rush</span>
+                                </div>
+                                <span class="ticket-amount">$329</span>
+                            </div>
+                            <div class="ticket-time">Started 45m ago</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ready Column -->
+                <div class="column stage-ready">
+                    <div class="column-header">
+                        <div class="column-title"><span class="column-icon">✅</span> Ready</div>
+                        <span class="column-count">2</span>
+                    </div>
+                    <div class="column-body">
+                        <div class="ticket" onclick="openDetail(this)">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1243</span>
+                                <span class="ticket-priority low"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">LA</div>
+                                <div>
+                                    <div class="customer-name">Lisa Anderson</div>
+                                    <div class="customer-phone">(573) 555-0789</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">📱</span>
+                                <div class="device-info">
+                                    <div class="device-name">iPhone 12</div>
+                                    <div class="device-repair">Battery</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags"></div>
+                                <span class="ticket-amount">$79</span>
+                            </div>
+                            <div class="ticket-time">Customer notified</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Closed Column -->
+                <div class="column stage-closed">
+                    <div class="column-header">
+                        <div class="column-title"><span class="column-icon">💰</span> Closed</div>
+                        <span class="column-count">1</span>
+                    </div>
+                    <div class="column-body">
+                        <div class="ticket" onclick="openDetail(this)">
+                            <div class="ticket-top">
+                                <span class="ticket-id">#FX-1240</span>
+                                <span class="ticket-priority low"></span>
+                            </div>
+                            <div class="ticket-customer">
+                                <div class="customer-avatar">CT</div>
+                                <div>
+                                    <div class="customer-name">Chris Taylor</div>
+                                    <div class="customer-phone">(314) 555-0654</div>
+                                </div>
+                            </div>
+                            <div class="ticket-device">
+                                <span class="device-icon">📱</span>
+                                <div class="device-info">
+                                    <div class="device-name">Pixel 8</div>
+                                    <div class="device-repair">Screen</div>
+                                </div>
+                            </div>
+                            <div class="ticket-footer">
+                                <div class="ticket-tags"></div>
+                                <span class="ticket-amount">$199</span>
+                            </div>
+                            <div class="ticket-time">💳 Paid 2:15 PM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- DETAIL OVERLAY -->
+    <div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+    
+    <!-- SLIDE-IN DETAIL PANEL -->
+    <div class="detail-panel" id="detail-panel">
+        <div class="detail-header">
+            <h2>Ticket #FX-1251</h2>
+            <div class="detail-actions">
+                <button class="action-btn" title="Edit">✏️</button>
+                <button class="action-btn" title="Print">🖨️</button>
+                <button class="action-btn" title="Message">💬</button>
+                <button class="action-btn close" title="Close" onclick="closeDetail()">✕</button>
+            </div>
+        </div>
+        <div class="detail-content">
+            <!-- Customer -->
+            <div class="detail-section">
+                <div class="section-label">👤 Customer</div>
+                <div class="customer-detail">
+                    <div class="avatar">JM</div>
+                    <div class="info">
+                        <h3>Jessica Martinez</h3>
+                        <p>jessica.m@email.com • (314) 555-0192</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device -->
+            <div class="detail-section">
+                <div class="section-label">📱 Device</div>
+                <div class="device-detail">
+                    <div class="icon">📱</div>
+                    <div class="info">
+                        <h3>iPhone 15 Pro Max</h3>
+                        <p>IMEI: 353912•••••8847 • 256GB • Natural Titanium</p>
+                        <div class="badges">
+                            <span class="badge success">✓ Unlocked</span>
+                            <span class="badge warning">⚠️ Find My ON</span>
+                            <span class="badge">AppleCare+</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Diagnosis -->
+            <div class="detail-section ai-box">
+                <div class="ai-header">
+                    <div class="ai-icon">🧠</div>
+                    <span class="ai-title">AI Diagnosis</span>
+                </div>
+                <div class="diagnosis-row">
+                    <span>Display Assembly Replacement</span>
+                    <span class="confidence high">96%</span>
+                </div>
+                <div class="diagnosis-row">
+                    <span>Face ID Module Recalibration</span>
+                    <span class="confidence high">89%</span>
+                </div>
+                <div class="diagnosis-row">
+                    <span>Proximity Sensor Check</span>
+                    <span class="confidence medium">54%</span>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="detail-section">
+                <div class="section-label">📍 Progress</div>
+                <div class="timeline">
+                    <div class="timeline-step done">
+                        <div class="timeline-dot">✓</div>
+                        <div class="timeline-info">
+                            <h4>Check-in Complete</h4>
+                            <p>Today 10:32 AM</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step current">
+                        <div class="timeline-dot">🔍</div>
+                        <div class="timeline-info">
+                            <h4>Diagnosing</h4>
+                            <p>AI analyzing symptoms</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="timeline-dot">🔧</div>
+                        <div class="timeline-info">
+                            <h4>Repair</h4>
+                            <p>Pending approval</p>
+                        </div>
+                    </div>
+                    <div class="timeline-step">
+                        <div class="timeline-dot">✅</div>
+                        <div class="timeline-info">
+                            <h4>Ready</h4>
+                            <p>Est. Today 4:00 PM</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Checkout -->
+            <div class="checkout-box">
+                <div class="checkout-row"><span>iPhone 15 Pro Max Screen (OEM)</span><span>$269.00</span></div>
+                <div class="checkout-row"><span>Face ID Recalibration</span><span>$50.00</span></div>
+                <div class="checkout-row"><span>Labor (Est. 1.5 hrs)</span><span>$75.00</span></div>
+                <div class="checkout-row" style="color:var(--emerald)"><span>VIP Discount (10%)</span><span>-$39.40</span></div>
+                <div class="checkout-row total"><span>Total</span><span>$354.60</span></div>
+            </div>
+        </div>
+        <div class="detail-footer">
+            <button class="btn btn-edit">✏️ Edit Ticket</button>
+            <button class="btn btn-success">💳 Collect Payment</button>
+        </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" title="New Ticket" onclick="openNewTicket()">+</button>
+
+    <script src="js/app.js"></script>
+    <script src="js/tickets.js"></script>
+    <script>
+    function openDetail(el) {
+        document.getElementById('detail-overlay').classList.add('open');
+        document.getElementById('detail-panel').classList.add('open');
+    }
+
+    function closeDetail() {
+        document.getElementById('detail-overlay').classList.remove('open');
+        document.getElementById('detail-panel').classList.remove('open');
+    }
+
+    function openNewTicket() {
+        window.location.href = 'index.html';
+        setTimeout(() => {
+            if (window.openNewTicketModal) window.openNewTicketModal();
+        }, 100);
+    }
+
+    // Load shop info
+    const API_BASE = 'https://final-bice-phi.vercel.app';
+    const token = localStorage.getItem('fixology_shop_token');
+    
+    if (!token) {
+        window.location.href = '../shop-login.html';
+    }
+
+    async function loadShopInfo() {
+        try {
+            const response = await fetch(`${API_BASE}/api/shops/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.shop) {
+                const shopNameEl = document.getElementById('shop-name');
+                const avatarEl = document.getElementById('user-avatar');
+                if (shopNameEl) shopNameEl.textContent = data.shop.shopName || 'Fixology';
+                if (avatarEl) avatarEl.textContent = (data.shop.shopName || 'F')[0].toUpperCase();
+            }
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }
+    loadShopInfo();
+    </script>
+</body>
+</html>

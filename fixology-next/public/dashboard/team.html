@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team | Fixology POS</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-50:#f5f3ff;--lavender-100:#ede9fe;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--surface-5:#232329;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%);--gradient-glow:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(34,211,238,0.1))}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.5;display:flex;min-height:100vh}
+    
+    /* Sidebar - same as index.html */
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border-subtle)}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .sidebar-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:9px;font-weight:700;padding:3px 6px;background:var(--lavender-600);border-radius:4px;color:white;margin-left:auto}
+    .sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+    .sidebar-section{margin-bottom:20px}
+    .sidebar-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:8px 12px;margin-bottom:4px}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:13px;font-weight:500;color:var(--text-secondary);border-radius:10px;margin-bottom:2px;transition:all 0.15s;text-decoration:none}
+    .sidebar-link:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-link.active{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .sidebar-link-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-link-badge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;background:var(--lavender-600);border-radius:10px;color:white}
+    .sidebar-link-badge.warning{background:var(--warning)}
+    .sidebar-link-badge.success{background:var(--success)}
+    .sidebar-divider{height:1px;background:var(--border-subtle);margin:12px 0}
+    .sidebar-footer{padding:12px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-3);border-radius:12px;cursor:pointer;transition:all 0.15s}
+    .sidebar-user:hover{background:var(--surface-4)}
+    .sidebar-user-avatar{width:40px;height:40px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+    .sidebar-user-info{flex:1;min-width:0}
+    .sidebar-user-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-user-plan{font-size:11px;color:var(--lavender-400)}
+    .sidebar-user-menu{font-size:16px;color:var(--text-muted)}
+
+    .main{flex:1;margin-left:260px;display:flex;flex-direction:column;min-height:100vh;background:var(--surface-1)}
+    .header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;background:var(--surface-2);border-bottom:1px solid var(--border-subtle);position:sticky;top:0;z-index:50}
+    .header-left{display:flex;align-items:center;gap:20px}
+    .header-title{font-family:var(--font-tech);font-size:1.5rem;font-weight:700}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,92,246,0.35)}
+    .btn-secondary{background:var(--surface-4);color:var(--text-primary);border:1px solid var(--border-default)}
+    .btn-secondary:hover{background:var(--surface-5)}
+    .content{flex:1;padding:24px 28px;overflow-y:auto}
+    
+    /* Team Grid */
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+    .team-card{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;transition:all 0.2s}
+    .team-card:hover{border-color:var(--lavender-500);transform:translateY(-2px)}
+    .team-header{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+    .team-avatar{width:64px;height:64px;background:var(--gradient-lavender);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:white}
+    .team-info{flex:1}
+    .team-name{font-size:16px;font-weight:600;margin-bottom:4px}
+    .team-role{font-size:13px;color:var(--text-muted)}
+    .team-details{display:grid;gap:12px;padding-top:16px;border-top:1px solid var(--border-subtle)}
+    .team-detail{display:flex;justify-content:space-between;font-size:13px}
+    .team-detail-label{color:var(--text-muted)}
+    .team-detail-value{font-weight:500}
+    .status-badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;display:inline-block}
+    .status-badge.active{background:rgba(34,197,94,0.15);color:var(--success)}
+    .status-badge.inactive{background:rgba(107,114,128,0.15);color:var(--text-secondary)}
+    
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.team-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+                <span>Fixology</span>
+                <span class="sidebar-badge">POS</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main</div>
+                <a href="/dashboard/index.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+                <a href="/dashboard/tickets.html" class="sidebar-link"><span class="sidebar-link-icon">🎫</span>Tickets<span class="sidebar-link-badge">12</span></a>
+                <a href="/dashboard/customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
+                <a href="/dashboard/inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory<span class="sidebar-link-badge warning">3</span></a>
+                <a href="/dashboard/invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Intelligence</div>
+                <a href="/dashboard/diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>AI Diagnostics</a>
+                <a href="/dashboard/imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
+                <a href="/dashboard/autopilot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span>Autopilot</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Operations</div>
+                <a href="/dashboard/calendar.html" class="sidebar-link"><span class="sidebar-link-icon">📅</span>Calendar</a>
+                <a href="/dashboard/timeclock.html" class="sidebar-link"><span class="sidebar-link-icon">⏱️</span>Time Clock</a>
+                <a href="/dashboard/team.html" class="sidebar-link active"><span class="sidebar-link-icon">👔</span>Team</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Business</div>
+                <a href="/dashboard/websites.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span>Website</a>
+                <a href="/dashboard/auto-reply.html" class="sidebar-link"><span class="sidebar-link-icon">💬</span>Messages</a>
+                <a href="/dashboard/reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span>Reports</a>
+            </div>
+            <div class="sidebar-divider"></div>
+            <a href="/dashboard/settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
+            <a href="#" class="sidebar-link" onclick="logout()"><span class="sidebar-link-icon">🚪</span>Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user" id="sidebar-user">
+                <div class="sidebar-user-avatar" id="user-avatar">F</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="shop-name">Loading...</div>
+                    <div class="sidebar-user-plan" id="shop-plan">Free Plan</div>
+                </div>
+                <span class="sidebar-user-menu">⋮</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="header-title">👔 Team</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-primary" onclick="openAddMemberModal()">+ Add Team Member</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="team-grid" id="team-grid">
+                <div class="team-card">
+                    <div class="team-header">
+                        <div class="team-avatar">JD</div>
+                        <div class="team-info">
+                            <div class="team-name">John Doe</div>
+                            <div class="team-role">Technician</div>
+                        </div>
+                    </div>
+                    <div class="team-details">
+                        <div class="team-detail">
+                            <span class="team-detail-label">Email</span>
+                            <span class="team-detail-value">john@fixology.com</span>
+                        </div>
+                        <div class="team-detail">
+                            <span class="team-detail-label">Phone</span>
+                            <span class="team-detail-value">(555) 123-4567</span>
+                        </div>
+                        <div class="team-detail">
+                            <span class="team-detail-label">Hourly Rate</span>
+                            <span class="team-detail-value">$25/hr</span>
+                        </div>
+                        <div class="team-detail">
+                            <span class="team-detail-label">Status</span>
+                            <span class="status-badge active">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+    const API_BASE = 'https://final-bice-phi.vercel.app';
+    const token = localStorage.getItem('fixology_shop_token');
+
+    if (!token) {
+        window.location.href = '../shop-login.html';
+    }
+
+    async function loadUser() {
+        try {
+            const response = await fetch(`${API_BASE}/api/shops/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.shop) {
+                document.getElementById('shop-name').textContent = data.shop.shopName || 'Your Shop';
+                document.getElementById('user-avatar').textContent = (data.shop.shopName || 'F')[0].toUpperCase();
+                const planNames = { free: 'Free Plan', basic: '🚀 Basic', pro: '💎 Pro', enterprise: '🏢 Enterprise' };
+                document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
+            }
+        } catch (err) {
+            console.error('Error loading user:', err);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('fixology_shop_token');
+        localStorage.removeItem('fixology_token');
+        window.location.href = '../index.html';
+    }
+
+    function openAddMemberModal() {
+        alert('Add team member functionality coming soon!');
+    }
+
+    loadUser();
+    </script>
+</body>
+</html>

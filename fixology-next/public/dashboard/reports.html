@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports | Fixology POS</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--font-mono:'JetBrains Mono',monospace;--lavender-50:#f5f3ff;--lavender-100:#ede9fe;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--surface-5:#232329;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD 0%,#A78BFA 50%,#8B5CF6 100%);--gradient-glow:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(34,211,238,0.1))}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.5;display:flex;min-height:100vh}
+    
+    /* Sidebar - same as index.html */
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow:hidden}
+    .sidebar-header{padding:20px;border-bottom:1px solid var(--border-subtle)}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .sidebar-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(139,92,246,0.5))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-badge{font-size:9px;font-weight:700;padding:3px 6px;background:var(--lavender-600);border-radius:4px;color:white;margin-left:auto}
+    .sidebar-nav{flex:1;padding:12px;overflow-y:auto}
+    .sidebar-section{margin-bottom:20px}
+    .sidebar-section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);padding:8px 12px;margin-bottom:4px}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:11px 14px;font-size:13px;font-weight:500;color:var(--text-secondary);border-radius:10px;margin-bottom:2px;transition:all 0.15s;text-decoration:none}
+    .sidebar-link:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-link.active{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .sidebar-link-icon{font-size:16px;width:20px;text-align:center}
+    .sidebar-link-badge{margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;background:var(--lavender-600);border-radius:10px;color:white}
+    .sidebar-link-badge.warning{background:var(--warning)}
+    .sidebar-link-badge.success{background:var(--success)}
+    .sidebar-divider{height:1px;background:var(--border-subtle);margin:12px 0}
+    .sidebar-footer{padding:12px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-3);border-radius:12px;cursor:pointer;transition:all 0.15s}
+    .sidebar-user:hover{background:var(--surface-4)}
+    .sidebar-user-avatar{width:40px;height:40px;background:var(--gradient-lavender);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+    .sidebar-user-info{flex:1;min-width:0}
+    .sidebar-user-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sidebar-user-plan{font-size:11px;color:var(--lavender-400)}
+    .sidebar-user-menu{font-size:16px;color:var(--text-muted)}
+
+    .main{flex:1;margin-left:260px;display:flex;flex-direction:column;min-height:100vh;background:var(--surface-1)}
+    .header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;background:var(--surface-2);border-bottom:1px solid var(--border-subtle);position:sticky;top:0;z-index:50}
+    .header-left{display:flex;align-items:center;gap:20px}
+    .header-title{font-family:var(--font-tech);font-size:1.5rem;font-weight:700}
+    .header-right{display:flex;align-items:center;gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;transition:all 0.15s;text-decoration:none}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(139,92,246,0.35)}
+    .btn-secondary{background:var(--surface-4);color:var(--text-primary);border:1px solid var(--border-default)}
+    .btn-secondary:hover{background:var(--surface-5)}
+    .content{flex:1;padding:24px 28px;overflow-y:auto}
+    
+    /* Reports Styles */
+    .date-range-selector{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}
+    .range-btn{padding:8px 16px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-secondary);font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s}
+    .range-btn:hover{background:var(--surface-4);color:var(--text-primary)}
+    .range-btn.active{background:var(--lavender-600);color:white;border-color:var(--lavender-600)}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+    .stat-card{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:20px}
+    .stat-value{font-family:var(--font-tech);font-size:2rem;font-weight:700;margin-bottom:4px;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .stat-label{font-size:13px;color:var(--text-muted)}
+    .chart-container{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;padding:24px;margin-bottom:24px}
+    .chart-title{font-family:var(--font-tech);font-size:1rem;font-weight:600;margin-bottom:20px}
+    .revenue-chart{height:300px;display:flex;align-items:flex-end;gap:12px;padding:20px 0}
+    .chart-bar{flex:1;background:var(--gradient-lavender);border-radius:4px 4px 0 0;min-height:20px;transition:all 0.3s;cursor:pointer}
+    .chart-bar:hover{opacity:0.8}
+    .table-container{background:var(--surface-2);border:1px solid var(--border-subtle);border-radius:16px;overflow:hidden}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--border-subtle)}
+    .table th{font-size:12px;font-weight:600;text-transform:uppercase;color:var(--text-muted);background:var(--surface-3)}
+    .table tr:hover td{background:var(--surface-3)}
+    .table tr:last-child td{border-bottom:none}
+    
+    @media(max-width:900px){.sidebar{display:none}.main{margin-left:0}.stats-row{grid-template-columns:repeat(2,1fr)}}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+                <span>Fixology</span>
+                <span class="sidebar-badge">POS</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main</div>
+                <a href="index.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+                <a href="tickets.html" class="sidebar-link"><span class="sidebar-link-icon">🎫</span>Tickets<span class="sidebar-link-badge">12</span></a>
+                <a href="customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
+                <a href="inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory<span class="sidebar-link-badge warning">3</span></a>
+                <a href="invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Intelligence</div>
+                <a href="diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>AI Diagnostics</a>
+                <a href="imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
+                <a href="autopilot.html" class="sidebar-link"><span class="sidebar-link-icon">🤖</span>Autopilot</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Operations</div>
+                <a href="calendar.html" class="sidebar-link"><span class="sidebar-link-icon">📅</span>Calendar</a>
+                <a href="timeclock.html" class="sidebar-link"><span class="sidebar-link-icon">⏱️</span>Time Clock</a>
+                <a href="team.html" class="sidebar-link"><span class="sidebar-link-icon">👔</span>Team</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Business</div>
+                <a href="websites.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span>Website</a>
+                <a href="auto-reply.html" class="sidebar-link"><span class="sidebar-link-icon">💬</span>Messages</a>
+                <a href="reports.html" class="sidebar-link active"><span class="sidebar-link-icon">📈</span>Reports</a>
+            </div>
+            <div class="sidebar-divider"></div>
+            <a href="settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
+            <a href="#" class="sidebar-link" onclick="logout()"><span class="sidebar-link-icon">🚪</span>Logout</a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user" id="sidebar-user">
+                <div class="sidebar-user-avatar" id="user-avatar">F</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="shop-name">Loading...</div>
+                    <div class="sidebar-user-plan" id="shop-plan">Free Plan</div>
+                </div>
+                <span class="sidebar-user-menu">⋮</span>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="header-title">📈 Reports</h1>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" onclick="exportReport()">Export CSV</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="date-range-selector">
+                <button class="range-btn active" onclick="setRange('7d')">Last 7 Days</button>
+                <button class="range-btn" onclick="setRange('30d')">Last 30 Days</button>
+                <button class="range-btn" onclick="setRange('90d')">Last 90 Days</button>
+                <button class="range-btn" onclick="setRange('year')">This Year</button>
+                <button class="range-btn" onclick="setRange('custom')">Custom</button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-revenue">$0</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="repairs-completed">0</div>
+                    <div class="stat-label">Repairs Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avg-repair-time">0m</div>
+                    <div class="stat-label">Avg Repair Time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="customer-count">0</div>
+                    <div class="stat-label">Total Customers</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <h3 class="chart-title">Revenue Over Time</h3>
+                <div class="revenue-chart" id="revenue-chart">
+                    <!-- Chart will be generated by JS -->
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Repair Type</th>
+                            <th>Count</th>
+                            <th>Revenue</th>
+                            <th>Avg Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="repair-types-table">
+                        <tr>
+                            <td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted)">Loading data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+    const API_BASE = 'https://final-bice-phi.vercel.app';
+    const token = localStorage.getItem('fixology_shop_token');
+    let currentRange = '30d';
+
+    if (!token) {
+        window.location.href = '../shop-login.html';
+    }
+
+    function setRange(range) {
+        currentRange = range;
+        document.querySelectorAll('.range-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        loadReports();
+    }
+
+    async function loadReports() {
+        try {
+            // Load dashboard stats
+            const stats = await fetch(`${API_BASE}/api/dashboard/stats`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json());
+
+            if (stats.success) {
+                document.getElementById('total-revenue').textContent = formatCurrency(stats.todayRevenue || 0);
+                document.getElementById('repairs-completed').textContent = stats.completedToday || 0;
+                document.getElementById('avg-repair-time').textContent = stats.avgRepairTime || '0m';
+            }
+
+            // Load tickets for repair types
+            const tickets = await fetch(`${API_BASE}/api/tickets`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json());
+
+            if (tickets.success && tickets.tickets) {
+                // Group by device type
+                const repairTypes = {};
+                tickets.tickets.forEach(ticket => {
+                    const type = ticket.device_type || 'Unknown';
+                    if (!repairTypes[type]) {
+                        repairTypes[type] = { count: 0, revenue: 0 };
+                    }
+                    repairTypes[type].count++;
+                    repairTypes[type].revenue += parseFloat(ticket.final_price || ticket.quoted_price || 0);
+                });
+
+                const tableBody = document.getElementById('repair-types-table');
+                if (Object.keys(repairTypes).length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:40px;color:var(--text-muted)">No data available</td></tr>';
+                } else {
+                    tableBody.innerHTML = Object.entries(repairTypes)
+                        .sort((a, b) => b[1].revenue - a[1].revenue)
+                        .map(([type, data]) => `
+                            <tr>
+                                <td>${type}</td>
+                                <td>${data.count}</td>
+                                <td>${formatCurrency(data.revenue)}</td>
+                                <td>${formatCurrency(data.revenue / data.count)}</td>
+                            </tr>
+                        `).join('');
+                }
+            }
+
+            // Update revenue chart
+            if (stats.success && stats.revenueByDay) {
+                updateRevenueChart(stats.revenueByDay);
+            }
+
+        } catch (err) {
+            console.error('Error loading reports:', err);
+        }
+    }
+
+    function updateRevenueChart(data) {
+        const chart = document.getElementById('revenue-chart');
+        if (!chart) return;
+
+        const maxAmount = Math.max(...data.map(d => d.amount), 1);
+        chart.innerHTML = data.map(day => {
+            const height = (day.amount / maxAmount) * 100;
+            return `<div class="chart-bar" style="height:${height}%" title="${day.day}: ${formatCurrency(day.amount)}"></div>`;
+        }).join('');
+    }
+
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+    }
+
+    function exportReport() {
+        alert('Export functionality coming soon!');
+    }
+
+    async function loadUser() {
+        try {
+            const response = await fetch(`${API_BASE}/api/shops/profile`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success && data.shop) {
+                document.getElementById('shop-name').textContent = data.shop.shopName || 'Your Shop';
+                document.getElementById('user-avatar').textContent = (data.shop.shopName || 'F')[0].toUpperCase();
+                const planNames = { free: 'Free Plan', basic: '🚀 Basic', pro: '💎 Pro', enterprise: '🏢 Enterprise' };
+                document.getElementById('shop-plan').textContent = planNames[data.shop.subscriptionPlan] || 'Free Plan';
+            }
+        } catch (err) {
+            console.error('Error loading user:', err);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('fixology_shop_token');
+        localStorage.removeItem('fixology_token');
+        window.location.href = '../index.html';
+    }
+
+    loadUser();
+    loadReports();
+    </script>
+</body>
+</html>

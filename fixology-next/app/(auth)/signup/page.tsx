@@ -132,7 +132,7 @@ export default function SignupPage() {
       }
       
       toast.success('Account created! Welcome to Fixology!')
-      router.push('/onboarding')
+      router.push('/dashboard/index.html')
       router.refresh()
     } catch (error) {
       console.error('Signup error:', error)

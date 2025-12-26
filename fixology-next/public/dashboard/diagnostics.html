@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Diagnostics — Fixology Dashboard</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+    :root{--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--danger:#EF4444;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-tertiary:#71717A;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#A78BFA,#8B5CF6,#7C3AED)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;background:var(--surface-1);color:var(--text-primary);line-height:1.5}a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer;border:none;background:none}
+    .dashboard{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+    .sidebar{background:var(--surface-0);border-right:1px solid var(--border-subtle);padding:24px 16px;display:flex;flex-direction:column}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;padding:0 8px 24px;margin-bottom:8px;border-bottom:1px solid var(--border-subtle)}
+    .sidebar-logo img{width:44px;height:44px;border-radius:0;filter:drop-shadow(0 0 12px rgba(139,92,246,0.6))}
+    .sidebar-logo span{font-family:'Space Grotesk',system-ui,sans-serif;font-size:1.25rem;font-weight:700;color:#EDE9FE}
+    .sidebar-nav{flex:1;display:flex;flex-direction:column;gap:4px}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:10px;font-size:14px;font-weight:500;color:var(--text-secondary);transition:all 0.15s}
+    .sidebar-link:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-link.active{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .sidebar-link span:first-child{font-size:18px}
+    .sidebar-section{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:24px 16px 8px}
+    .main{display:flex;flex-direction:column}
+    .breadcrumb{font-size:12px;color:var(--text-muted);margin-bottom:4px}.breadcrumb a{color:var(--text-secondary);text-decoration:none}.breadcrumb a:hover{color:var(--lavender-400)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:var(--surface-2);border-bottom:1px solid var(--border-subtle)}
+    .topbar-left h1{font-size:1.25rem;font-weight:600}
+    .content{flex:1;padding:32px;overflow-y:auto}
+    .diag-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+    .input-panel{background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:20px;padding:32px}
+    .panel-title{font-size:1.125rem;font-weight:600;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+    .panel-title span{font-size:24px}
+    .form-group{margin-bottom:20px}
+    .form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:8px;color:var(--text-secondary)}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:14px 18px;background:var(--surface-4);border:1px solid var(--border-default);border-radius:0;color:var(--text-primary);font-size:15px}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--lavender-500)}
+    .symptom-chips{display:flex;flex-wrap:wrap;gap:8px}
+    .symptom-chip{padding:8px 14px;background:var(--surface-4);border:1px solid var(--border-default);border-radius:8px;font-size:13px;cursor:pointer;transition:all 0.15s}
+    .symptom-chip:hover{border-color:var(--lavender-400)}
+    .symptom-chip.selected{background:rgba(139,92,246,0.15);border-color:var(--lavender-500);color:var(--lavender-400)}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;font-size:15px;font-weight:600;border-radius:0;width:100%;margin-top:8px}
+    .btn-primary{background:var(--gradient-lavender);color:white;box-shadow:0 0 30px rgba(139,92,246,0.3)}
+    .results-panel{background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:20px;padding:32px}
+    .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .confidence-badge{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(34,197,94,0.15);border-radius:8px;font-size:13px;font-weight:600;color:var(--success)}
+    .cause-card{background:var(--surface-4);border:1px solid var(--border-subtle);border-radius:0;padding:20px;margin-bottom:16px}
+    .cause-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .cause-name{font-weight:600}
+    .cause-confidence{font-size:13px;font-weight:600;color:var(--lavender-400)}
+    .cause-component{font-size:13px;color:var(--text-muted);margin-bottom:12px}
+    .cause-price{display:flex;align-items:center;gap:8px}
+    .cause-price span{font-size:14px;color:var(--text-tertiary)}
+    .cause-price strong{font-size:16px;color:var(--success)}
+    .red-flag{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:0;padding:16px;margin-top:20px;display:flex;align-items:center;gap:12px}
+    .red-flag-icon{font-size:24px}
+    .red-flag-text{font-size:14px}
+    .red-flag-text strong{color:var(--danger)}
+    .tests-section{margin-top:24px;padding-top:24px;border-top:1px solid var(--border-subtle)}
+    .tests-title{font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-secondary)}
+    .test-item{display:flex;align-items:center;gap:10px;padding:10px 0;font-size:14px;color:var(--text-tertiary)}
+    .test-item::before{content:'→';color:var(--cyan-400)}
+    @media(max-width:1024px){.dashboard{grid-template-columns:1fr}.sidebar{display:none}.diag-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <a href="../index.html" class="sidebar-logo"><img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology"><span>Fixology</span></a>
+            <nav class="sidebar-nav">
+                <a href="preview.html" class="sidebar-link"><span>📊</span> Dashboard</a>
+                <a href="repairs.html" class="sidebar-link"><span>🔧</span> Repairs</a>
+                <a href="customers.html" class="sidebar-link"><span>👥</span> Customers</a>
+                <a href="inventory.html" class="sidebar-link"><span>📦</span> Inventory</a>
+                <a href="invoices.html" class="sidebar-link"><span>💳</span> Invoices</a>
+                <div class="sidebar-section">AI Tools</div>
+                <a href="diagnostics.html" class="sidebar-link active"><span>🧠</span> Diagnostics</a>
+                <a href="imei.html" class="sidebar-link"><span>📱</span> IMEI Lookup</a>
+                <a href="auto-reply.html" class="sidebar-link"><span>💬</span> Auto-Reply</a>
+                <div class="sidebar-section">Settings</div>
+                <a href="settings.html" class="sidebar-link"><span>⚙️</span> Settings</a>
+            </nav>
+                <div style="padding:12px;border-top:1px solid var(--border-subtle)"><a href="../admin/index.html" style="display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:500;color:var(--lavender-400);background:rgba(139,92,246,0.1);border-radius:10px;text-decoration:none">👑 Admin Console</a></div>
+    </aside>
+        <main class="main">
+            <header class="topbar"><div class="topbar-left"><div class="breadcrumb"><a href="preview.html">Dashboard</a> / Diagnostics</div><h1>AI Diagnostics</h1></div></header>
+            <div class="content">
+                <div class="diag-grid">
+                    <div class="input-panel">
+                        <div class="panel-title"><span>🧠</span> New Diagnosis</div>
+                        <div class="form-group"><label>Device</label><select><option>Select device...</option><option>iPhone 14 Pro</option><option>iPhone 14</option><option>iPhone 13 Pro</option><option>iPhone 13</option><option>Samsung Galaxy S23</option><option>Samsung Galaxy S22</option><option>Google Pixel 8</option><option>MacBook Pro</option><option>PlayStation 5</option><option>Xbox Series X</option></select></div>
+                        <div class="form-group"><label>Symptoms (select all that apply)</label><div class="symptom-chips"><span class="symptom-chip selected">Won't turn on</span><span class="symptom-chip">Cracked screen</span><span class="symptom-chip">Battery drain</span><span class="symptom-chip selected">Dropped</span><span class="symptom-chip">Water damage</span><span class="symptom-chip">No sound</span><span class="symptom-chip">Overheating</span><span class="symptom-chip">Charging issue</span></div></div>
+                        <div class="form-group"><label>Additional Details</label><textarea rows="3" placeholder="Customer says device won't turn on after dropping it yesterday..."></textarea></div>
+                        <div class="form-group"><label>Panic Log (optional)</label><textarea rows="2" placeholder="Paste panic log here..."></textarea></div>
+                        <button class="btn btn-primary">🔍 Run Diagnosis</button>
+                    </div>
+                    <div class="results-panel">
+                        <div class="results-header">
+                            <div class="panel-title"><span>📋</span> Diagnosis Results</div>
+                            <div class="confidence-badge">✓ 98.7% Overall Confidence</div>
+                        </div>
+                        <div class="cause-card">
+                            <div class="cause-header"><span class="cause-name">Damaged Display Connector</span><span class="cause-confidence">87% likely</span></div>
+                            <div class="cause-component">Component: Display Flex Cable / Connector</div>
+                            <div class="cause-price"><span>Repair estimate:</span><strong>$89 - $149</strong></div>
+                        </div>
+                        <div class="cause-card">
+                            <div class="cause-header"><span class="cause-name">Battery Disconnection</span><span class="cause-confidence">42% likely</span></div>
+                            <div class="cause-component">Component: Battery Connector</div>
+                            <div class="cause-price"><span>Repair estimate:</span><strong>$49 - $79</strong></div>
+                        </div>
+                        <div class="cause-card">
+                            <div class="cause-header"><span class="cause-name">Logic Board Damage</span><span class="cause-confidence">18% likely</span></div>
+                            <div class="cause-component">Component: Main Logic Board</div>
+                            <div class="cause-price"><span>Repair estimate:</span><strong>$249 - $449</strong></div>
+                        </div>
+                        <div class="red-flag">
+                            <span class="red-flag-icon">⚠️</span>
+                            <div class="red-flag-text"><strong>Red Flag Detected:</strong> Device was dropped — check for liquid damage indicators before proceeding with repair.</div>
+                        </div>
+                        <div class="tests-section">
+                            <div class="tests-title">Recommended Tests</div>
+                            <div class="test-item">Visual inspection of internal components</div>
+                            <div class="test-item">Check display connector seating</div>
+                            <div class="test-item">Battery voltage test</div>
+                            <div class="test-item">Inspect for liquid damage indicators (LCI)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

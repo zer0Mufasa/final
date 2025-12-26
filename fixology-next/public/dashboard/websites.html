@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Builder — Fixology Dashboard</title>
+    <link rel="icon" type="image/webp" href="https://i.ibb.co/GfPnk0zV/preview.webp">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+    :root{--font-sans:'Inter',-apple-system,system-ui,sans-serif;--font-tech:'Space Grotesk',sans-serif;--lavender-400:#A78BFA;--lavender-500:#8B5CF6;--lavender-600:#7C3AED;--cyan-400:#22D3EE;--success:#22C55E;--warning:#F59E0B;--surface-0:#000;--surface-1:#09090B;--surface-2:#0F0F12;--surface-3:#16161A;--surface-4:#1C1C22;--surface-5:#232329;--text-primary:#FAFAFA;--text-secondary:#A1A1AA;--text-muted:#52525B;--border-subtle:rgba(255,255,255,0.04);--border-default:rgba(255,255,255,0.08);--gradient-lavender:linear-gradient(135deg,#C4B5FD,#A78BFA,#8B5CF6)}
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:var(--font-sans);background:var(--surface-1);color:var(--text-primary);line-height:1.5;display:flex;min-height:100vh}
+    
+    .sidebar{width:260px;background:var(--surface-0);border-right:1px solid var(--border-subtle);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .sidebar-header{padding:24px 20px;border-bottom:1px solid var(--border-subtle)}
+    .sidebar-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+    .sidebar-logo img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(139,92,246,0.4))}
+    .sidebar-logo span{font-family:var(--font-tech);font-size:1.25rem;font-weight:700;background:var(--gradient-lavender);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+    .sidebar-section{margin-bottom:24px}
+    .sidebar-section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:0 12px;margin-bottom:8px}
+    .sidebar-link{display:flex;align-items:center;gap:12px;padding:12px 16px;font-size:14px;font-weight:500;color:var(--text-secondary);border-radius:12px;margin-bottom:4px;transition:all 0.15s;text-decoration:none}
+    .sidebar-link:hover{background:var(--surface-3);color:var(--text-primary)}
+    .sidebar-link.active{background:rgba(139,92,246,0.15);color:var(--lavender-400)}
+    .sidebar-link-icon{font-size:18px;width:24px;text-align:center}
+    .sidebar-footer{padding:16px 12px;border-top:1px solid var(--border-subtle)}
+    .sidebar-user{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface-3);border-radius:12px}
+    .sidebar-user-avatar{width:36px;height:36px;background:var(--lavender-500);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px}
+    .sidebar-user-info{flex:1}
+    .sidebar-user-name{font-size:14px;font-weight:600}
+    .sidebar-user-plan{font-size:11px;color:var(--text-muted)}
+
+    .main{flex:1;margin-left:260px;display:flex;flex-direction:column;min-height:100vh}
+    .topbar{height:64px;background:var(--surface-2);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+    .topbar-title{font-family:var(--font-tech);font-size:1.25rem;font-weight:600}
+    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin-bottom:4px}
+    .breadcrumb a{color:var(--text-secondary);text-decoration:none}
+    .breadcrumb a:hover{color:var(--lavender-400)}
+    .breadcrumb-sep{margin:0 2px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:13px;font-weight:600;border-radius:10px;border:none;cursor:pointer;transition:all 0.15s}
+    .btn-primary{background:var(--gradient-lavender);color:white}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(139,92,246,0.3)}
+    .btn-secondary{background:var(--surface-4);color:var(--text-primary);border:1px solid var(--border-default)}
+    .btn-secondary:hover{background:var(--surface-5)}
+
+    /* Builder Layout */
+    .builder-container{display:grid;grid-template-columns:260px 1fr 320px;flex:1;overflow:hidden}
+    
+    /* Left: Templates */
+    .templates-panel{background:var(--surface-2);border-right:1px solid var(--border-subtle);padding:20px;overflow-y:auto}
+    .panel-title{font-size:14px;font-weight:600;margin-bottom:16px;color:var(--text-secondary)}
+    .template-grid{display:flex;flex-direction:column;gap:12px}
+    .template-card{background:var(--surface-3);border:2px solid var(--border-subtle);border-radius:14px;padding:16px;cursor:pointer;transition:all 0.2s}
+    .template-card:hover{border-color:var(--border-default)}
+    .template-card.selected{border-color:var(--lavender-500);background:rgba(139,92,246,0.1)}
+    .template-preview{height:80px;background:var(--surface-4);border-radius:10px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;font-size:32px}
+    .template-name{font-size:14px;font-weight:600;margin-bottom:4px}
+    .template-desc{font-size:12px;color:var(--text-muted)}
+
+    /* Center: Preview */
+    .preview-panel{background:var(--surface-1);display:flex;flex-direction:column;overflow:hidden}
+    .preview-tabs{display:flex;gap:4px;padding:16px 20px;border-bottom:1px solid var(--border-subtle);background:var(--surface-2)}
+    .preview-tab{padding:10px 20px;font-size:13px;font-weight:500;background:var(--surface-4);border:1px solid var(--border-subtle);border-radius:10px;cursor:pointer;color:var(--text-secondary);transition:all 0.15s}
+    .preview-tab:hover{background:var(--surface-5)}
+    .preview-tab.active{background:var(--lavender-500);color:white;border-color:var(--lavender-500)}
+    .preview-frame{flex:1;padding:24px;overflow:auto;display:flex;justify-content:center}
+    .preview-device{background:var(--surface-0);border:1px solid var(--border-default);border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.3);transition:all 0.3s}
+    .preview-device.desktop{width:100%;max-width:1000px;height:100%}
+    .preview-device.tablet{width:768px;height:100%}
+    .preview-device.mobile{width:375px;height:100%}
+    
+    /* Mock Website Preview */
+    .mock-site{background:#0a0a0a;min-height:100%;font-family:var(--font-sans)}
+    .mock-nav{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.1)}
+    .mock-nav-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+    .mock-nav-logo img{width:32px;height:32px}
+    .mock-nav-links{display:flex;gap:24px;font-size:13px;color:#a1a1aa}
+    .mock-nav-cta{padding:8px 16px;background:var(--lavender-500);border-radius:8px;font-size:12px;font-weight:600}
+    .mock-hero{padding:80px 24px;text-align:center;background:linear-gradient(180deg,rgba(139,92,246,0.1) 0%,transparent 100%)}
+    .mock-hero h1{font-size:32px;font-weight:700;margin-bottom:16px}
+    .mock-hero p{color:#a1a1aa;margin-bottom:24px;font-size:14px}
+    .mock-hero-btn{display:inline-block;padding:12px 28px;background:var(--lavender-500);border-radius:10px;font-weight:600;font-size:14px}
+    .mock-services{padding:48px 24px}
+    .mock-services h2{font-size:20px;text-align:center;margin-bottom:24px}
+    .mock-services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .mock-service{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;text-align:center}
+    .mock-service-icon{font-size:28px;margin-bottom:12px}
+    .mock-service h3{font-size:14px;margin-bottom:8px}
+    .mock-service p{font-size:12px;color:#71717a}
+
+    /* Right: Customizer */
+    .customizer-panel{background:var(--surface-2);border-left:1px solid var(--border-subtle);padding:20px;overflow-y:auto}
+    .customizer-section{margin-bottom:28px}
+    .customizer-section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:14px}
+    .color-picker-row{display:flex;gap:12px;margin-bottom:12px}
+    .color-picker-group{flex:1}
+    .color-picker-label{font-size:12px;color:var(--text-secondary);margin-bottom:6px}
+    .color-picker{display:flex;gap:8px;align-items:center}
+    .color-swatch{width:36px;height:36px;border-radius:10px;border:2px solid var(--border-default);cursor:pointer}
+    .color-input{flex:1;padding:10px 12px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-primary);font-size:12px;font-family:monospace}
+    .upload-box{border:2px dashed var(--border-default);border-radius:14px;padding:28px;text-align:center;cursor:pointer;transition:all 0.2s}
+    .upload-box:hover{border-color:var(--lavender-500);background:rgba(139,92,246,0.05)}
+    .upload-icon{font-size:32px;margin-bottom:12px}
+    .upload-text{font-size:13px;color:var(--text-secondary)}
+    .section-toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface-3);border-radius:12px;margin-bottom:8px}
+    .section-toggle-info{display:flex;align-items:center;gap:12px}
+    .section-toggle-icon{font-size:18px}
+    .section-toggle-name{font-size:14px}
+    .toggle-switch{width:44px;height:24px;background:var(--surface-5);border-radius:12px;position:relative;cursor:pointer;transition:background 0.2s}
+    .toggle-switch.active{background:var(--lavender-500)}
+    .toggle-switch::after{content:'';position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:left 0.2s}
+    .toggle-switch.active::after{left:23px}
+    .domain-input{display:flex;align-items:center;gap:0;margin-bottom:20px}
+    .domain-input input{flex:1;padding:14px 16px;background:var(--surface-3);border:1px solid var(--border-subtle);border-radius:12px 0 0 12px;color:var(--text-primary);font-size:14px}
+    .domain-suffix{padding:14px 16px;background:var(--surface-4);border:1px solid var(--border-subtle);border-left:none;border-radius:0 12px 12px 0;font-size:13px;color:var(--text-muted)}
+    .publish-actions{display:flex;flex-direction:column;gap:10px}
+    .publish-actions .btn{justify-content:center}
+
+    @media(max-width:1200px){.builder-container{grid-template-columns:1fr;}.templates-panel,.customizer-panel{display:none}}
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="../index.html" class="sidebar-logo">
+                <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="Fixology">
+                <span>Fixology</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Main</div>
+                <a href="preview.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span>Dashboard</a>
+                <a href="repairs.html" class="sidebar-link"><span class="sidebar-link-icon">🔧</span>Repairs</a>
+                <a href="customers.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span>Customers</a>
+                <a href="inventory.html" class="sidebar-link"><span class="sidebar-link-icon">📦</span>Inventory</a>
+                <a href="invoices.html" class="sidebar-link"><span class="sidebar-link-icon">📄</span>Invoices</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">AI Tools</div>
+                <a href="diagnostics.html" class="sidebar-link"><span class="sidebar-link-icon">🧠</span>Diagnostics</a>
+                <a href="imei.html" class="sidebar-link"><span class="sidebar-link-icon">📱</span>IMEI Lookup</a>
+                <a href="auto-reply.html" class="sidebar-link"><span class="sidebar-link-icon">💬</span>Auto-Reply</a>
+                <a href="websites.html" class="sidebar-link active"><span class="sidebar-link-icon">🌐</span>Websites</a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Settings</div>
+                <a href="settings.html" class="sidebar-link"><span class="sidebar-link-icon">⚙️</span>Settings</a>
+            </div>
+        </nav>
+        <div style="padding:12px;border-top:1px solid var(--border-subtle)"><a href="../admin/index.html" style="display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:500;color:var(--lavender-400);background:rgba(139,92,246,0.1);border-radius:10px;text-decoration:none"><span>👑</span>Admin Console</a></div>
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-user-avatar">M</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">Mufasa's Shop</div>
+                    <div class="sidebar-user-plan">Pro Plan</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="topbar">
+            <div><div class="breadcrumb"><a href="preview.html">Dashboard</a><span class="breadcrumb-sep">/</span><span>Website Builder</span></div><h1 class="topbar-title">Website Builder</h1></div>
+            <div style="display:flex;gap:12px">
+                <button class="btn btn-secondary">Preview</button>
+                <button class="btn btn-primary">🚀 Publish</button>
+            </div>
+        </div>
+
+        <div class="builder-container">
+            <!-- Templates -->
+            <div class="templates-panel">
+                <div class="panel-title">Choose Template</div>
+                <div class="template-grid">
+                    <div class="template-card selected">
+                        <div class="template-preview">🏪</div>
+                        <div class="template-name">Modern Lavender</div>
+                        <div class="template-desc">Clean, professional repair shop design</div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">🎮</div>
+                        <div class="template-name">Gaming & Tech</div>
+                        <div class="template-desc">Perfect for console & PC repair</div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">🏢</div>
+                        <div class="template-name">Corporate B2B</div>
+                        <div class="template-desc">Enterprise & business clients</div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-preview">✨</div>
+                        <div class="template-name">Minimal Light</div>
+                        <div class="template-desc">Clean, minimal aesthetic</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div class="preview-panel">
+                <div class="preview-tabs">
+                    <button class="preview-tab active">🖥️ Desktop</button>
+                    <button class="preview-tab">📱 Tablet</button>
+                    <button class="preview-tab">📱 Mobile</button>
+                </div>
+                <div class="preview-frame">
+                    <div class="preview-device desktop">
+                        <div class="mock-site">
+                            <div class="mock-nav">
+                                <div class="mock-nav-logo">
+                                    <img src="https://i.ibb.co/GfPnk0zV/preview.webp" alt="">
+                                    <span>Your Shop Name</span>
+                                </div>
+                                <div class="mock-nav-links">
+                                    <span>Services</span>
+                                    <span>Pricing</span>
+                                    <span>About</span>
+                                    <span>Contact</span>
+                                </div>
+                                <div class="mock-nav-cta">Book Now</div>
+                            </div>
+                            <div class="mock-hero">
+                                <h1>Expert Device Repair<br>You Can Trust</h1>
+                                <p>Professional repairs for phones, tablets, laptops & game consoles.<br>Fast turnaround. Quality parts. Lifetime warranty.</p>
+                                <div class="mock-hero-btn">Get Free Diagnosis →</div>
+                            </div>
+                            <div class="mock-services">
+                                <h2>Our Services</h2>
+                                <div class="mock-services-grid">
+                                    <div class="mock-service">
+                                        <div class="mock-service-icon">📱</div>
+                                        <h3>Phone Repair</h3>
+                                        <p>iPhone, Samsung, Google & more</p>
+                                    </div>
+                                    <div class="mock-service">
+                                        <div class="mock-service-icon">💻</div>
+                                        <h3>Laptop Repair</h3>
+                                        <p>MacBook, Dell, HP, Lenovo</p>
+                                    </div>
+                                    <div class="mock-service">
+                                        <div class="mock-service-icon">🎮</div>
+                                        <h3>Console Repair</h3>
+                                        <p>PS5, Xbox, Nintendo Switch</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customizer -->
+            <div class="customizer-panel">
+                <div class="customizer-section">
+                    <div class="customizer-section-title">Colors</div>
+                    <div class="color-picker-row">
+                        <div class="color-picker-group">
+                            <div class="color-picker-label">Primary</div>
+                            <div class="color-picker">
+                                <div class="color-swatch" style="background:#8B5CF6"></div>
+                                <input type="text" class="color-input" value="#8B5CF6">
+                            </div>
+                        </div>
+                        <div class="color-picker-group">
+                            <div class="color-picker-label">Accent</div>
+                            <div class="color-picker">
+                                <div class="color-swatch" style="background:#22C55E"></div>
+                                <input type="text" class="color-input" value="#22C55E">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="customizer-section">
+                    <div class="customizer-section-title">Logo</div>
+                    <div class="upload-box">
+                        <div class="upload-icon">📤</div>
+                        <div class="upload-text">Drop logo here or click to upload</div>
+                    </div>
+                </div>
+
+                <div class="customizer-section">
+                    <div class="customizer-section-title">Sections</div>
+                    <div class="section-toggle">
+                        <div class="section-toggle-info">
+                            <span class="section-toggle-icon">🏠</span>
+                            <span class="section-toggle-name">Hero</span>
+                        </div>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="section-toggle">
+                        <div class="section-toggle-info">
+                            <span class="section-toggle-icon">🔧</span>
+                            <span class="section-toggle-name">Services</span>
+                        </div>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="section-toggle">
+                        <div class="section-toggle-info">
+                            <span class="section-toggle-icon">📱</span>
+                            <span class="section-toggle-name">Brands We Repair</span>
+                        </div>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="section-toggle">
+                        <div class="section-toggle-info">
+                            <span class="section-toggle-icon">⭐</span>
+                            <span class="section-toggle-name">Reviews</span>
+                        </div>
+                        <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="section-toggle">
+                        <div class="section-toggle-info">
+                            <span class="section-toggle-icon">📅</span>
+                            <span class="section-toggle-name">Booking Widget</span>
+                        </div>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="section-toggle">
+                        <div class="section-toggle-info">
+                            <span class="section-toggle-icon">🧠</span>
+                            <span class="section-toggle-name">AI Diagnosis Widget</span>
+                        </div>
+                        <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="section-toggle">
+                        <div class="section-toggle-info">
+                            <span class="section-toggle-icon">📱</span>
+                            <span class="section-toggle-name">IMEI Lookup</span>
+                        </div>
+                        <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                </div>
+
+                <div class="customizer-section">
+                    <div class="customizer-section-title">Domain</div>
+                    <div class="domain-input">
+                        <input type="text" placeholder="your-shop-name">
+                        <span class="domain-suffix">.fixologyai.com</span>
+                    </div>
+                    <div class="publish-actions">
+                        <button class="btn btn-primary">🚀 Publish Site</button>
+                        <button class="btn btn-secondary">📦 Export HTML</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+    // Template selection
+    document.querySelectorAll('.template-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+        });
+    });
+
+    // Preview tabs
+    document.querySelectorAll('.preview-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            const device = document.querySelector('.preview-device');
+            device.className = 'preview-device';
+            if (tab.textContent.includes('Desktop')) device.classList.add('desktop');
+            else if (tab.textContent.includes('Tablet')) device.classList.add('tablet');
+            else device.classList.add('mobile');
+        });
+    });
+
+    // Section toggles - actually show/hide preview sections
+    const sectionMap = {
+        'Hero': '.mock-hero',
+        'Services': '.mock-services',
+        'Brands We Repair': '.mock-brands',
+        'Reviews': '.mock-reviews',
+        'Booking Widget': '.mock-booking',
+        'AI Diagnosis Widget': '.mock-ai',
+        'IMEI Lookup': '.mock-imei'
+    };
+    
+    document.querySelectorAll('.section-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            if (e.target.classList.contains('toggle-switch')) return;
+            const switchEl = this.querySelector('.toggle-switch');
+            switchEl.classList.toggle('active');
+            
+            const sectionName = this.querySelector('.section-toggle-name').textContent;
+            const selector = sectionMap[sectionName];
+            if (selector) {
+                const section = document.querySelector(selector);
+                if (section) section.style.display = switchEl.classList.contains('active') ? 'block' : 'none';
+            }
+        });
+    });
+
+    // Color pickers - update preview in real-time
+    document.querySelectorAll('.color-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const swatch = this.previousElementSibling;
+            swatch.style.background = this.value;
+            
+            // Update preview primary color
+            if (this.value && this.closest('.color-picker-group').querySelector('.color-picker-label').textContent === 'Primary') {
+                document.querySelectorAll('.mock-nav-cta, .mock-hero-btn').forEach(el => {
+                    el.style.background = this.value;
+                });
+            }
+        });
+    });
+
+    // Publish button
+    document.querySelector('.btn-primary').addEventListener('click', function() {
+        if (this.textContent.includes('Publish')) {
+            this.innerHTML = '✓ Published!';
+            this.style.background = 'var(--success)';
+            setTimeout(() => {
+                this.innerHTML = '🚀 Publish Site';
+                this.style.background = '';
+            }, 2000);
+        }
+    });
+
+    // Export button
+    document.querySelector('.btn-secondary').addEventListener('click', function() {
+        if (this.textContent.includes('Export')) {
+            this.innerHTML = '⬇️ Downloading...';
+            setTimeout(() => {
+                this.innerHTML = '📦 Export HTML';
+                alert('Website exported! Check your downloads folder.');
+            }, 1500);
+        }
+    });
+
+    // Domain input validation
+    document.querySelector('.domain-input input').addEventListener('input', function() {
+        this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    });
+    </script>
+</body>
+</html>
