@@ -40,6 +40,11 @@ export default async function DashboardLayout({
     redirect('/login?error=shop_inactive')
   }
 
+  // Onboarding guard: don't allow dashboard until onboarding is complete.
+  if (!shopUser.shop.onboardingCompletedAt) {
+    redirect('/onboarding')
+  }
+
   return (
     <div className="min-h-screen bg-[rgb(var(--bg-primary))]">
       <Sidebar

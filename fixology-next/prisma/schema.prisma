@@ -52,6 +52,11 @@ model Shop {
   currency String  @default("USD")
   logoUrl  String? @map("logo_url")
 
+  // Onboarding
+  onboardingCompletedAt DateTime? @map("onboarding_completed_at")
+  businessHours         Json      @default("{}") @map("business_hours")
+  repairFocus           String[]  @default([]) @map("repair_focus")
+
   // Subscription
   plan                 SubscriptionPlan @default(FREE)
   stripeCustomerId     String?          @unique @map("stripe_customer_id")

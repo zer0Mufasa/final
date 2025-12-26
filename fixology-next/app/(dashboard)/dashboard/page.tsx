@@ -90,6 +90,10 @@ export default async function DashboardPage() {
   }
 
   const stats = await getStats(shopUser.shopId)
+  const cityState = [shopUser.shop.city, shopUser.shop.state].filter(Boolean).join(', ')
+  const greeting =
+    `Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ` +
+    `${shopUser.name.split(' ')[0]}!`
 
   const statCards = [
     {
@@ -142,11 +146,26 @@ export default async function DashboardPage() {
   return (
     <>
       <Header 
-        title={`Good ${new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}, ${shopUser.name.split(' ')[0]}!`}
-        description={`Here's what's happening at ${shopUser.shop.name} today.`}
+        title={shopUser.shop.name}
+        description={cityState ? `${cityState} • ${greeting}` : greeting}
       />
 
       <div className="p-6 space-y-6">
+        {/* Getting started (rare: if onboarding is incomplete due to legacy data) */}
+        {!shopUser.shop.onboardingCompletedAt && (
+          <div className="glass-card border border-[rgba(167,139,250,.2)]">
+            <div className="card-header">
+              <h2 className="card-title">Finish setup</h2>
+              <a href="/onboarding" className="text-sm text-[rgb(var(--accent-light))] hover:underline">
+                Continue onboarding →
+              </a>
+            </div>
+            <p className="text-sm text-[rgb(var(--text-muted))]">
+              Your shop is almost ready. Complete onboarding to unlock the personalized dashboard experience.
+            </p>
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {statCards.map((stat, index) => (
