@@ -54,6 +54,10 @@ const supplierBadges = [
 
 const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
+const US_STATES = [
+  'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'
+]
+
 function defaultBusinessHours(): BusinessHours {
   return {
     Mon: { open: '09:00', close: '18:00', closed: false },
@@ -72,6 +76,13 @@ function isValidEmail(v: string) {
 
 function isValidPhone(v: string) {
   return v.replace(/\D/g, '').length >= 10
+}
+
+function formatPhone(v: string) {
+  const digits = v.replace(/\D/g, '').slice(0, 10)
+  if (digits.length <= 3) return digits
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
 }
 
 async function postJson(url: string, payload: any) {
@@ -156,7 +167,9 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
   const canContinue = useMemo(() => {
     if (saving) return false
     if (step === 1) {
-      return !!shopName.trim() && !!timezone.trim() && isValidPhone(phone)
+      if (!shopName.trim()) return false
+      if (phone.trim() && !isValidPhone(phone)) return false
+      return true
     }
     if (step === 2) {
       return repairFocus.length > 0 && repairFocus.length <= 6
@@ -209,8 +222,7 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
       // Light validation messaging
       if (step === 1) {
         if (!shopName.trim()) throw new Error('Shop name is required.')
-        if (!timezone.trim()) throw new Error('Timezone is required.')
-        if (!isValidPhone(phone)) throw new Error('A valid phone number is required.')
+        if (phone.trim() && !isValidPhone(phone)) throw new Error('Enter a valid phone number or leave it blank.')
       }
       if (step === 2) {
         if (repairFocus.length === 0) throw new Error('Pick at least 1 repair focus.')
@@ -221,6 +233,9 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
       }
 
       await saveStep(step)
+      if (step === 1) {
+        toast.success('Shop saved. Your dashboard is now personalized.')
+      }
 
       if (step < 5) {
         setStep(step + 1)
@@ -260,24 +275,9 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
       <div className="wide-container" style={{ paddingTop: 120, paddingBottom: 96 }}>
         <div style={{ maxWidth: 980, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '8px 14px',
-                borderRadius: 999,
-                background: 'rgba(167,139,250,.12)',
-                border: '1px solid rgba(167,139,250,.22)',
-                color: 'rgba(196,181,253,.95)',
-                fontSize: 13,
-                fontWeight: 700,
-                letterSpacing: '-0.01em',
-                marginBottom: 14,
-              }}
-            >
+            <div className="fx-pill" style={{ marginBottom: 14 }}>
               <span style={{ width: 8, height: 8, borderRadius: 999, background: 'rgba(74,222,128,.9)' }} />
-              2–3 minute shop setup • Step {step} of 5
+              2–3 minute shop setup • Step {step} of 5 • {Math.round(progressPct)}%
             </div>
             <h1 className="section-title" style={{ fontSize: 'clamp(34px, 4vw, 52px)', marginBottom: 10 }}>
               {headline}
@@ -287,17 +287,46 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
             </p>
           </div>
 
-          {/* Progress bar */}
+          {/* Progress bar + stepper */}
           <div
             style={{
-              height: 10,
-              background: 'rgba(167,139,250,.12)',
-              borderRadius: 999,
-              overflow: 'hidden',
-              border: '1px solid rgba(167,139,250,.18)',
-              marginBottom: 22,
+              marginBottom: 18,
             }}
           >
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
+              {[1, 2, 3, 4, 5].map((n) => {
+                const active = n === step
+                const done = n < step
+                return (
+                  <div
+                    key={n}
+                    title={`Step ${n}`}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: 999,
+                      background: done
+                        ? 'rgba(74,222,128,.85)'
+                        : active
+                          ? 'rgba(167,139,250,.95)'
+                          : 'rgba(255,255,255,.12)',
+                      border: active ? '1px solid rgba(196,181,253,.7)' : '1px solid rgba(255,255,255,.12)',
+                      boxShadow: active ? '0 0 0 4px rgba(139,92,246,.16)' : 'none',
+                      transition: 'all .2s ease',
+                    }}
+                  />
+                )
+              })}
+            </div>
+            <div
+              style={{
+                height: 10,
+                background: 'rgba(255,255,255,.06)',
+                borderRadius: 999,
+                overflow: 'hidden',
+                border: '1px solid rgba(255,255,255,.10)',
+              }}
+            >
             <div
               style={{
                 height: '100%',
@@ -306,65 +335,79 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
                 transition: 'width .25s ease',
               }}
             />
+            </div>
           </div>
 
           <div
             className="glass-card"
             style={{
-              padding: 28,
-              border: '1px solid rgba(167,139,250,.22)',
-              boxShadow: '0 18px 60px rgba(0,0,0,0.35)',
+              padding: 32,
             }}
           >
             {step === 1 && (
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 18 }}>
                 <div>
-                  <label className="auth-label">Shop name</label>
+                  <label className="fx-label">Shop name <span style={{ color: '#ef4444' }}>*</span></label>
                   <input
-                    className="auth-input"
+                    className="fx-input"
                     value={shopName}
                     onChange={(e) => setShopName(e.target.value)}
                     placeholder="e.g., Midtown Device Repair"
                   />
+                  <div className="fx-help" style={{ marginTop: 8 }}>
+                    Used for receipts, customer updates, and your store branding. You can change this later.
+                  </div>
                 </div>
                 <div>
-                  <label className="auth-label">Phone</label>
+                  <label className="fx-label">Phone (optional)</label>
                   <input
-                    className="auth-input"
+                    className="fx-input"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(formatPhone(e.target.value))}
                     placeholder="(555) 555-5555"
                     inputMode="tel"
                   />
-                  <p className="auth-muted" style={{ marginTop: 8, fontSize: 12 }}>
+                  <div className="fx-help" style={{ marginTop: 8 }}>
                     Used for call confirmations and support.
-                  </p>
+                  </div>
                 </div>
 
                 <div style={{ gridColumn: '1 / -1' }}>
-                  <label className="auth-label">Address</label>
+                  <label className="fx-label">Address (optional)</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr 0.6fr', gap: 12 }}>
                     <input
-                      className="auth-input"
+                      className="fx-input"
                       value={street}
                       onChange={(e) => setStreet(e.target.value)}
                       placeholder="Street"
                     />
-                    <input className="auth-input" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
-                    <input className="auth-input" value={state} onChange={(e) => setState(e.target.value)} placeholder="State" />
+                    <input className="fx-input" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
+                    <select
+                      className="fx-input fx-select"
+                      value={state}
+                      onChange={(e) => setState(e.target.value)}
+                      aria-label="State"
+                    >
+                      <option value="">State</option>
+                      {US_STATES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '0.5fr 1fr', gap: 12, marginTop: 12 }}>
-                    <input className="auth-input" value={zip} onChange={(e) => setZip(e.target.value)} placeholder="ZIP" />
+                    <input className="fx-input" value={zip} onChange={(e) => setZip(e.target.value)} placeholder="ZIP" />
                     <input
-                      className="auth-input"
+                      className="fx-input"
                       value={timezone}
                       onChange={(e) => setTimezone(e.target.value)}
                       placeholder="Timezone"
                     />
                   </div>
-                  <p className="auth-muted" style={{ marginTop: 8, fontSize: 12 }}>
+                  <div className="fx-help" style={{ marginTop: 8 }}>
                     Timezone auto-detected. Update if your shop is in a different location.
-                  </p>
+                  </div>
                 </div>
               </div>
             )}
@@ -418,23 +461,23 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
             {step === 3 && (
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label className="auth-label">Invite a technician (optional)</label>
+                  <label className="fx-label">Invite a technician (optional)</label>
                   <input
-                    className="auth-input"
+                    className="fx-input"
                     value={techEmail}
                     onChange={(e) => setTechEmail(e.target.value)}
                     placeholder="tech@yourshop.com"
                     inputMode="email"
                   />
-                  <p className="auth-muted" style={{ marginTop: 8, fontSize: 12 }}>
+                  <div className="fx-help" style={{ marginTop: 8 }}>
                     We’ll stage the invite now. Full invite emails + permissions are coming next.
-                  </p>
+                  </div>
                 </div>
                 <div
                   style={{
                     borderRadius: 16,
-                    border: '1px solid rgba(167,139,250,.18)',
-                    background: 'rgba(167,139,250,.06)',
+                    border: '1px solid rgba(255,255,255,.10)',
+                    background: 'rgba(255,255,255,.04)',
                     padding: 16,
                   }}
                 >
@@ -523,23 +566,23 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
                           <div style={{ color: 'rgba(196,181,253,.85)', fontWeight: 800, fontSize: 12 }}>{d}</div>
                           <input
                             type="time"
-                            className="auth-input"
+                            className="fx-input"
                             value={day.open || '09:00'}
                             disabled={closed}
                             onChange={(e) =>
                               setBusinessHours((prev) => ({ ...prev, [d]: { ...prev[d], open: e.target.value } }))
                             }
-                            style={{ height: 40 }}
+                            style={{ height: 44, colorScheme: 'dark' as any }}
                           />
                           <input
                             type="time"
-                            className="auth-input"
+                            className="fx-input"
                             value={day.close || '18:00'}
                             disabled={closed}
                             onChange={(e) =>
                               setBusinessHours((prev) => ({ ...prev, [d]: { ...prev[d], close: e.target.value } }))
                             }
-                            style={{ height: 40 }}
+                            style={{ height: 44, colorScheme: 'dark' as any }}
                           />
                           <button
                             type="button"
@@ -674,6 +717,28 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
               >
                 Back
               </button>
+              {step === 3 && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setTechEmail('')
+                    try {
+                      setSaving(true)
+                      await postJson('/api/onboarding/save', { step: 4, team: { techEmail: '' } })
+                      setStep(4)
+                    } catch {
+                      // ignore
+                    } finally {
+                      setSaving(false)
+                    }
+                  }}
+                  disabled={saving}
+                  className="glow-button glow-button-secondary"
+                  style={{ padding: '14px 18px' }}
+                >
+                  Skip for now
+                </button>
+              )}
               <button
                 type="button"
                 onClick={handleContinue}
@@ -685,8 +750,13 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
               </button>
             </div>
 
-            <div style={{ marginTop: 14, textAlign: 'center', color: 'rgba(196,181,253,.55)', fontSize: 12, lineHeight: 1.6 }}>
-              You can change any of this later in Settings. We’re just making the dashboard feel ready.
+            <div style={{ marginTop: 14, textAlign: 'center' }}>
+              <div className="fx-help">
+                Used for receipts, customer updates, and your store branding. You can change this later.
+              </div>
+              <div className="fx-help" style={{ marginTop: 6 }}>
+                We’re setting best-practice defaults so your dashboard feels ready on day one.
+              </div>
             </div>
           </div>
         </div>
