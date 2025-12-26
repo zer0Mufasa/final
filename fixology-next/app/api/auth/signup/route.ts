@@ -122,10 +122,21 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     )
-  } catch (error) {
+  } catch (error: any) {
     console.error('Signup error:', error)
+
+    const msg = String(error?.message || '')
+    const isDbUnreachable =
+      msg.includes('P1001') ||
+      msg.includes("Can't reach database server") ||
+      msg.toLowerCase().includes('prismaclientinitializationerror')
+
     return NextResponse.json(
-      { error: 'Failed to create account' },
+      {
+        error: isDbUnreachable
+          ? 'Database is unreachable from the server. Check Vercel DATABASE_URL (Supabase pooler recommended).'
+          : 'Failed to create account',
+      },
       { status: 500 }
     )
   }
