@@ -1,9 +1,10 @@
 // app/(dashboard)/dashboard/page.tsx
-// Main dashboard page (new Fixology dashboard)
+// Main dashboard page (themed to match homepage/login/onboarding)
 
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 import { Header } from '@/components/dashboard/header'
+import Link from 'next/link'
 import {
   Ticket,
   Users,
@@ -13,6 +14,7 @@ import {
   AlertCircle,
   CheckCircle,
   Package,
+  Plus,
 } from 'lucide-react'
 
 export const metadata = {
@@ -20,7 +22,7 @@ export const metadata = {
 }
 
 async function getStats(shopId: string) {
-  const [openTickets, totalCustomers, readyTickets, lowStockCount, recentTickets] =
+  const [openTickets, totalCustomers, readyTickets, inventoryItems, recentTickets] =
     await Promise.all([
       prisma.ticket.count({
         where: {
@@ -37,11 +39,14 @@ async function getStats(shopId: string) {
           status: 'READY',
         },
       }),
-      prisma.inventoryItem.count({
+      prisma.inventoryItem.findMany({
         where: {
           shopId,
-          quantity: { lte: prisma.inventoryItem.fields.minStock },
           isActive: true,
+        },
+        select: {
+          quantity: true,
+          minStock: true,
         },
       }),
       prisma.ticket.findMany({
@@ -53,6 +58,10 @@ async function getStats(shopId: string) {
         },
       }),
     ])
+
+  const lowStockCount = inventoryItems.filter(
+    (item) => item.quantity <= (item.minStock || 0)
+  ).length
 
   return {
     openTickets,
@@ -95,7 +104,7 @@ export default async function DashboardPage() {
       label: 'Open Tickets',
       value: stats.openTickets,
       icon: <Ticket className="w-6 h-6 text-white" />,
-      gradient: 'gradient-blue',
+      gradient: 'from-blue-500 to-blue-700',
       trend: '+12%',
       trendUp: true,
     },
@@ -103,7 +112,7 @@ export default async function DashboardPage() {
       label: 'Total Customers',
       value: stats.totalCustomers,
       icon: <Users className="w-6 h-6 text-white" />,
-      gradient: 'gradient-teal',
+      gradient: 'from-teal-500 to-teal-700',
       trend: '+8%',
       trendUp: true,
     },
@@ -111,27 +120,27 @@ export default async function DashboardPage() {
       label: 'Ready for Pickup',
       value: stats.readyTickets,
       icon: <CheckCircle className="w-6 h-6 text-white" />,
-      gradient: 'gradient-green',
+      gradient: 'from-green-500 to-green-700',
     },
     {
       label: 'Low Stock Items',
       value: stats.lowStockCount,
       icon: <Package className="w-6 h-6 text-white" />,
-      gradient: stats.lowStockCount > 0 ? 'gradient-red' : 'gradient-yellow',
+      gradient: stats.lowStockCount > 0 ? 'from-red-500 to-red-700' : 'from-yellow-500 to-yellow-700',
     },
   ]
 
   const getStatusBadgeClass = (status: string) => {
     const statusClasses: Record<string, string> = {
-      INTAKE: 'status-intake',
-      DIAGNOSED: 'status-diagnosed',
-      WAITING_PARTS: 'status-waiting',
-      IN_PROGRESS: 'status-progress',
-      READY: 'status-ready',
-      PICKED_UP: 'status-picked',
-      CANCELLED: 'status-cancelled',
+      INTAKE: 'bg-blue-500/20 text-blue-400',
+      DIAGNOSED: 'bg-purple-500/20 text-purple-400',
+      WAITING_PARTS: 'bg-yellow-500/20 text-yellow-400',
+      IN_PROGRESS: 'bg-indigo-500/20 text-indigo-400',
+      READY: 'bg-green-500/20 text-green-400',
+      PICKED_UP: 'bg-gray-500/20 text-gray-400',
+      CANCELLED: 'bg-red-500/20 text-red-400',
     }
-    return statusClasses[status] || 'badge-gray'
+    return statusClasses[status] || 'bg-gray-500/20 text-gray-400'
   }
 
   const formatStatus = (status: string) => {
@@ -148,13 +157,14 @@ export default async function DashboardPage() {
           {statCards.map((stat, index) => (
             <div
               key={index}
-              className="glass-card flex items-center gap-4 animate-fade-in-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="glass-card flex items-center gap-4"
             >
-              <div className={`gradient-icon ${stat.gradient}`}>{stat.icon}</div>
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center shadow-lg`}>
+                {stat.icon}
+              </div>
               <div className="flex-1">
-                <p className="text-2xl font-bold text-[rgb(var(--text-primary))]">{stat.value}</p>
-                <p className="text-sm text-[rgb(var(--text-muted))]">{stat.label}</p>
+                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-sm text-white/60">{stat.label}</p>
               </div>
               {stat.trend && (
                 <div className={`flex items-center gap-1 text-sm ${stat.trendUp ? 'text-green-400' : 'text-red-400'}`}>
@@ -169,43 +179,53 @@ export default async function DashboardPage() {
         {/* Main content grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Tickets */}
-          <div className="lg:col-span-2 glass-card animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <div className="card-header">
-              <h2 className="card-title">Recent Tickets</h2>
-              <a href="/tickets" className="text-sm text-[rgb(var(--accent-light))] hover:underline">
+          <div className="lg:col-span-2 glass-card">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-white">Recent Tickets</h2>
+              <Link href="/tickets" className="text-sm text-[#a78bfa] hover:text-[#c4b5fd] transition-colors">
                 View all →
-              </a>
+              </Link>
             </div>
 
             {stats.recentTickets.length > 0 ? (
               <div className="space-y-3">
                 {stats.recentTickets.map((ticket) => (
-                  <div
+                  <Link
                     key={ticket.id}
-                    className="flex items-center gap-4 p-4 rounded-xl bg-[rgb(var(--bg-tertiary))] hover:bg-[rgb(var(--bg-card-hover))] transition-colors cursor-pointer"
+                    href={`/tickets/${ticket.id}`}
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.06] hover:border-white/15 transition-all cursor-pointer"
                   >
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center">
                       <Ticket className="w-5 h-5 text-purple-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-[rgb(var(--text-primary))] truncate">
+                      <p className="font-semibold text-white truncate">
                         {ticket.ticketNumber} - {ticket.deviceBrand} {ticket.deviceModel || ticket.deviceType}
                       </p>
-                      <p className="text-sm text-[rgb(var(--text-muted))] truncate">
+                      <p className="text-sm text-white/60 truncate">
                         {ticket.customer.firstName} {ticket.customer.lastName}
                       </p>
                     </div>
-                    <span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{formatStatus(ticket.status)}</span>
-                  </div>
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(ticket.status)}`}>
+                      {formatStatus(ticket.status)}
+                    </span>
+                  </Link>
                 ))}
               </div>
             ) : (
-              <div className="empty-state">
-                <div className="empty-state-icon">
-                  <Ticket className="w-8 h-8 text-[rgb(var(--text-muted))]" />
+              <div className="text-center py-12">
+                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto mb-4">
+                  <Ticket className="w-8 h-8 text-white/40" />
                 </div>
-                <p className="empty-state-title">No tickets yet</p>
-                <p className="empty-state-description">Create your first repair ticket to get started.</p>
+                <p className="text-lg font-semibold text-white mb-2">No tickets yet</p>
+                <p className="text-sm text-white/60 mb-6">Create your first repair ticket to get started.</p>
+                <Link
+                  href="/tickets/new"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#a78bfa] to-[#8b5cf6] text-white font-semibold hover:opacity-90 transition-opacity"
+                >
+                  <Plus className="w-4 h-4" />
+                  New Ticket
+                </Link>
               </div>
             )}
           </div>
@@ -213,58 +233,58 @@ export default async function DashboardPage() {
           {/* Quick Actions & Alerts */}
           <div className="space-y-6">
             {/* Quick Actions */}
-            <div className="glass-card animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-              <h2 className="card-title mb-4">Quick Actions</h2>
+            <div className="glass-card">
+              <h2 className="text-lg font-bold text-white mb-4">Quick Actions</h2>
               <div className="grid grid-cols-2 gap-3">
-                <a
+                <Link
                   href="/tickets/new"
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[rgb(var(--bg-tertiary))] hover:bg-[rgb(var(--bg-card-hover))] transition-colors group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.06] hover:border-white/15 transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-xl gradient-purple flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Ticket className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-sm text-[rgb(var(--text-secondary))]">New Ticket</span>
-                </a>
-                <a
+                  <span className="text-sm text-white/80 font-medium">New Ticket</span>
+                </Link>
+                <Link
                   href="/customers/new"
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[rgb(var(--bg-tertiary))] hover:bg-[rgb(var(--bg-card-hover))] transition-colors group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.06] hover:border-white/15 transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-xl gradient-teal flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Users className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-sm text-[rgb(var(--text-secondary))]">Add Customer</span>
-                </a>
-                <a
+                  <span className="text-sm text-white/80 font-medium">Add Customer</span>
+                </Link>
+                <Link
                   href="/invoices/new"
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[rgb(var(--bg-tertiary))] hover:bg-[rgb(var(--bg-card-hover))] transition-colors group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.06] hover:border-white/15 transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-xl gradient-green flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <DollarSign className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-sm text-[rgb(var(--text-secondary))]">New Invoice</span>
-                </a>
-                <a
+                  <span className="text-sm text-white/80 font-medium">New Invoice</span>
+                </Link>
+                <Link
                   href="/diagnostics"
-                  className="flex flex-col items-center gap-2 p-4 rounded-xl bg-[rgb(var(--bg-tertiary))] hover:bg-[rgb(var(--bg-card-hover))] transition-colors group"
+                  className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.06] hover:border-white/15 transition-all group"
                 >
-                  <div className="w-10 h-10 rounded-xl gradient-blue flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
                     <Clock className="w-5 h-5 text-white" />
                   </div>
-                  <span className="text-sm text-[rgb(var(--text-secondary))]">AI Diagnose</span>
-                </a>
+                  <span className="text-sm text-white/80 font-medium">AI Diagnose</span>
+                </Link>
               </div>
             </div>
 
             {/* Alerts */}
-            <div className="glass-card animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-              <h2 className="card-title mb-4">Alerts</h2>
+            <div className="glass-card">
+              <h2 className="text-lg font-bold text-white mb-4">Alerts</h2>
               <div className="space-y-3">
                 {stats.lowStockCount > 0 && (
                   <div className="flex items-start gap-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
                     <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-yellow-400">Low Stock Alert</p>
-                      <p className="text-xs text-[rgb(var(--text-muted))]">{stats.lowStockCount} items need restocking</p>
+                      <p className="text-sm font-semibold text-yellow-400">Low Stock Alert</p>
+                      <p className="text-xs text-white/60">{stats.lowStockCount} items need restocking</p>
                     </div>
                   </div>
                 )}
@@ -272,13 +292,13 @@ export default async function DashboardPage() {
                   <div className="flex items-start gap-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
                     <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-green-400">Ready for Pickup</p>
-                      <p className="text-xs text-[rgb(var(--text-muted))]">{stats.readyTickets} repairs ready for customers</p>
+                      <p className="text-sm font-semibold text-green-400">Ready for Pickup</p>
+                      <p className="text-xs text-white/60">{stats.readyTickets} repairs ready for customers</p>
                     </div>
                   </div>
                 )}
                 {stats.lowStockCount === 0 && stats.readyTickets === 0 && (
-                  <p className="text-sm text-[rgb(var(--text-muted))] text-center py-4">No alerts at this time 🎉</p>
+                  <p className="text-sm text-white/60 text-center py-4">No alerts at this time 🎉</p>
                 )}
               </div>
             </div>
@@ -288,4 +308,3 @@ export default async function DashboardPage() {
     </>
   )
 }
-

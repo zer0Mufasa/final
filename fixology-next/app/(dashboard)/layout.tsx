@@ -1,10 +1,28 @@
 // app/(dashboard)/layout.tsx
-// Layout for all dashboard pages (protected) – this is the “new” Fixology dashboard.
+// The new Fixology dashboard layout (auth + onboarding gate, homepage-style theme).
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 import { Sidebar } from '@/components/dashboard/sidebar'
+
+const dashboardStyles = `
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+body{background:#0f0a1a;min-height:100vh;overflow-x:hidden;color:#EDE9FE}
+.bg-structure{position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 50%,#1a0f2e 0%,#0f0a1a 100%);z-index:-1}
+.bg-grid{position:absolute;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(rgba(167,139,250,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.03) 1px,transparent 1px);background-size:60px 60px;z-index:-1}
+.vertical-rail{position:fixed;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(167,139,250,0.08),transparent);z-index:1;pointer-events:none}
+.vertical-rail.left{left:clamp(20px, 5vw, 80px)}
+.vertical-rail.right{right:clamp(20px, 5vw, 80px)}
+.glow-spot{position:absolute;width:640px;height:640px;background:radial-gradient(circle,rgba(167,139,250,0.10) 0%,transparent 70%);filter:blur(90px);pointer-events:none;z-index:0}
+.dash-shell{min-height:100vh;position:relative}
+.dash-main{min-height:100vh;padding-left:288px}
+@media (max-width: 1024px){.dash-main{padding-left:0}}
+`
 
 export default async function DashboardLayout({
   children,
@@ -40,10 +58,23 @@ export default async function DashboardLayout({
     redirect('/login?error=shop_inactive')
   }
 
-  // Option B: allow dashboard immediately (no onboarding gate)
+  // Dashboard requires onboarding completion (so the UI is personalized).
+  if (!shopUser.shop.onboardingCompletedAt) {
+    redirect('/onboarding')
+  }
 
   return (
-    <div className="min-h-screen bg-[rgb(var(--bg-primary))]">
+    <div className="dash-shell">
+      <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
+      <div className="bg-structure">
+        <div className="bg-grid" />
+        <div className="vertical-rail left" />
+        <div className="vertical-rail right" />
+      </div>
+
+      <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
+      <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
+
       <Sidebar
         user={{
           name: shopUser.name,
@@ -53,11 +84,12 @@ export default async function DashboardLayout({
         shop={{
           name: shopUser.shop.name,
           plan: shopUser.shop.plan,
+          city: shopUser.shop.city || undefined,
+          state: shopUser.shop.state || undefined,
         }}
       />
 
-      {/* Main content area - offset by sidebar width */}
-      <main className="ml-64 transition-all duration-300">{children}</main>
+      <main className="dash-main">{children}</main>
     </div>
   )
 }

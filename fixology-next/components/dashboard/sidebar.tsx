@@ -5,9 +5,10 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
 import { Logo } from '@/components/shared/logo'
+import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard,
   Ticket,
@@ -65,12 +66,28 @@ interface SidebarProps {
   shop?: {
     name: string
     plan: string
+    city?: string
+    state?: string
   }
 }
 
 export function Sidebar({ user, shop }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+
+  const handleSignOut = async () => {
+    try {
+      setSigningOut(true)
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      router.push('/login')
+      router.refresh()
+    } finally {
+      setSigningOut(false)
+    }
+  }
 
   const NavLink = ({ item }: { item: NavItem }) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
@@ -79,14 +96,17 @@ export function Sidebar({ user, shop }: SidebarProps) {
       <Link
         href={item.href}
         className={cn(
-          'sidebar-item group',
-          isActive && 'active',
+          'flex items-center gap-3 px-4 py-3 rounded-xl',
+          'text-white/60 text-sm font-medium',
+          'transition-all duration-200 ease-out cursor-pointer',
+          'hover:bg-white/5 hover:text-white',
+          isActive && 'bg-white/10 text-[#a78bfa]',
           collapsed && 'justify-center px-3'
         )}
       >
         <span className={cn(
           'flex-shrink-0 transition-transform group-hover:scale-110',
-          isActive && 'text-[rgb(var(--accent-light))]'
+          isActive && 'text-[#a78bfa]'
         )}>
           {item.icon}
         </span>
@@ -94,7 +114,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
           <>
             <span className="flex-1">{item.label}</span>
             {item.badge && (
-              <span className="badge badge-purple text-[10px]">
+              <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-[10px] font-semibold">
                 {item.badge}
               </span>
             )}
@@ -107,15 +127,16 @@ export function Sidebar({ user, shop }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 h-screen bg-[rgb(var(--bg-secondary))]',
-        'border-r border-[rgb(var(--border-subtle))]',
+        'fixed left-0 top-0 h-screen',
+        'bg-black/30 backdrop-blur-xl',
+        'border-r border-white/10',
         'flex flex-col transition-all duration-300 ease-out z-40',
         collapsed ? 'w-[72px]' : 'w-64'
       )}
     >
       {/* Logo */}
       <div className={cn(
-        'flex items-center h-16 px-4 border-b border-[rgb(var(--border-subtle))]',
+        'flex items-center h-16 px-4 border-b border-white/10',
         collapsed && 'justify-center'
       )}>
         <Logo showText={!collapsed} size={collapsed ? 'sm' : 'md'} />
@@ -126,7 +147,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         {/* Main */}
         <div>
           {!collapsed && (
-            <p className="px-4 mb-2 text-xs font-medium uppercase tracking-wider text-[rgb(var(--text-muted))]">
+            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
               Main
             </p>
           )}
@@ -140,7 +161,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         {/* Tools */}
         <div>
           {!collapsed && (
-            <p className="px-4 mb-2 text-xs font-medium uppercase tracking-wider text-[rgb(var(--text-muted))]">
+            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
               Tools
             </p>
           )}
@@ -154,7 +175,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         {/* Other */}
         <div>
           {!collapsed && (
-            <p className="px-4 mb-2 text-xs font-medium uppercase tracking-wider text-[rgb(var(--text-muted))]">
+            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
               Other
             </p>
           )}
@@ -168,16 +189,16 @@ export function Sidebar({ user, shop }: SidebarProps) {
 
       {/* User section */}
       <div className={cn(
-        'p-3 border-t border-[rgb(var(--border-subtle))]',
+        'p-3 border-t border-white/10',
         collapsed && 'flex flex-col items-center'
       )}>
         {!collapsed && shop && (
-          <div className="px-4 py-2 mb-2 rounded-xl bg-[rgb(var(--bg-tertiary))]">
-            <p className="text-sm font-medium text-[rgb(var(--text-primary))] truncate">
+          <div className="px-4 py-3 mb-2 rounded-2xl bg-white/[0.04] border border-white/10">
+            <p className="text-sm font-semibold text-white truncate">
               {shop.name}
             </p>
-            <p className="text-xs text-[rgb(var(--text-muted))] capitalize">
-              {shop.plan.toLowerCase()} plan
+            <p className="text-xs text-white/50">
+              {[shop.city, shop.state].filter(Boolean).join(', ') || '—'} • {shop.plan.toLowerCase()} plan
             </p>
           </div>
         )}
@@ -186,21 +207,26 @@ export function Sidebar({ user, shop }: SidebarProps) {
           'flex items-center gap-3 px-4 py-2',
           collapsed && 'px-0 justify-center'
         )}>
-          <div className="avatar avatar-sm flex-shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
             {user?.name?.charAt(0).toUpperCase() || 'U'}
           </div>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[rgb(var(--text-primary))] truncate">
+              <p className="text-sm font-semibold text-white truncate">
                 {user?.name || 'User'}
               </p>
-              <p className="text-xs text-[rgb(var(--text-muted))] truncate">
+              <p className="text-xs text-white/50 truncate">
                 {user?.role || 'Owner'}
               </p>
             </div>
           )}
-          <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-            <LogOut className="w-4 h-4 text-[rgb(var(--text-muted))]" />
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-60"
+            aria-label={signingOut ? 'Signing out' : 'Sign out'}
+          >
+            <LogOut className="w-4 h-4 text-white/50" />
           </button>
         </div>
       </div>
@@ -210,9 +236,9 @@ export function Sidebar({ user, shop }: SidebarProps) {
         onClick={() => setCollapsed(!collapsed)}
         className={cn(
           'absolute top-20 -right-3 w-6 h-6 rounded-full',
-          'bg-[rgb(var(--bg-tertiary))] border border-[rgb(var(--border-subtle))]',
+          'bg-white/10 backdrop-blur-sm border border-white/20',
           'flex items-center justify-center',
-          'text-[rgb(var(--text-muted))] hover:text-[rgb(var(--text-primary))]',
+          'text-white/60 hover:text-white',
           'transition-colors shadow-sm'
         )}
       >
