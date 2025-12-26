@@ -1,7 +1,7 @@
 'use client'
 
 // app/(auth)/login/page.tsx
-// Login page with premium two-column layout
+// Login page (styled to match marketing homepage theme)
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -74,197 +74,218 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex flex-col justify-center px-12 py-16 bg-[#0a0a0f] relative">
-        <Link href="/" className="flex items-center gap-3 mb-12 text-white no-underline group">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] flex items-center justify-center text-xl shadow-lg shadow-purple-500/30">
-            🔧
-          </div>
-          <span className="text-2xl font-bold font-['Space_Grotesk'] tracking-tight">Fixology</span>
-        </Link>
-        
-        <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-white mb-4 leading-tight tracking-tight">
-          Built for repair shops.
-        </h1>
-        <p className="text-lg text-white/70 mb-12 leading-relaxed">
-          AI that runs your repair business. Stop guessing. Start diagnosing.
-        </p>
-        
-        <ul className="space-y-6 mb-16">
-          <li className="flex items-center gap-4 text-white">
-            <span className="text-2xl">⚡</span>
-            <span>Faster diagnostics.</span>
-          </li>
-          <li className="flex items-center gap-4 text-white">
-            <span className="text-2xl">📈</span>
-            <span>Smarter inventory.</span>
-          </li>
-          <li className="flex items-center gap-4 text-white">
-            <span className="text-2xl">🛡️</span>
-            <span>Fewer repeat repairs.</span>
-          </li>
-        </ul>
+    <div className="min-h-screen">
+      <div className="glow-spot" style={{ top: '10%', left: '10%' }} />
+      <div className="glow-spot" style={{ bottom: '10%', right: '10%', opacity: 0.75 }} />
 
-        {/* Social Proof */}
-        <div className="mt-auto bg-[#12121a] border border-white/8 rounded-2xl p-8">
-          <div className="text-xs font-semibold uppercase tracking-wider text-white/50 text-center mb-6">
-            TRUSTED BY REPAIR SHOPS USING AI DAILY
-          </div>
-          <div className="grid grid-cols-3 gap-6 text-center">
-            <div>
-              <div className="text-3xl font-bold font-['Space_Grotesk'] bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] bg-clip-text text-transparent mb-1">
-                500+
+      <div className="wide-container" style={{ paddingTop: 120, paddingBottom: 96 }}>
+        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Right (mobile first): auth card */}
+          <div className="order-1 lg:order-2 fade-in">
+            <div className="glass-card" style={{ padding: 32, maxWidth: 560, marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
+                <Link href="/" className="auth-link" aria-label="Back to Fixology home">
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                    <span
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 10,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg,#a78bfa 0%,#c4b5fd 100%)',
+                        color: '#0f0a1a',
+                        fontWeight: 800,
+                      }}
+                      aria-hidden="true"
+                    >
+                      ⚡
+                    </span>
+                    <span style={{ fontWeight: 800, letterSpacing: '-0.02em' }}>Fixology</span>
+                  </span>
+                </Link>
+                <span className="auth-kicker">Secure sign-in</span>
               </div>
-              <div className="text-xs text-white/50">Active Shops</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold font-['Space_Grotesk'] bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] bg-clip-text text-transparent mb-1">
-                50K+
-              </div>
-              <div className="text-xs text-white/50">Repairs</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold font-['Space_Grotesk'] bg-gradient-to-br from-[#a78bfa] to-[#06b6d4] bg-clip-text text-transparent mb-1">
-                99%
-              </div>
-              <div className="text-xs text-white/50">Uptime</div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Right Panel - Form Card */}
-      <div className="flex items-center justify-center px-6 py-12 lg:px-12 bg-[#0a0a0f]">
-        <div className="w-full max-w-[440px] animate-[fadeInUp_0.5s_ease-out]">
-          <div className="bg-[rgba(18,18,26,0.8)] backdrop-blur-[20px] border border-white/8 rounded-3xl p-12 shadow-2xl relative overflow-hidden">
-            {/* Top gradient line */}
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#a78bfa] to-transparent opacity-50" />
-            
-            <div id="error-message" className="hidden mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm"></div>
-            <div id="success-message" className="hidden mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 text-sm"></div>
-
-            <div className="mb-8">
-              <h1 className="text-3xl font-semibold font-['Space_Grotesk'] text-white mb-2 tracking-tight">
+              <h1 className="section-title" style={{ fontSize: 34, marginBottom: 8 }}>
                 Welcome back
               </h1>
-              <p className="text-[0.9375rem] text-white/70 leading-relaxed">
+              <p className="auth-muted" style={{ marginBottom: 22, lineHeight: 1.6 }}>
                 Log in to your Fixology dashboard.
               </p>
-            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-2">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value)
-                      if (errors.email) setErrors({ ...errors, email: undefined })
-                    }}
-                    placeholder="you@example.com"
-                    required
-                    autoComplete="email"
-                    className="w-full pl-11 pr-4 py-3.5 text-base bg-[#0a0a0f] border border-white/8 rounded-[10px] text-white placeholder-white/50 transition-all focus:outline-none focus:border-[#a78bfa] focus:ring-2 focus:ring-[#a78bfa]/15"
-                  />
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <label htmlFor="email" className="auth-label">
+                    Email
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Mail
+                      className="pointer-events-none"
+                      style={{
+                        position: 'absolute',
+                        left: 14,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 18,
+                        height: 18,
+                        color: 'rgba(196,181,253,.65)',
+                      }}
+                      aria-hidden="true"
+                    />
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value)
+                        if (errors.email) setErrors({ ...errors, email: undefined })
+                      }}
+                      placeholder="you@example.com"
+                      required
+                      autoComplete="email"
+                      className="auth-input"
+                      aria-invalid={!!errors.email}
+                    />
+                  </div>
+                  {errors.email && <p className="auth-error">{errors.email}</p>}
                 </div>
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-400">{errors.email}</p>
-                )}
-              </div>
 
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-2">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50 pointer-events-none" />
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value)
-                      if (errors.password) setErrors({ ...errors, password: undefined })
-                    }}
-                    placeholder="Your password"
-                    required
-                    autoComplete="current-password"
-                    className="w-full pl-11 pr-4 py-3.5 text-base bg-[#0a0a0f] border border-white/8 rounded-[10px] text-white placeholder-white/50 transition-all focus:outline-none focus:border-[#a78bfa] focus:ring-2 focus:ring-[#a78bfa]/15"
-                  />
+                <div>
+                  <label htmlFor="password" className="auth-label">
+                    Password
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <Lock
+                      className="pointer-events-none"
+                      style={{
+                        position: 'absolute',
+                        left: 14,
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: 18,
+                        height: 18,
+                        color: 'rgba(196,181,253,.65)',
+                      }}
+                      aria-hidden="true"
+                    />
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value)
+                        if (errors.password) setErrors({ ...errors, password: undefined })
+                      }}
+                      placeholder="Your password"
+                      required
+                      autoComplete="current-password"
+                      className="auth-input"
+                      aria-invalid={!!errors.password}
+                    />
+                  </div>
+                  {errors.password && <p className="auth-error">{errors.password}</p>}
                 </div>
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-400">{errors.password}</p>
-                )}
-              </div>
 
-              <div className="flex items-center justify-between mb-5">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-white/8 bg-[#0a0a0f] text-[#a78bfa] focus:ring-[#a78bfa]/20 accent-[#a78bfa] cursor-pointer"
-                  />
-                  <span className="text-sm text-white/70">Remember me</span>
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-[#a78bfa] hover:underline transition-colors"
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 2 }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="accent-[#a78bfa]"
+                      style={{ width: 16, height: 16 }}
+                    />
+                    <span className="auth-muted" style={{ fontSize: 13 }}>
+                      Remember me
+                    </span>
+                  </label>
+                  <Link href="/forgot-password" className="auth-link" style={{ fontSize: 13 }}>
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading || !email || !password}
+                  className="glow-button"
+                  style={{ width: '100%', marginTop: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+                  aria-label={loading ? 'Signing in' : 'Sign in'}
                 >
-                  Forgot password?
+                  {loading ? (
+                    'Signing in…'
+                  ) : (
+                    <>
+                      Sign in <ArrowRight style={{ width: 18, height: 18 }} aria-hidden="true" />
+                    </>
+                  )}
+                </button>
+
+                <div style={{ marginTop: 8, fontSize: 12, color: 'rgba(196,181,253,.55)', display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'center' }}>
+                  <span aria-hidden="true">🔒</span>
+                  <span>We never share your data</span>
+                </div>
+              </form>
+
+              <div style={{ marginTop: 18, textAlign: 'center', fontSize: 13, color: 'rgba(196,181,253,.70)' }}>
+                Don&apos;t have an account?{' '}
+                <Link href="/signup" className="auth-link" style={{ fontWeight: 700 }}>
+                  Sign up
                 </Link>
               </div>
+            </div>
+          </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 px-4 text-base font-semibold bg-gradient-to-r from-[#a78bfa] to-[#06b6d4] border-none rounded-[10px] text-white cursor-pointer transition-all flex items-center justify-center gap-2 hover:translate-y-[-2px] hover:shadow-lg hover:shadow-purple-500/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {loading ? 'Signing in...' : (
-                  <>
-                    Sign In <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
+          {/* Left (desktop): value prop / social proof */}
+          <div className="order-2 lg:order-1 fade-in">
+            <div style={{ maxWidth: 720 }}>
+              <span className="auth-kicker">✨ Built for repair shops</span>
+              <h2 className="section-title" style={{ fontSize: 44, marginTop: 18, marginBottom: 14 }}>
+                Your techs stop guessing.
+                <br />
+                <span style={{ color: '#a78bfa' }}>Your tickets write themselves.</span>
+              </h2>
+              <p className="auth-muted" style={{ fontSize: 16, lineHeight: 1.7, marginBottom: 22 }}>
+                Fixology turns messy customer messages into diagnoses, tickets, pricing, inventory actions, and customer updates — automatically.
+              </p>
 
-            <p className="mt-6 text-center text-[0.9375rem] text-white/70">
-              Don&apos;t have an account?{' '}
-              <Link
-                href="/signup"
-                className="text-[#a78bfa] no-underline font-medium hover:underline transition-colors"
-              >
-                Sign up
-              </Link>
-            </p>
+              <div style={{ display: 'grid', gap: 12, marginBottom: 22 }}>
+                {[
+                  'Works with how your shop already runs',
+                  'Fewer comebacks with guided steps + risk alerts',
+                  'Tickets created from one sentence',
+                ].map((t) => (
+                  <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(196,181,253,.82)' }}>
+                    <span style={{ color: '#4ade80', fontWeight: 900 }} aria-hidden="true">
+                      ✓
+                    </span>
+                    <span style={{ fontSize: 15 }}>{t}</span>
+                  </div>
+                ))}
+              </div>
 
-            <div className="flex items-center justify-center gap-2 mt-6 text-xs text-white/50">
-              <span>🔒</span>
-              <span>We never share your data</span>
+              <div className="glass-card" style={{ padding: 22, borderRadius: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(167,139,250,.75)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 14 }}>
+                  Low-key social proof
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
+                  {[
+                    { k: '⚡ Avg setup time', v: 'Under 2 minutes' },
+                    { k: '📉 Fewer repeats', v: 'Guided steps + risk alerts' },
+                    { k: '✅ Built for', v: 'Phone, console, PC shops' },
+                  ].map((s) => (
+                    <div key={s.k} style={{ padding: 14, borderRadius: 14, border: '1px solid rgba(167,139,250,.12)', background: 'rgba(15,10,26,.55)' }}>
+                      <div style={{ fontSize: 12, color: 'rgba(196,181,253,.75)', marginBottom: 6 }}>{s.k}</div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{s.v}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   )
 }

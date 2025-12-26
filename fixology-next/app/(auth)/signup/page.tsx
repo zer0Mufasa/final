@@ -1,16 +1,13 @@
 'use client'
 
 // app/(auth)/signup/page.tsx
-// Signup page for new shops
+// Signup page for new shops (styled to match marketing homepage theme)
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Logo } from '@/components/shared/logo'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/toaster'
-import { Mail, Lock, User, Building, Phone, ArrowRight, Check } from 'lucide-react'
+import { Mail, Lock, User, Building, Phone, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignupPage() {
@@ -146,193 +143,394 @@ export default function SignupPage() {
   }
 
   const features = [
-    'AI-powered diagnostics',
-    'Smart ticket management',
-    'Customer portal',
-    'Inventory tracking',
-    'Invoice generation',
-    'Analytics dashboard',
+    'AI diagnosis from one sentence',
+    'Tickets + pricing auto-generated',
+    'IMEI / risk checks before you touch it',
+    'Inventory intelligence + reorder prompts',
+    'Customer updates that write themselves',
   ]
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left side - Decorative */}
-      <div className="hidden lg:flex lg:flex-1 relative overflow-hidden bg-gradient-to-br from-purple-900/50 via-purple-800/30 to-bg-primary">
-        <div className="absolute inset-0">
-          <div className="absolute top-20 right-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 left-20 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
-        
-        <div className="relative z-10 flex flex-col justify-center p-12">
-          <h2 className="text-3xl font-bold text-white mb-6">
-            Start your 14-day free trial
-          </h2>
-          <p className="text-purple-200/80 mb-8 max-w-md">
-            Join hundreds of repair shops using Fixology to streamline their operations and grow their business.
-          </p>
-          
-          <ul className="space-y-4">
-            {features.map((feature, index) => (
-              <li key={index} className="flex items-center gap-3 text-purple-200/90">
-                <div className="w-6 h-6 rounded-full bg-purple-500/30 flex items-center justify-center">
-                  <Check className="w-4 h-4 text-purple-300" />
-                </div>
-                {feature}
-              </li>
-            ))}
-          </ul>
-          
-          <div className="mt-12 p-6 rounded-2xl bg-white/5 border border-white/10">
-            <p className="text-purple-200/90 italic">
-              &quot;Fixology transformed our repair shop. We&apos;ve cut ticket processing time in half and our customers love the real-time updates.&quot;
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700" />
-              <div>
-                <p className="text-white font-medium">Mike Chen</p>
-                <p className="text-purple-300/60 text-sm">TechFix Pro</p>
+    <div className="min-h-screen">
+      <div className="glow-spot" style={{ top: '8%', right: '14%' }} />
+      <div className="glow-spot" style={{ bottom: '12%', left: '10%', opacity: 0.7 }} />
+
+      <div className="wide-container" style={{ paddingTop: 120, paddingBottom: 96 }}>
+        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-20">
+          {/* Right (mobile first): form */}
+          <div className="order-1 lg:order-2 fade-in">
+            <div className="glass-card" style={{ padding: 32, maxWidth: 620, marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
+                <Link href="/" className="auth-link" aria-label="Back to Fixology home">
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+                    <span
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 10,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'linear-gradient(135deg,#a78bfa 0%,#c4b5fd 100%)',
+                        color: '#0f0a1a',
+                        fontWeight: 800,
+                      }}
+                      aria-hidden="true"
+                    >
+                      ⚡
+                    </span>
+                    <span style={{ fontWeight: 800, letterSpacing: '-0.02em' }}>Fixology</span>
+                  </span>
+                </Link>
+                <span className="auth-kicker">{step === 1 ? 'Step 1 of 2' : 'Step 2 of 2'}</span>
+              </div>
+
+              <h1 className="section-title" style={{ fontSize: 34, marginBottom: 8 }}>
+                Start building smarter repairs
+              </h1>
+              <p className="auth-muted" style={{ marginBottom: 18, lineHeight: 1.6 }}>
+                {step === 1 ? 'Tell us about your shop.' : 'Set up your account details.'}
+              </p>
+
+              {/* Progress bar */}
+              <div style={{ height: 8, background: 'rgba(167,139,250,.15)', borderRadius: 999, overflow: 'hidden', marginBottom: 18 }}>
+                <div
+                  style={{
+                    height: '100%',
+                    width: step === 1 ? '50%' : '100%',
+                    background: 'linear-gradient(90deg, rgba(167,139,250,.95), rgba(196,181,253,.95))',
+                    transition: 'width .25s ease',
+                  }}
+                />
+              </div>
+
+              <form
+                onSubmit={
+                  step === 2
+                    ? handleSubmit
+                    : (e) => {
+                        e.preventDefault()
+                        handleNextStep()
+                      }
+                }
+                style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+              >
+                {step === 1 ? (
+                  <>
+                    <div>
+                      <label htmlFor="shopName" className="auth-label">
+                        Shop name
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Building
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 18,
+                            height: 18,
+                            color: 'rgba(196,181,253,.65)',
+                          }}
+                          aria-hidden="true"
+                        />
+                        <input
+                          id="shopName"
+                          value={formData.shopName}
+                          onChange={(e) => updateField('shopName', e.target.value)}
+                          placeholder="Your repair shop"
+                          className="auth-input"
+                          autoComplete="organization"
+                          aria-invalid={!!errors.shopName}
+                        />
+                      </div>
+                      {errors.shopName && <p className="auth-error">{errors.shopName}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="ownerName" className="auth-label">
+                        Your name
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <User
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 18,
+                            height: 18,
+                            color: 'rgba(196,181,253,.65)',
+                          }}
+                          aria-hidden="true"
+                        />
+                        <input
+                          id="ownerName"
+                          value={formData.ownerName}
+                          onChange={(e) => updateField('ownerName', e.target.value)}
+                          placeholder="Owner / manager"
+                          className="auth-input"
+                          autoComplete="name"
+                          aria-invalid={!!errors.ownerName}
+                        />
+                      </div>
+                      {errors.ownerName && <p className="auth-error">{errors.ownerName}</p>}
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="glow-button"
+                      disabled={loading || !formData.shopName.trim() || !formData.ownerName.trim()}
+                      style={{ width: '100%', marginTop: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+                    >
+                      {formData.shopName.trim() || formData.ownerName.trim() ? (
+                        <>
+                          Continue <ArrowRight style={{ width: 18, height: 18 }} aria-hidden="true" />
+                        </>
+                      ) : (
+                        'Continue'
+                      )}
+                    </button>
+
+                    <div style={{ marginTop: 8, textAlign: 'center', fontSize: 12, color: 'rgba(196,181,253,.55)' }}>
+                      Nice — this takes less than a minute.
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label htmlFor="email" className="auth-label">
+                        Email
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Mail
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 18,
+                            height: 18,
+                            color: 'rgba(196,181,253,.65)',
+                          }}
+                          aria-hidden="true"
+                        />
+                        <input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => updateField('email', e.target.value)}
+                          placeholder="you@example.com"
+                          className="auth-input"
+                          autoComplete="email"
+                          aria-invalid={!!errors.email}
+                        />
+                      </div>
+                      {errors.email && <p className="auth-error">{errors.email}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="phone" className="auth-label">
+                        Phone
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Phone
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 18,
+                            height: 18,
+                            color: 'rgba(196,181,253,.65)',
+                          }}
+                          aria-hidden="true"
+                        />
+                        <input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => updateField('phone', e.target.value)}
+                          placeholder="(555) 123-4567"
+                          className="auth-input"
+                          autoComplete="tel"
+                          aria-invalid={!!errors.phone}
+                        />
+                      </div>
+                      {errors.phone && <p className="auth-error">{errors.phone}</p>}
+                    </div>
+
+                    <div>
+                      <label htmlFor="password" className="auth-label">
+                        Password
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Lock
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 18,
+                            height: 18,
+                            color: 'rgba(196,181,253,.65)',
+                          }}
+                          aria-hidden="true"
+                        />
+                        <input
+                          id="password"
+                          type="password"
+                          value={formData.password}
+                          onChange={(e) => updateField('password', e.target.value)}
+                          placeholder="••••••••"
+                          className="auth-input"
+                          autoComplete="new-password"
+                          aria-invalid={!!errors.password}
+                        />
+                      </div>
+                      {errors.password && <p className="auth-error">{errors.password}</p>}
+                      <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: 'rgba(196,181,253,.55)' }}>
+                        <span aria-hidden="true">🔒</span>
+                        <span>We never share your data</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="confirmPassword" className="auth-label">
+                        Confirm password
+                      </label>
+                      <div style={{ position: 'relative' }}>
+                        <Lock
+                          style={{
+                            position: 'absolute',
+                            left: 14,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            width: 18,
+                            height: 18,
+                            color: 'rgba(196,181,253,.65)',
+                          }}
+                          aria-hidden="true"
+                        />
+                        <input
+                          id="confirmPassword"
+                          type="password"
+                          value={formData.confirmPassword}
+                          onChange={(e) => updateField('confirmPassword', e.target.value)}
+                          placeholder="••••••••"
+                          className="auth-input"
+                          autoComplete="new-password"
+                          aria-invalid={!!errors.confirmPassword}
+                        />
+                      </div>
+                      {errors.confirmPassword && <p className="auth-error">{errors.confirmPassword}</p>}
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: 12, marginTop: 6 }}>
+                      <button
+                        type="button"
+                        className="glow-button glow-button-secondary"
+                        onClick={() => setStep(1)}
+                        disabled={loading}
+                        style={{ width: '100%' }}
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="submit"
+                        className="glow-button"
+                        disabled={loading || !formData.email || !formData.phone || !formData.password || !formData.confirmPassword}
+                        style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+                      >
+                        {loading ? (
+                          'Creating…'
+                        ) : (
+                          <>
+                            Create account <ArrowRight style={{ width: 18, height: 18 }} aria-hidden="true" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <div style={{ marginTop: 10, textAlign: 'center', fontSize: 12, color: 'rgba(196,181,253,.55)' }}>
+                      You&apos;re almost set up.
+                    </div>
+                  </>
+                )}
+              </form>
+
+              <div style={{ marginTop: 18, textAlign: 'center', fontSize: 13, color: 'rgba(196,181,253,.70)' }}>
+                Already have an account?{' '}
+                <Link href="/login" className="auth-link" style={{ fontWeight: 700 }}>
+                  Log in
+                </Link>
+              </div>
+
+              <div style={{ marginTop: 10, textAlign: 'center', fontSize: 12, color: 'rgba(196,181,253,.55)' }}>
+                By continuing, you agree to our{' '}
+                <Link href="/terms" className="auth-link">
+                  Terms
+                </Link>{' '}
+                and{' '}
+                <Link href="/privacy" className="auth-link">
+                  Privacy Policy
+                </Link>
+                .
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Right side - Form */}
-      <div className="flex-1 flex flex-col justify-center px-8 py-12 lg:px-24">
-        <div className="max-w-md w-full mx-auto">
-          <Logo size="lg" className="mb-12" />
-          
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[rgb(var(--text-primary))] mb-2">
-              Create your account
-            </h1>
-            <p className="text-[rgb(var(--text-muted))]">
-              {step === 1 ? 'Tell us about your shop' : 'Set up your login credentials'}
-            </p>
-          </div>
+          {/* Left (desktop): value prop */}
+          <div className="order-2 lg:order-1 fade-in">
+            <div style={{ maxWidth: 720 }}>
+              <span className="auth-kicker">14-day free trial</span>
+              <h2 className="section-title" style={{ fontSize: 44, marginTop: 18, marginBottom: 14 }}>
+                Built for real tech workflows.
+                <br />
+                <span style={{ color: '#a78bfa' }}>Not generic software.</span>
+              </h2>
+              <p className="auth-muted" style={{ fontSize: 16, lineHeight: 1.7, marginBottom: 22 }}>
+                You’ll feel the difference on day one: faster intake, clearer diagnosis, fewer mistakes, cleaner communication.
+              </p>
 
-          {/* Progress indicator */}
-          <div className="flex items-center gap-2 mb-8">
-            <div className={`h-1 flex-1 rounded-full ${step >= 1 ? 'bg-[rgb(var(--accent-primary))]' : 'bg-[rgb(var(--bg-tertiary))]'}`} />
-            <div className={`h-1 flex-1 rounded-full ${step >= 2 ? 'bg-[rgb(var(--accent-primary))]' : 'bg-[rgb(var(--bg-tertiary))]'}`} />
-          </div>
-
-          <form onSubmit={step === 2 ? handleSubmit : (e) => { e.preventDefault(); handleNextStep(); }}>
-            {step === 1 ? (
-              <div className="space-y-6 animate-fade-in-up">
-                <Input
-                  label="Shop Name"
-                  placeholder="Your Repair Shop"
-                  value={formData.shopName}
-                  onChange={(e) => updateField('shopName', e.target.value)}
-                  error={errors.shopName}
-                  leftIcon={<Building className="w-5 h-5" />}
-                />
-
-                <Input
-                  label="Your Name"
-                  placeholder="John Smith"
-                  value={formData.ownerName}
-                  onChange={(e) => updateField('ownerName', e.target.value)}
-                  error={errors.ownerName}
-                  leftIcon={<User className="w-5 h-5" />}
-                />
-
-                <Button
-                  type="submit"
-                  className="w-full"
-                  rightIcon={<ArrowRight className="w-4 h-4" />}
-                >
-                  Continue
-                </Button>
+              <div style={{ display: 'grid', gap: 12, marginBottom: 22 }}>
+                {features.map((t) => (
+                  <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(196,181,253,.82)' }}>
+                    <span style={{ color: '#4ade80', fontWeight: 900 }} aria-hidden="true">
+                      ✓
+                    </span>
+                    <span style={{ fontSize: 15 }}>{t}</span>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <div className="space-y-6 animate-fade-in-up">
-                <Input
-                  label="Email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={(e) => updateField('email', e.target.value)}
-                  error={errors.email}
-                  leftIcon={<Mail className="w-5 h-5" />}
-                  autoComplete="email"
-                />
 
-                <Input
-                  label="Phone"
-                  type="tel"
-                  placeholder="(555) 123-4567"
-                  value={formData.phone}
-                  onChange={(e) => updateField('phone', e.target.value)}
-                  error={errors.phone}
-                  leftIcon={<Phone className="w-5 h-5" />}
-                />
-
-                <Input
-                  label="Password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => updateField('password', e.target.value)}
-                  error={errors.password}
-                  leftIcon={<Lock className="w-5 h-5" />}
-                  autoComplete="new-password"
-                />
-
-                <Input
-                  label="Confirm Password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={(e) => updateField('confirmPassword', e.target.value)}
-                  error={errors.confirmPassword}
-                  leftIcon={<Lock className="w-5 h-5" />}
-                  autoComplete="new-password"
-                />
-
-                <div className="flex gap-4">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => setStep(1)}
-                    className="flex-1"
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="flex-1"
-                    loading={loading}
-                    rightIcon={<ArrowRight className="w-4 h-4" />}
-                  >
-                    Create Account
-                  </Button>
+              <div className="glass-card" style={{ padding: 22, borderRadius: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(167,139,250,.75)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 10 }}>
+                  Calm social proof
+                </div>
+                <div style={{ color: 'rgba(196,181,253,.80)', lineHeight: 1.7, fontSize: 14 }}>
+                  Used by phone, console, and PC repair shops. Designed to fit the way shops already work — no forced process change.
+                </div>
+                <div style={{ marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  {['Avg setup: under 2 min', 'Guided steps reduce comebacks', 'Tickets from one sentence'].map((p) => (
+                    <span
+                      key={p}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: 999,
+                        background: 'rgba(15,10,26,.55)',
+                        border: '1px solid rgba(167,139,250,.14)',
+                        fontSize: 12,
+                        color: 'rgba(196,181,253,.82)',
+                      }}
+                    >
+                      {p}
+                    </span>
+                  ))}
                 </div>
               </div>
-            )}
-          </form>
-
-          <p className="mt-8 text-center text-[rgb(var(--text-muted))]">
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="text-[rgb(var(--accent-light))] hover:underline font-medium"
-            >
-              Sign in
-            </Link>
-          </p>
-
-          <p className="mt-4 text-center text-xs text-[rgb(var(--text-muted))]">
-            By signing up, you agree to our{' '}
-            <Link href="/terms" className="text-[rgb(var(--accent-light))] hover:underline">
-              Terms of Service
-            </Link>{' '}
-            and{' '}
-            <Link href="/privacy" className="text-[rgb(var(--accent-light))] hover:underline">
-              Privacy Policy
-            </Link>
-          </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
