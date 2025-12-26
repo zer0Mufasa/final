@@ -7,6 +7,14 @@ function run(cmd, args, opts = {}) {
 
 function tryMigrateDeploy() {
   console.log('\n▲ prisma migrate deploy (best-effort)\n')
+  const dbUrl = process.env.DATABASE_URL || ''
+  let dbHost = '(missing)'
+  try {
+    if (dbUrl) dbHost = new URL(dbUrl).host
+  } catch {
+    dbHost = '(invalid url)'
+  }
+  console.log(`Using DATABASE_URL host: ${dbHost}\n`)
   const res = spawnSync('npx', ['prisma', 'migrate', 'deploy'], {
     encoding: 'utf8',
     shell: false,

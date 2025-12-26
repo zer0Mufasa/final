@@ -19,7 +19,6 @@ export async function GET() {
   const info = dbUrl ? redactDb(dbUrl) : { host: '(missing)', db: '(missing)' }
 
   try {
-    // lightweight query
     await prisma.shop.count()
     return NextResponse.json({ ok: true, database: info })
   } catch (error: any) {
