@@ -277,7 +277,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         {/* User section */}
         <div className={cn(
           'p-3 border-t border-white/10',
-          !isOpen && 'flex flex-col items-center'
+          !isOpen && 'flex flex-col items-center justify-center'
         )}>
           {isOpen && shop && (
             <div className="px-4 py-3 mb-2 rounded-2xl bg-white/[0.04] border border-white/10">
@@ -291,30 +291,32 @@ export function Sidebar({ user, shop }: SidebarProps) {
           )}
 
           <div className={cn(
-            'flex items-center gap-3 px-4 py-2',
-            !isOpen && 'px-0 justify-center'
+            'flex items-center gap-3',
+            isOpen ? 'px-4 py-2' : 'px-0 py-2 justify-center w-full'
           )}>
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
             {isOpen && (
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">
-                  {user?.name || 'User'}
-                </p>
-                <p className="text-xs text-white/50 truncate">
-                  {user?.role || 'Owner'}
-                </p>
-              </div>
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {user?.name || 'User'}
+                  </p>
+                  <p className="text-xs text-white/50 truncate">
+                    {user?.role || 'Owner'}
+                  </p>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  disabled={signingOut}
+                  className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-60"
+                  aria-label={signingOut ? 'Signing out' : 'Sign out'}
+                >
+                  <LogOut className="w-4 h-4 text-white/50" />
+                </button>
+              </>
             )}
-            <button
-              onClick={handleSignOut}
-              disabled={signingOut}
-              className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-60"
-              aria-label={signingOut ? 'Signing out' : 'Sign out'}
-            >
-              <LogOut className="w-4 h-4 text-white/50" />
-            </button>
           </div>
         </div>
       </aside>
