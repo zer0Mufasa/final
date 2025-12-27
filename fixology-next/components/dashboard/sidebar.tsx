@@ -218,8 +218,8 @@ export function Sidebar({ user, shop }: SidebarProps) {
       >
         {/* Logo */}
         <div className={cn(
-          'flex items-center h-16 px-4 border-b border-white/10',
-          !isOpen && 'justify-center'
+          'flex items-center justify-center h-16 border-b border-white/10',
+          isOpen ? 'px-4' : 'px-0'
         )}>
           <Logo showText={isOpen} size={isOpen ? 'md' : 'sm'} />
         </div>
