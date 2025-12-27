@@ -4,7 +4,7 @@
 // Right-side focus panel for ticket details
 
 import { useState } from 'react'
-import { Phone, Mail, MessageSquare, X, Ticket, Calendar, DollarSign, User, AlertCircle } from 'lucide-react'
+import { Phone, Mail, MessageSquare, X, Ticket, Calendar, DollarSign, User, AlertCircle, CheckCircle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 interface Ticket {
