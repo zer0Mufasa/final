@@ -25,7 +25,7 @@ interface Ticket {
   dueAt?: Date | null
   estimatedCost?: number | null
   notes?: string | null
-  createdAt: Date
+  createdAt: Date | string
 }
 
 interface CommandCenterProps {
@@ -40,16 +40,20 @@ export function CommandCenter({ tickets }: CommandCenterProps) {
 
   // Load view mode from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('dashboard-view-mode') as ViewMode | null
-    if (saved === 'board' || saved === 'list') {
-      setViewMode(saved)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('dashboard-view-mode') as ViewMode | null
+      if (saved === 'board' || saved === 'list') {
+        setViewMode(saved)
+      }
     }
   }, [])
 
   // Save view mode to localStorage
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode)
-    localStorage.setItem('dashboard-view-mode', mode)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('dashboard-view-mode', mode)
+    }
   }
 
   const handleStatusChange = async (ticketId: string, newStatus: string) => {

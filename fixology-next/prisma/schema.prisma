@@ -224,6 +224,10 @@ model Ticket {
   waiverSignedAt  DateTime? @map("waiver_signed_at")
   waiverSignature String?   @map("waiver_signature") // Base64 signature
 
+  // AI & Risk Intelligence
+  aiDraft    Json? @map("ai_draft") // AI intake draft data
+  riskReport Json? @map("risk_report") // IMEI risk check results
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

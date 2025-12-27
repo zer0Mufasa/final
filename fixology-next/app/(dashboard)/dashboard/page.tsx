@@ -6,6 +6,7 @@ import { prisma } from '@/lib/prisma/client'
 import { Header } from '@/components/dashboard/header'
 import { LeftRail } from '@/components/dashboard/left-rail'
 import { CommandCenter } from '@/components/dashboard/command-center'
+import { QuickAIIntake } from '@/components/dashboard/quick-ai-intake'
 
 export const metadata = {
   title: 'Dashboard',
@@ -32,6 +33,8 @@ async function getTickets(shopId: string) {
     deviceType: ticket.deviceType,
     deviceIssue: ticket.issueDescription || null,
     problem: ticket.symptoms?.join(', ') || null,
+    issueDescription: ticket.issueDescription || null,
+    symptoms: ticket.symptoms || null,
     diagnosis: ticket.diagnosis || null,
     resolution: ticket.resolution || null,
     priority: ticket.priority || 'NORMAL',
@@ -93,9 +96,10 @@ export default async function DashboardPage() {
             email: shopUser.email,
           }}
         />
-        <div className="flex-1 overflow-hidden p-6">
-          <CommandCenter tickets={tickets} />
-        </div>
+                    <div className="flex-1 overflow-hidden p-6">
+                      <QuickAIIntake />
+                      <CommandCenter tickets={tickets} />
+                    </div>
       </div>
     </div>
   )

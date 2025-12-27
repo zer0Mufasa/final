@@ -52,7 +52,28 @@ export async function PATCH(
     const updated = await prisma.ticket.update({
       where: { id: params.id },
       data: { status },
+      include: {
+        parts: {
+          include: {
+            inventory: true,
+          },
+        },
+      },
     })
+
+    // Deduct inventory when ticket moves to READY or PICKED_UP
+    if ((status === 'READY' || status === 'PICKED_UP') && updated.parts.length > 0) {
+      for (const ticketPart of updated.parts) {
+        await prisma.inventoryItem.update({
+          where: { id: ticketPart.inventoryId },
+          data: {
+            quantity: {
+              decrement: ticketPart.quantity,
+            },
+          },
+        })
+      }
+    }
 
     return NextResponse.json({ success: true, ticket: updated })
   } catch (error: any) {

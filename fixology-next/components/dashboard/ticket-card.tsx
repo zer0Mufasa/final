@@ -20,17 +20,17 @@ interface TicketCardProps {
       phone?: string | null
     }
     status: string
-    dueAt?: Date | null
+    dueAt?: Date | string | null
     estimatedCost?: number | null
     isOverdue?: boolean
     isPinned?: boolean
-    createdAt: Date
+    createdAt: Date | string
   }
   onClick?: () => void
   isSelected?: boolean
 }
 
-function formatTimeAgo(date: Date): string {
+function formatTimeAgo(date: Date | string): string {
   const now = new Date()
   const diff = now.getTime() - new Date(date).getTime()
   const seconds = Math.floor(diff / 1000)
@@ -44,7 +44,7 @@ function formatTimeAgo(date: Date): string {
   return 'Just now'
 }
 
-function formatDate(date: Date): string {
+function formatDate(date: Date | string): string {
   return new Date(date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -53,19 +53,24 @@ function formatDate(date: Date): string {
 }
 
 export function TicketCard({ ticket, onClick, isSelected }: TicketCardProps) {
+  if (!ticket) return null
+
   const deviceDisplay = ticket.deviceModel || ticket.deviceType || 'Device'
-  const customerName = `${ticket.customer.firstName} ${ticket.customer.lastName}`
-  const isOverdue = ticket.isOverdue || (ticket.dueAt && new Date(ticket.dueAt) < new Date())
-  const [timeAgo, setTimeAgo] = useState(formatTimeAgo(ticket.createdAt))
+  const customerName = ticket.customer 
+    ? `${ticket.customer.firstName || ''} ${ticket.customer.lastName || ''}`.trim() || 'Unknown Customer'
+    : 'Unknown Customer'
+  const isOverdue = ticket.isOverdue || (ticket.dueAt && new Date(ticket.dueAt).getTime() < new Date().getTime())
+  const createdAt = ticket.createdAt ? new Date(ticket.createdAt) : new Date()
+  const [timeAgo, setTimeAgo] = useState(formatTimeAgo(createdAt))
   const [showTimer, setShowTimer] = useState(false)
 
   // Update timer every minute
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeAgo(formatTimeAgo(ticket.createdAt))
+      setTimeAgo(formatTimeAgo(createdAt))
     }, 60000)
     return () => clearInterval(interval)
-  }, [ticket.createdAt])
+  }, [createdAt])
 
   return (
     <div
@@ -107,7 +112,7 @@ export function TicketCard({ ticket, onClick, isSelected }: TicketCardProps) {
 
       {/* Date and timer */}
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
-        <p className="text-xs text-white/50">{formatDate(ticket.createdAt)}</p>
+        <p className="text-xs text-white/50">{formatDate(createdAt)}</p>
         <div
           className="relative"
           onMouseEnter={() => setShowTimer(true)}
@@ -119,7 +124,7 @@ export function TicketCard({ ticket, onClick, isSelected }: TicketCardProps) {
           </div>
           {showTimer && (
             <div className="absolute bottom-full right-0 mb-2 px-2 py-1 rounded-lg bg-black/90 backdrop-blur-xl border border-white/10 text-xs text-white/80 whitespace-nowrap z-10">
-              Created {new Date(ticket.createdAt).toLocaleString()}
+              Created {createdAt.toLocaleString()}
             </div>
           )}
         </div>

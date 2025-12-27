@@ -15,6 +15,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
+  useDroppable,
 } from '@dnd-kit/core'
 import {
   SortableContext,
@@ -41,7 +42,7 @@ interface Ticket {
   status: string
   dueAt?: Date | null
   estimatedCost?: number | null
-  createdAt: Date
+  createdAt: Date | string
 }
 
 interface Column {
@@ -102,12 +103,32 @@ function SortableTicketCard({
     opacity: isDragging ? 0.5 : 1,
   }
 
+  // Track if this was a click vs drag
+  const clickStartRef = useRef<{ x: number; y: number; time: number } | null>(null)
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    clickStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      time: Date.now(),
+    }
+  }
+
   // Separate click handler from drag listeners
   const handleClick = (e: React.MouseEvent) => {
-    // Only trigger onClick if not dragging
-    if (!isDragging && onClick) {
-      onClick()
+    // Only trigger onClick if we didn't drag (just clicked)
+    if (!isDragging && clickStartRef.current && onClick) {
+      const { x, y, time } = clickStartRef.current
+      const moved = Math.abs(e.clientX - x) > 5 || Math.abs(e.clientY - y) > 5
+      const timeSinceStart = Date.now() - time
+      
+      // If we didn't move much and it's been less than 200ms, treat as click
+      if (!moved && timeSinceStart < 200) {
+        e.stopPropagation()
+        onClick()
+      }
     }
+    clickStartRef.current = null
   }
 
   return (
@@ -115,10 +136,12 @@ function SortableTicketCard({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
+      onPointerDown={handlePointerDown}
       onClick={handleClick}
     >
-      <TicketCard ticket={ticket} onClick={undefined} isSelected={isSelected} />
+      <div {...listeners} style={{ cursor: 'grab' }}>
+        <TicketCard ticket={ticket} onClick={undefined} isSelected={isSelected} />
+      </div>
     </div>
   )
 }
@@ -135,9 +158,23 @@ function BoardColumn({
   selectedTicketId?: string | null
 }) {
   const sortableIds = tickets.map((t) => t.id)
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+    data: {
+      type: 'column',
+      column,
+    },
+  })
 
   return (
-    <div className="flex-shrink-0 w-80" data-column-id={column.id}>
+    <div 
+      ref={setNodeRef}
+      className={cn(
+        "flex-shrink-0 w-80",
+        isOver && "ring-2 ring-purple-500/50 rounded-xl"
+      )}
+      data-column-id={column.id}
+    >
       <ColumnHeader column={column} count={tickets.length} />
       <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
         <div className="space-y-2 min-h-[200px]" data-column-id={column.id}>
@@ -172,7 +209,6 @@ export function TicketBoard({
 }: TicketBoardProps) {
   const [columns, setColumns] = useState<Column[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
-  const [pinnedTickets, setPinnedTickets] = useState<Ticket[]>([])
   const boardRef = useRef<HTMLDivElement>(null)
   const [isRightClickPanning, setIsRightClickPanning] = useState(false)
   const [panStart, setPanStart] = useState({ x: 0, scrollLeft: 0 })
@@ -180,8 +216,7 @@ export function TicketBoard({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        delay: 1000, // 1 second delay before drag starts
-        tolerance: 5, // 5px movement tolerance
+        distance: 8, // Start dragging after 8px of movement (distinguishes from clicks)
       },
     }),
     useSensor(KeyboardSensor, {
@@ -191,15 +226,17 @@ export function TicketBoard({
 
   // Organize tickets into columns
   useEffect(() => {
+    if (!tickets || !Array.isArray(tickets)) {
+      setColumns([])
+      return
+    }
+
     const organized: Column[] = STATUSES.map((status) => ({
       id: status.id,
       title: status.title,
       tickets: tickets.filter((t) => t.status === status.id),
     }))
 
-    // Separate pinned tickets
-    const pinned = tickets.filter((t) => t.status !== 'PICKED_UP' && t.status !== 'CANCELLED')
-    setPinnedTickets(pinned.slice(0, 3)) // Show top 3 as "pinned"
     setColumns(organized)
   }, [tickets])
 
@@ -266,68 +303,53 @@ export function TicketBoard({
     const activeId = active.id as string
     const overId = over.id as string
 
-    // Check if dragging over a column header
-    const overColumn = columns.find((col) => col.id === overId)
-    if (overColumn) {
-      // Find the column containing the active ticket
-      const activeColumn = columns.find((col) =>
-        col.tickets.some((t) => t.id === activeId)
-      )
+    // Find the column containing the active ticket
+    const activeColumn = columns.find((col) =>
+      col.tickets.some((t) => t.id === activeId)
+    )
 
-      if (!activeColumn || activeColumn.id === overColumn.id) {
-        return
+    if (!activeColumn) return
+
+    // Check if dragging over a column (droppable area)
+    let targetColumn = columns.find((col) => col.id === overId)
+    
+    // If not a column, check if dragging over a ticket (to determine target column)
+    if (!targetColumn) {
+      const overTicket = tickets.find((t) => t.id === overId)
+      if (overTicket) {
+        targetColumn = columns.find((col) =>
+          col.tickets.some((t) => t.id === overId)
+        )
       }
+    }
 
-      setColumns((prev) => {
-        const newColumns = prev.map((col) => {
-          if (col.id === activeColumn.id) {
-            return {
-              ...col,
-              tickets: col.tickets.filter((t) => t.id !== activeId),
-            }
-          }
-          if (col.id === overColumn.id) {
-            const activeTicket = activeColumn.tickets.find((t) => t.id === activeId)
-            if (activeTicket) {
-              return {
-                ...col,
-                tickets: [...col.tickets, { ...activeTicket, status: col.id }],
-              }
-            }
-          }
-          return col
-        })
-        return newColumns
-      })
+    // Also check if dropping on a column container (via data-column-id)
+    if (!targetColumn && over.data.current) {
+      const containerId = over.data.current.sortable?.containerId
+      if (containerId) {
+        targetColumn = columns.find((col) => col.id === containerId)
+      }
+    }
+
+    if (!targetColumn || activeColumn.id === targetColumn.id) {
       return
     }
 
-    // Check if dragging over another ticket (to determine target column)
-    const overTicket = tickets.find((t) => t.id === overId)
-    if (overTicket) {
-      const targetColumn = columns.find((col) =>
-        col.tickets.some((t) => t.id === overId)
-      )
-      const activeColumn = columns.find((col) =>
-        col.tickets.some((t) => t.id === activeId)
-      )
-
-      if (!targetColumn || !activeColumn || targetColumn.id === activeColumn.id) {
-        return
-      }
-
-      setColumns((prev) => {
-        const newColumns = prev.map((col) => {
-          if (col.id === activeColumn.id) {
-            return {
-              ...col,
-              tickets: col.tickets.filter((t) => t.id !== activeId),
-            }
+    // Move ticket to target column
+    setColumns((prev) => {
+      const newColumns = prev.map((col) => {
+        if (col.id === activeColumn.id) {
+          return {
+            ...col,
+            tickets: col.tickets.filter((t) => t.id !== activeId),
           }
-          if (col.id === targetColumn.id) {
-            const activeTicket = activeColumn.tickets.find((t) => t.id === activeId)
-            if (activeTicket) {
-              // Insert after the ticket we're hovering over
+        }
+        if (col.id === targetColumn.id) {
+          const activeTicket = activeColumn.tickets.find((t) => t.id === activeId)
+          if (activeTicket) {
+            // If dragging over a ticket, insert after it; otherwise append to end
+            const overTicket = tickets.find((t) => t.id === overId)
+            if (overTicket && col.tickets.some((t) => t.id === overId)) {
               const overIndex = col.tickets.findIndex((t) => t.id === overId)
               const newTickets = [...col.tickets]
               newTickets.splice(overIndex + 1, 0, { ...activeTicket, status: col.id })
@@ -335,13 +357,18 @@ export function TicketBoard({
                 ...col,
                 tickets: newTickets,
               }
+            } else {
+              return {
+                ...col,
+                tickets: [...col.tickets, { ...activeTicket, status: col.id }],
+              }
             }
           }
-          return col
-        })
-        return newColumns
+        }
+        return col
       })
-    }
+      return newColumns
+    })
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -353,19 +380,41 @@ export function TicketBoard({
     const activeId = active.id as string
     const overId = over.id as string
 
-    // Find the ticket and new status
+    // Find the column containing the active ticket
     const activeColumn = columns.find((col) =>
       col.tickets.some((t) => t.id === activeId)
     )
-    const overColumn = columns.find((col) => col.id === overId)
 
-    if (!activeColumn || !overColumn || activeColumn.id === overColumn.id) {
+    if (!activeColumn) return
+
+    // Check if dropping on a column (via column header or empty area)
+    let targetColumn = columns.find((col) => col.id === overId)
+    
+    // If not a column, check if dropping on a ticket (to get its column)
+    if (!targetColumn) {
+      const overTicket = tickets.find((t) => t.id === overId)
+      if (overTicket) {
+        targetColumn = columns.find((col) =>
+          col.tickets.some((t) => t.id === overId)
+        )
+      }
+    }
+
+    // Also check if dropping on a column container (via data-column-id)
+    if (!targetColumn && over.data.current) {
+      const containerId = over.data.current.sortable?.containerId
+      if (containerId) {
+        targetColumn = columns.find((col) => col.id === containerId)
+      }
+    }
+
+    if (!targetColumn || activeColumn.id === targetColumn.id) {
       return
     }
 
     // Update ticket status
     if (onStatusChange) {
-      await onStatusChange(activeId, overColumn.id)
+      await onStatusChange(activeId, targetColumn.id)
     }
   }
 
@@ -375,27 +424,6 @@ export function TicketBoard({
 
   return (
     <div ref={boardRef} className="flex-1 overflow-x-auto pb-4" style={{ cursor: isRightClickPanning ? 'grabbing' : 'grab' }}>
-      {/* Pinned tickets row */}
-      {pinnedTickets.length > 0 && (
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-4 bg-yellow-400 rounded-full" />
-            <h3 className="text-sm font-semibold text-white/80">Pinned / Urgent</h3>
-          </div>
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {pinnedTickets.map((ticket) => (
-              <div key={ticket.id} className="flex-shrink-0 w-64">
-                <TicketCard
-                  ticket={{ ...ticket, isPinned: true, createdAt: ticket.createdAt }}
-                  onClick={() => onTicketSelect?.(ticket)}
-                  isSelected={selectedTicketId === ticket.id}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Kanban board */}
       <DndContext
         sensors={sensors}
@@ -419,7 +447,14 @@ export function TicketBoard({
         <DragOverlay>
           {activeTicket ? (
             <div className="opacity-90 rotate-3">
-              <TicketCard ticket={activeTicket} />
+              <TicketCard 
+                ticket={{
+                  ...activeTicket,
+                  createdAt: activeTicket.createdAt || new Date().toISOString(),
+                }} 
+                onClick={undefined}
+                isSelected={false}
+              />
             </div>
           ) : null}
         </DragOverlay>

@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { Phone, Mail, MessageSquare, X, Ticket, Calendar, DollarSign, User, AlertCircle, CheckCircle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { AIDiagnosticsPanel } from './ai-diagnostics-panel'
 
 interface Ticket {
   id: string
@@ -25,41 +26,53 @@ interface Ticket {
     email?: string | null
   }
   status: string
-  dueAt?: Date | null
+  dueAt?: Date | string | null
   estimatedCost?: number | null
   actualCost?: number | null
   notes?: string | null
-  createdAt: Date
-  intakeAt?: Date
-  diagnosedAt?: Date | null
-  repairedAt?: Date | null
-  completedAt?: Date | null
-  pickedUpAt?: Date | null
+  createdAt: Date | string
+  intakeAt?: Date | string
+  diagnosedAt?: Date | string | null
+  repairedAt?: Date | string | null
+  completedAt?: Date | string | null
+  pickedUpAt?: Date | string | null
+  symptoms?: string[] | null
+  issueDescription?: string | null
 }
 
 interface FocusPanelProps {
   ticket: Ticket | null
   onClose?: () => void
   onStatusChange?: (status: string) => void
-  onMessageSend?: (message: string) => void
+  onMessageSend?: (message: string) => Promise<void>
 }
 
-function formatDate(date: Date): string {
-  return new Date(date).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
+function formatDate(date: Date | string | null | undefined): string {
+  if (!date) return 'N/A'
+  try {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return 'Invalid date'
+  }
 }
 
-function formatDateTime(date: Date): string {
-  return new Date(date).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
+function formatDateTime(date: Date | string | null | undefined): string {
+  if (!date) return 'N/A'
+  try {
+    return new Date(date).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    })
+  } catch {
+    return 'Invalid date'
+  }
 }
 
 function TodayOverview() {
@@ -103,6 +116,7 @@ function TodayOverview() {
 
 export function FocusPanel({ ticket, onClose, onStatusChange, onMessageSend }: FocusPanelProps) {
   const [message, setMessage] = useState('')
+  const [isSending, setIsSending] = useState(false)
 
   if (!ticket) {
     return (
@@ -118,10 +132,17 @@ export function FocusPanel({ ticket, onClose, onStatusChange, onMessageSend }: F
     return status.replace('_', ' ').toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase())
   }
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (message.trim() && onMessageSend) {
-      onMessageSend(message)
-      setMessage('')
+      setIsSending(true)
+      try {
+        await onMessageSend(message)
+        setMessage('')
+      } catch (error) {
+        console.error('Failed to send message:', error)
+      } finally {
+        setIsSending(false)
+      }
     }
   }
 
@@ -255,6 +276,18 @@ export function FocusPanel({ ticket, onClose, onStatusChange, onMessageSend }: F
           </div>
         )}
 
+        {/* AI Diagnostics Panel */}
+        <div className="mb-4">
+          <AIDiagnosticsPanel
+            ticketId={ticket.id}
+            deviceType={ticket.deviceType || ''}
+            deviceBrand={ticket.deviceBrand}
+            deviceModel={ticket.deviceModel}
+            issueDescription={ticket.issueDescription || ticket.deviceIssue || ticket.problem || ''}
+            symptoms={ticket.symptoms || []}
+          />
+        </div>
+
         {/* Diagnosis & Resolution */}
         {(ticket.diagnosis || ticket.resolution) && (
           <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
@@ -330,10 +363,10 @@ export function FocusPanel({ ticket, onClose, onStatusChange, onMessageSend }: F
         />
         <button
           onClick={handleSendMessage}
-          disabled={!message.trim()}
+          disabled={!message.trim() || isSending}
           className="mt-3 w-full px-4 py-2 rounded-xl bg-gradient-to-r from-purple-500 to-purple-700 text-white font-semibold hover:opacity-90 transition-opacity text-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send Update to Customer
+          {isSending ? 'Sending...' : 'Send Update to Customer'}
         </button>
       </div>
 

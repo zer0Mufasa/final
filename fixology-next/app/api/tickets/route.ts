@@ -87,8 +87,113 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const shopId = context.shopId
 
+    // Support both direct creation and draft-based creation
+    let customerId = body.customerId
+    let draft = body.draft || null
+
+    // If draft is provided, create/upsert customer first
+    if (draft && draft.customer) {
+      const customerData = draft.customer
+      
+      // Normalize phone number (remove formatting, keep only digits)
+      const normalizedPhone = customerData.phone 
+        ? customerData.phone.replace(/\D/g, '') 
+        : null
+      
+      // Try to find existing customer by phone or email (with normalized phone)
+      if (normalizedPhone || customerData.email) {
+        const existingCustomer = await prisma.customer.findFirst({
+          where: {
+            shopId,
+            OR: [
+              ...(normalizedPhone ? [{ phone: normalizedPhone }] : []),
+              ...(customerData.email ? [{ email: customerData.email }] : []),
+            ],
+          },
+        })
+
+        if (existingCustomer) {
+          customerId = existingCustomer.id
+          // Update customer info if provided
+          const updateData: any = {}
+          if (customerData.firstName) updateData.firstName = customerData.firstName
+          if (customerData.lastName) updateData.lastName = customerData.lastName
+          if (normalizedPhone) updateData.phone = normalizedPhone
+          if (customerData.email) updateData.email = customerData.email
+          
+          if (Object.keys(updateData).length > 0) {
+            await prisma.customer.update({
+              where: { id: customerId },
+              data: updateData,
+            })
+          }
+        } else {
+          // Create new customer with normalized phone
+          const newCustomer = await prisma.customer.create({
+            data: {
+              shopId,
+              firstName: customerData.firstName || 'Unknown',
+              lastName: customerData.lastName || 'Customer',
+              phone: normalizedPhone,
+              email: customerData.email,
+            },
+          })
+          customerId = newCustomer.id
+        }
+      } else {
+        // No phone/email, try to find by name match (fuzzy match)
+        if (customerData.firstName && customerData.lastName) {
+          const nameMatch = await prisma.customer.findFirst({
+            where: {
+              shopId,
+              firstName: { contains: customerData.firstName, mode: 'insensitive' },
+              lastName: { contains: customerData.lastName, mode: 'insensitive' },
+            },
+          })
+          
+          if (nameMatch) {
+            customerId = nameMatch.id
+            // Update phone/email if provided
+            if (normalizedPhone || customerData.email) {
+              await prisma.customer.update({
+                where: { id: customerId },
+                data: {
+                  ...(normalizedPhone && { phone: normalizedPhone }),
+                  ...(customerData.email && { email: customerData.email }),
+                },
+              })
+            }
+          } else {
+            // Create new customer
+            const newCustomer = await prisma.customer.create({
+              data: {
+                shopId,
+                firstName: customerData.firstName,
+                lastName: customerData.lastName,
+                phone: normalizedPhone,
+                email: customerData.email,
+              },
+            })
+            customerId = newCustomer.id
+          }
+        } else {
+          // Create anonymous customer
+          const newCustomer = await prisma.customer.create({
+            data: {
+              shopId,
+              firstName: customerData.firstName || 'Unknown',
+              lastName: customerData.lastName || 'Customer',
+              phone: normalizedPhone,
+              email: customerData.email,
+            },
+          })
+          customerId = newCustomer.id
+        }
+      }
+    }
+
     // Validate required fields
-    if (!body.customerId || !body.deviceType || !body.deviceBrand || !body.issueDescription) {
+    if (!customerId || (!body.deviceType && !draft?.device?.type) || (!body.deviceBrand && !draft?.device?.brand) || (!body.issueDescription && !draft?.issue)) {
       return NextResponse.json(
         { error: 'Missing required fields: customerId, deviceType, deviceBrand, issueDescription' },
         { status: 400 }
@@ -106,26 +211,37 @@ export async function POST(request: NextRequest) {
       : 1
     const ticketNumber = `FIX-${ticketCount.toString().padStart(4, '0')}`
 
+    // Use draft data if available, otherwise use direct body data
+    const deviceType = body.deviceType || draft?.device?.type || ''
+    const deviceBrand = body.deviceBrand || draft?.device?.brand || ''
+    const deviceModel = body.deviceModel || draft?.device?.model
+    const deviceColor = body.deviceColor || draft?.device?.color
+    const issueDescription = body.issueDescription || draft?.issue || ''
+    const priority = body.priority || draft?.priority || 'NORMAL'
+    const estimatedCost = body.estimatedCost || (draft?.estimatedPriceRange ? draft.estimatedPriceRange.max : null)
+    const passcode = body.passcode || draft?.passcode
+
     // Create the ticket
     const ticket = await prisma.ticket.create({
       data: {
         shopId,
         ticketNumber,
-        customerId: body.customerId,
-        deviceType: body.deviceType,
-        deviceBrand: body.deviceBrand,
-        deviceModel: body.deviceModel,
-        deviceColor: body.deviceColor,
+        customerId,
+        deviceType,
+        deviceBrand,
+        deviceModel,
+        deviceColor,
         imei: body.imei,
         serialNumber: body.serialNumber,
-        passcode: body.passcode,
-        issueDescription: body.issueDescription,
+        passcode: passcode,
+        issueDescription,
         symptoms: body.symptoms || [],
-        priority: body.priority || 'NORMAL',
+        priority,
         createdById: context.user.id,
         assignedToId: body.assignedToId,
-        estimatedCost: body.estimatedCost,
+        estimatedCost,
         dueAt: body.dueAt,
+        aiDraft: draft ? JSON.parse(JSON.stringify(draft)) : null, // Store draft as JSON
       },
       include: {
         customer: true,
@@ -147,9 +263,21 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Create intake note with AI draft info if available
+    if (draft) {
+      await prisma.ticketNote.create({
+        data: {
+          ticketId: ticket.id,
+          userId: context.user.id,
+          content: `AI Intake Note (${draft.confidence?.overall || 0}% confidence):\n${draft.issue}\n\n${draft.riskFlags && draft.riskFlags.length > 0 ? `Risk Flags: ${draft.riskFlags.join(', ')}\n` : ''}${draft.carrier ? `Carrier: ${draft.carrier}\n` : ''}${draft.suggestedParts && draft.suggestedParts.length > 0 ? `Suggested Parts: ${draft.suggestedParts.join(', ')}` : ''}`,
+          isInternal: false, // Customer-visible note
+        },
+      })
+    }
+
     // Update customer ticket count
     await prisma.customer.update({
-      where: { id: body.customerId },
+      where: { id: customerId },
       data: { ticketCount: { increment: 1 } },
     })
 
