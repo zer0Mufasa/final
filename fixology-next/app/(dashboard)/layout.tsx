@@ -108,7 +108,21 @@ export default async function DashboardLayout({
       <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
       <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
 
-      {/* Sidebar is conditionally rendered - dashboard uses LeftRail instead */}
+      {/* Sidebar for non-dashboard pages - dashboard page renders its own LeftRail */}
+      <Sidebar
+        user={{
+          name: shopUser.name,
+          email: shopUser.email,
+          role: shopUser.role,
+        }}
+        shop={{
+          name: shopUser.shop.name,
+          plan: shopUser.shop.plan,
+          city: shopUser.shop.city || undefined,
+          state: shopUser.shop.state || undefined,
+        }}
+      />
+
       <main className="dash-main">{children}</main>
     </div>
   )

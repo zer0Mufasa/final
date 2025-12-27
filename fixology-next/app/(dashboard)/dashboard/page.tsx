@@ -69,7 +69,9 @@ export default async function DashboardPage() {
   const cityState = [shopUser.shop.city, shopUser.shop.state].filter(Boolean).join(', ')
 
   return (
-    <>
+    <div className="relative">
+      {/* Hide layout sidebar for dashboard */}
+      <style dangerouslySetInnerHTML={{ __html: '.dash-main { padding-left: 0 !important; }' }} />
       <LeftRail />
       <div className="ml-16 flex flex-col h-screen">
         <Header
@@ -84,6 +86,6 @@ export default async function DashboardPage() {
           <CommandCenter tickets={tickets} />
         </div>
       </div>
-    </>
+    </div>
   )
 }
