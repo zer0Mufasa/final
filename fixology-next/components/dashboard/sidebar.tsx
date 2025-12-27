@@ -218,10 +218,15 @@ export function Sidebar({ user, shop }: SidebarProps) {
       >
         {/* Logo */}
         <div className={cn(
-          'flex items-center justify-center h-16 border-b border-white/10',
+          'flex items-center justify-center h-16 border-b border-white/10 w-full',
           isOpen ? 'px-4' : 'px-0'
         )}>
-          <Logo showText={isOpen} size={isOpen ? 'md' : 'sm'} />
+          <div className={cn(
+            'flex items-center',
+            isOpen ? 'gap-3' : 'justify-center'
+          )}>
+            <Logo showText={isOpen} size={isOpen ? 'md' : 'sm'} />
+          </div>
         </div>
 
         {/* Navigation */}
