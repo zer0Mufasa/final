@@ -144,9 +144,9 @@ export function Sidebar({ user, shop }: SidebarProps) {
     const main = document.querySelector('.dash-main') as HTMLElement
     if (main) {
       if (isOpen) {
-        main.style.paddingLeft = '288px' // 256px sidebar + 32px gap
+        main.style.paddingLeft = '288px' // 256px sidebar (w-64) + 32px gap
       } else {
-        main.style.paddingLeft = '0px'
+        main.style.paddingLeft = '88px' // 72px sidebar (collapsed) + 16px gap
       }
     }
   }, [isOpen])
