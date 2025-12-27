@@ -3,7 +3,7 @@
 // components/dashboard/ticket-board.tsx
 // Kanban board with drag-and-drop
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -137,23 +137,23 @@ function BoardColumn({
   const sortableIds = tickets.map((t) => t.id)
 
   return (
-    <div className="flex-shrink-0 w-80">
+    <div className="flex-shrink-0 w-80" data-column-id={column.id}>
       <ColumnHeader column={column} count={tickets.length} />
       <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2 min-h-[200px]">
-            {tickets.map((ticket) => (
-              <SortableTicketCard
-                key={ticket.id}
-                ticket={{
-                  ...ticket,
-                  createdAt: ticket.createdAt,
-                }}
-                onClick={() => onTicketClick(ticket)}
-                isSelected={selectedTicketId === ticket.id}
-              />
-            ))}
+        <div className="space-y-2 min-h-[200px]" data-column-id={column.id}>
+          {tickets.map((ticket) => (
+            <SortableTicketCard
+              key={ticket.id}
+              ticket={{
+                ...ticket,
+                createdAt: ticket.createdAt,
+              }}
+              onClick={() => onTicketClick(ticket)}
+              isSelected={selectedTicketId === ticket.id}
+            />
+          ))}
           {tickets.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 rounded-xl border-2 border-dashed border-white/10">
+            <div className="flex flex-col items-center justify-center py-12 rounded-xl border-2 border-dashed border-white/10" data-column-id={column.id}>
               <Ticket className="w-8 h-8 text-white/20 mb-2" />
               <p className="text-xs text-white/40">No tickets</p>
             </div>
@@ -173,6 +173,9 @@ export function TicketBoard({
   const [columns, setColumns] = useState<Column[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
   const [pinnedTickets, setPinnedTickets] = useState<Ticket[]>([])
+  const boardRef = useRef<HTMLDivElement>(null)
+  const [isRightClickPanning, setIsRightClickPanning] = useState(false)
+  const [panStart, setPanStart] = useState({ x: 0, scrollLeft: 0 })
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -200,6 +203,58 @@ export function TicketBoard({
     setColumns(organized)
   }, [tickets])
 
+  // Right-click panning handlers
+  useEffect(() => {
+    const board = boardRef.current
+    if (!board) return
+
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault() // Prevent context menu
+    }
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // Only handle right-click (button 2)
+      if (e.button === 2) {
+        setIsRightClickPanning(true)
+        setPanStart({
+          x: e.clientX,
+          scrollLeft: board.scrollLeft,
+        })
+        board.style.cursor = 'grabbing'
+        board.style.userSelect = 'none'
+      }
+    }
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isRightClickPanning) {
+        const deltaX = e.clientX - panStart.x
+        board.scrollLeft = panStart.scrollLeft - deltaX
+      }
+    }
+
+    const handleMouseUp = () => {
+      if (isRightClickPanning) {
+        setIsRightClickPanning(false)
+        if (board) {
+          board.style.cursor = ''
+          board.style.userSelect = ''
+        }
+      }
+    }
+
+    board.addEventListener('contextmenu', handleContextMenu)
+    board.addEventListener('mousedown', handleMouseDown)
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      board.removeEventListener('contextmenu', handleContextMenu)
+      board.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isRightClickPanning, panStart])
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
   }
@@ -211,37 +266,82 @@ export function TicketBoard({
     const activeId = active.id as string
     const overId = over.id as string
 
-    // Find columns
-    const activeColumn = columns.find((col) =>
-      col.tickets.some((t) => t.id === activeId)
-    )
+    // Check if dragging over a column header
     const overColumn = columns.find((col) => col.id === overId)
+    if (overColumn) {
+      // Find the column containing the active ticket
+      const activeColumn = columns.find((col) =>
+        col.tickets.some((t) => t.id === activeId)
+      )
 
-    if (!activeColumn || !overColumn || activeColumn.id === overColumn.id) {
+      if (!activeColumn || activeColumn.id === overColumn.id) {
+        return
+      }
+
+      setColumns((prev) => {
+        const newColumns = prev.map((col) => {
+          if (col.id === activeColumn.id) {
+            return {
+              ...col,
+              tickets: col.tickets.filter((t) => t.id !== activeId),
+            }
+          }
+          if (col.id === overColumn.id) {
+            const activeTicket = activeColumn.tickets.find((t) => t.id === activeId)
+            if (activeTicket) {
+              return {
+                ...col,
+                tickets: [...col.tickets, { ...activeTicket, status: col.id }],
+              }
+            }
+          }
+          return col
+        })
+        return newColumns
+      })
       return
     }
 
-    setColumns((prev) => {
-      const newColumns = prev.map((col) => {
-        if (col.id === activeColumn.id) {
-          return {
-            ...col,
-            tickets: col.tickets.filter((t) => t.id !== activeId),
-          }
-        }
-        if (col.id === overColumn.id) {
-          const activeTicket = activeColumn.tickets.find((t) => t.id === activeId)
-          if (activeTicket) {
+    // Check if dragging over another ticket (to determine target column)
+    const overTicket = tickets.find((t) => t.id === overId)
+    if (overTicket) {
+      const targetColumn = columns.find((col) =>
+        col.tickets.some((t) => t.id === overId)
+      )
+      const activeColumn = columns.find((col) =>
+        col.tickets.some((t) => t.id === activeId)
+      )
+
+      if (!targetColumn || !activeColumn || targetColumn.id === activeColumn.id) {
+        return
+      }
+
+      setColumns((prev) => {
+        const newColumns = prev.map((col) => {
+          if (col.id === activeColumn.id) {
             return {
               ...col,
-              tickets: [...col.tickets, { ...activeTicket, status: col.id }],
+              tickets: col.tickets.filter((t) => t.id !== activeId),
             }
           }
-        }
-        return col
+          if (col.id === targetColumn.id) {
+            const activeTicket = activeColumn.tickets.find((t) => t.id === activeId)
+            if (activeTicket) {
+              // Insert after the ticket we're hovering over
+              const overIndex = col.tickets.findIndex((t) => t.id === overId)
+              const newTickets = [...col.tickets]
+              newTickets.splice(overIndex + 1, 0, { ...activeTicket, status: col.id })
+              return {
+                ...col,
+                tickets: newTickets,
+              }
+            }
+          }
+          return col
+        })
+        return newColumns
       })
-      return newColumns
-    })
+    }
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -274,7 +374,7 @@ export function TicketBoard({
     : null
 
   return (
-    <div className="flex-1 overflow-x-auto pb-4">
+    <div ref={boardRef} className="flex-1 overflow-x-auto pb-4" style={{ cursor: isRightClickPanning ? 'grabbing' : 'grab' }}>
       {/* Pinned tickets row */}
       {pinnedTickets.length > 0 && (
         <div className="mb-6">
