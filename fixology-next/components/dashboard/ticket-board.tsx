@@ -286,7 +286,7 @@ export function TicketBoard({
             {pinnedTickets.map((ticket) => (
               <div key={ticket.id} className="flex-shrink-0 w-64">
                 <TicketCard
-                  ticket={{ ...ticket, isPinned: true }}
+                  ticket={{ ...ticket, isPinned: true, createdAt: ticket.createdAt }}
                   onClick={() => onTicketSelect?.(ticket)}
                   isSelected={selectedTicketId === ticket.id}
                 />
