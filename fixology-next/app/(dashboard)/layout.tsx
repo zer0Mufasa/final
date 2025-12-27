@@ -40,15 +40,39 @@ export default async function DashboardLayout({
   }
 
   // Get shop user info
-  const shopUser = await prisma.shopUser.findFirst({
-    where: {
-      email: session.user.email!,
-      status: 'ACTIVE',
-    },
-    include: {
-      shop: true,
-    },
-  })
+  let shopUser
+  try {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Database query timeout after 10 seconds')), 10000)
+    )
+    
+    shopUser = await Promise.race([
+      prisma.shopUser.findFirst({
+        where: {
+          email: session.user.email!,
+          status: 'ACTIVE',
+        },
+        include: {
+          shop: true,
+        },
+      }),
+      timeoutPromise,
+    ]) as any
+  } catch (dbError: any) {
+    // Database connection error - show helpful message
+    console.error('Database connection error:', dbError)
+    const errorMessage = dbError.message || 'Unknown database error'
+    const isTimeout = errorMessage.includes('timeout')
+    const isConnectionError = errorMessage.includes('Can\'t reach') || errorMessage.includes('P1001') || errorMessage.includes('P1000')
+    
+    if (isTimeout || isConnectionError) {
+      throw new Error(
+        `Database connection failed. Check your DATABASE_URL in .env.local. It should use the Supabase pooler (port 6543), not direct connection (port 5432). Current error: ${errorMessage}`
+      )
+    }
+    throw dbError
+  }
 
   if (!shopUser) {
     redirect('/login?error=no_shop')

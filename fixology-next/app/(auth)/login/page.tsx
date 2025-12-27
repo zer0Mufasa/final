@@ -46,29 +46,43 @@ export default function LoginPage() {
     setLoading(true)
     
     try {
+      console.log('Attempting login for:', email)
       const supabase = createClient()
+      console.log('Supabase client created, URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
       
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       
+      console.log('Login response:', { data: data?.user?.id, error: error?.message })
+      
       if (error) {
+        console.error('Login error:', error)
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Invalid email or password')
         } else {
-          toast.error(error.message)
+          toast.error(error.message || 'Failed to sign in')
         }
+        setLoading(false)
         return
       }
       
-      toast.success('Welcome back!')
-      router.push(redirect)
-      router.refresh()
-    } catch (error) {
-      console.error('Login error:', error)
-      toast.error('Something went wrong. Please try again.')
-    } finally {
+      if (data?.user) {
+        console.log('Login successful, redirecting to:', redirect)
+        toast.success('Welcome back!')
+        // Small delay to ensure toast shows, then redirect
+        setTimeout(() => {
+          window.location.href = redirect
+        }, 500)
+      } else {
+        console.error('No user data returned')
+        toast.error('Sign in failed. Please try again.')
+        setLoading(false)
+      }
+    } catch (error: any) {
+      console.error('Login exception:', error)
+      toast.error(error?.message || 'Something went wrong. Please try again.')
       setLoading(false)
     }
   }
