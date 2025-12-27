@@ -63,8 +63,17 @@ export default async function DashboardLayout({
     // Database connection error - show helpful message
     console.error('Database connection error:', dbError)
     const errorMessage = dbError.message || 'Unknown database error'
+    const isAuthError = errorMessage.includes('Authentication failed') || errorMessage.includes('credentials') || errorMessage.includes('P1000')
     const isTimeout = errorMessage.includes('timeout')
-    const isConnectionError = errorMessage.includes('Can\'t reach') || errorMessage.includes('P1001') || errorMessage.includes('P1000')
+    const isConnectionError = errorMessage.includes('Can\'t reach') || errorMessage.includes('P1001')
+    
+    if (isAuthError) {
+      const dbUrl = process.env.DATABASE_URL || '(not set)'
+      const dbHost = dbUrl.includes('@') ? dbUrl.split('@')[1]?.split('/')[0] : 'unknown'
+      throw new Error(
+        `Database authentication failed. Please verify:\n1. The password in DATABASE_URL matches your Supabase database password\n2. The username format is correct (postgres.mvvkcwgzkygiwihakdft for shared pooler)\n3. You're using the pooler connection (port 6543), not direct (port 5432)\n\nCurrent host: ${dbHost}\nError: ${errorMessage}`
+      )
+    }
     
     if (isTimeout || isConnectionError) {
       throw new Error(
