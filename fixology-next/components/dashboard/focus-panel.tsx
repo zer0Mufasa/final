@@ -4,7 +4,7 @@
 // Right-side focus panel for ticket details
 
 import { useState } from 'react'
-import { Phone, Mail, MessageSquare, X, Ticket, Calendar, DollarSign, User } from 'lucide-react'
+import { Phone, Mail, MessageSquare, X, Ticket, Calendar, DollarSign, User, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
 interface Ticket {
@@ -13,6 +13,11 @@ interface Ticket {
   deviceBrand: string
   deviceModel?: string | null
   deviceType?: string | null
+  deviceIssue?: string | null
+  problem?: string | null
+  diagnosis?: string | null
+  resolution?: string | null
+  priority?: string
   customer: {
     firstName: string
     lastName: string
@@ -22,8 +27,14 @@ interface Ticket {
   status: string
   dueAt?: Date | null
   estimatedCost?: number | null
+  actualCost?: number | null
   notes?: string | null
   createdAt: Date
+  intakeAt?: Date
+  diagnosedAt?: Date | null
+  repairedAt?: Date | null
+  completedAt?: Date | null
+  pickedUpAt?: Date | null
 }
 
 interface FocusPanelProps {
@@ -147,6 +158,17 @@ export function FocusPanel({ ticket, onClose, onStatusChange, onMessageSend }: F
                 <p className="text-sm font-semibold text-white">{formatStatus(ticket.status)}</p>
               </div>
             </div>
+            {ticket.priority && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
+                  <AlertCircle className="w-4 h-4 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-white/50">Priority</p>
+                  <p className="text-sm font-semibold text-white">{ticket.priority}</p>
+                </div>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
                 <Calendar className="w-4 h-4 text-blue-400" />
@@ -156,6 +178,28 @@ export function FocusPanel({ ticket, onClose, onStatusChange, onMessageSend }: F
                 <p className="text-sm font-semibold text-white">{formatDateTime(ticket.createdAt)}</p>
               </div>
             </div>
+            {ticket.intakeAt && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-indigo-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-white/50">Intake Date</p>
+                  <p className="text-sm font-semibold text-white">{formatDateTime(ticket.intakeAt)}</p>
+                </div>
+              </div>
+            )}
+            {ticket.diagnosedAt && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-purple-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-white/50">Diagnosed</p>
+                  <p className="text-sm font-semibold text-white">{formatDateTime(ticket.diagnosedAt)}</p>
+                </div>
+              </div>
+            )}
             {ticket.dueAt && (
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
@@ -178,8 +222,57 @@ export function FocusPanel({ ticket, onClose, onStatusChange, onMessageSend }: F
                 </div>
               </div>
             )}
+            {ticket.actualCost && (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-green-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-white/50">Actual Cost</p>
+                  <p className="text-sm font-semibold text-green-400">${ticket.actualCost.toFixed(2)}</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Device Issue & Problem */}
+        {(ticket.deviceIssue || ticket.problem) && (
+          <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
+            <h3 className="text-sm font-semibold text-white/80 mb-3">Issue Description</h3>
+            {ticket.deviceIssue && (
+              <div className="mb-3">
+                <p className="text-xs text-white/50 mb-1">Device Issue</p>
+                <p className="text-sm text-white/90">{ticket.deviceIssue}</p>
+              </div>
+            )}
+            {ticket.problem && (
+              <div>
+                <p className="text-xs text-white/50 mb-1">Problem Reported</p>
+                <p className="text-sm text-white/90">{ticket.problem}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Diagnosis & Resolution */}
+        {(ticket.diagnosis || ticket.resolution) && (
+          <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
+            <h3 className="text-sm font-semibold text-white/80 mb-3">Repair Details</h3>
+            {ticket.diagnosis && (
+              <div className="mb-3">
+                <p className="text-xs text-white/50 mb-1">Diagnosis</p>
+                <p className="text-sm text-white/90">{ticket.diagnosis}</p>
+              </div>
+            )}
+            {ticket.resolution && (
+              <div>
+                <p className="text-xs text-white/50 mb-1">Resolution</p>
+                <p className="text-sm text-white/90">{ticket.resolution}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Customer Info */}
         <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">

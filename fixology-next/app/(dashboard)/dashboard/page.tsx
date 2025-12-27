@@ -30,6 +30,11 @@ async function getTickets(shopId: string) {
     deviceBrand: ticket.deviceBrand,
     deviceModel: ticket.deviceModel,
     deviceType: ticket.deviceType,
+    deviceIssue: ticket.deviceIssue || null,
+    problem: ticket.problem || null,
+    diagnosis: ticket.diagnosis || null,
+    resolution: ticket.resolution || null,
+    priority: ticket.priority || 'NORMAL',
     customer: {
       firstName: ticket.customer.firstName,
       lastName: ticket.customer.lastName,
@@ -39,8 +44,14 @@ async function getTickets(shopId: string) {
     status: ticket.status,
     dueAt: ticket.dueAt,
     estimatedCost: ticket.estimatedCost ? Number(ticket.estimatedCost) : null,
+    actualCost: ticket.actualCost ? Number(ticket.actualCost) : null,
     notes: null, // TODO: Add notes field to schema
     createdAt: ticket.createdAt,
+    intakeAt: ticket.intakeAt,
+    diagnosedAt: ticket.diagnosedAt,
+    repairedAt: ticket.repairedAt,
+    completedAt: ticket.completedAt,
+    pickedUpAt: ticket.pickedUpAt,
   }))
 }
 
