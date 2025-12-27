@@ -3,8 +3,9 @@
 // components/dashboard/ticket-card.tsx
 // Compact ticket card for kanban board
 
-import { Ticket, Phone, MessageSquare } from 'lucide-react'
+import { Ticket, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { useState, useEffect } from 'react'
 
 interface TicketCardProps {
   ticket: {
@@ -23,26 +24,48 @@ interface TicketCardProps {
     estimatedCost?: number | null
     isOverdue?: boolean
     isPinned?: boolean
+    createdAt: Date
   }
   onClick?: () => void
   isSelected?: boolean
+}
+
+function formatTimeAgo(date: Date): string {
+  const now = new Date()
+  const diff = now.getTime() - new Date(date).getTime()
+  const seconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (days > 0) return `${days}d ago`
+  if (hours > 0) return `${hours}h ago`
+  if (minutes > 0) return `${minutes}m ago`
+  return 'Just now'
+}
+
+function formatDate(date: Date): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 export function TicketCard({ ticket, onClick, isSelected }: TicketCardProps) {
   const deviceDisplay = ticket.deviceModel || ticket.deviceType || 'Device'
   const customerName = `${ticket.customer.firstName} ${ticket.customer.lastName}`
   const isOverdue = ticket.isOverdue || (ticket.dueAt && new Date(ticket.dueAt) < new Date())
+  const [timeAgo, setTimeAgo] = useState(formatTimeAgo(ticket.createdAt))
+  const [showTimer, setShowTimer] = useState(false)
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      INTAKE: 'border-blue-500/30 bg-blue-500/10',
-      DIAGNOSED: 'border-purple-500/30 bg-purple-500/10',
-      IN_PROGRESS: 'border-indigo-500/30 bg-indigo-500/10',
-      READY: 'border-green-500/30 bg-green-500/10',
-      PICKED_UP: 'border-gray-500/30 bg-gray-500/10',
-    }
-    return colors[status] || 'border-gray-500/30 bg-gray-500/10'
-  }
+  // Update timer every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeAgo(formatTimeAgo(ticket.createdAt))
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [ticket.createdAt])
 
   return (
     <div
@@ -82,30 +105,24 @@ export function TicketCard({ ticket, onClick, isSelected }: TicketCardProps) {
       {/* Customer */}
       <p className="text-xs text-white/60 truncate mb-2">{customerName}</p>
 
-      {/* Quick actions (show on hover) */}
-      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {ticket.customer.phone && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              window.location.href = `tel:${ticket.customer.phone}`
-            }}
-            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-            title="Call customer"
-          >
-            <Phone className="w-3.5 h-3.5 text-white/70" />
-          </button>
-        )}
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            // TODO: Open message modal
-          }}
-          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-          title="Message customer"
+      {/* Date and timer */}
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
+        <p className="text-xs text-white/50">{formatDate(ticket.createdAt)}</p>
+        <div
+          className="relative"
+          onMouseEnter={() => setShowTimer(true)}
+          onMouseLeave={() => setShowTimer(false)}
         >
-          <MessageSquare className="w-3.5 h-3.5 text-white/70" />
-        </button>
+          <div className="flex items-center gap-1 text-xs text-white/40 group-hover:text-white/60 transition-colors">
+            <Clock className="w-3 h-3" />
+            <span>{timeAgo}</span>
+          </div>
+          {showTimer && (
+            <div className="absolute bottom-full right-0 mb-2 px-2 py-1 rounded-lg bg-black/90 backdrop-blur-xl border border-white/10 text-xs text-white/80 whitespace-nowrap z-10">
+              Created {new Date(ticket.createdAt).toLocaleString()}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Estimated cost */}

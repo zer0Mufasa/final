@@ -102,9 +102,23 @@ function SortableTicketCard({
     opacity: isDragging ? 0.5 : 1,
   }
 
+  // Separate click handler from drag listeners
+  const handleClick = (e: React.MouseEvent) => {
+    // Only trigger onClick if not dragging
+    if (!isDragging && onClick) {
+      onClick()
+    }
+  }
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <TicketCard ticket={ticket} onClick={onClick} isSelected={isSelected} />
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={handleClick}
+    >
+      <TicketCard ticket={ticket} onClick={undefined} isSelected={isSelected} />
     </div>
   )
 }
@@ -158,7 +172,12 @@ export function TicketBoard({
   const [pinnedTickets, setPinnedTickets] = useState<Ticket[]>([])
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        delay: 1000, // 1 second delay before drag starts
+        tolerance: 5, // 5px movement tolerance
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

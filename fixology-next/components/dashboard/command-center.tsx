@@ -154,14 +154,17 @@ export function CommandCenter({ tickets }: CommandCenterProps) {
       {/* Focus panel */}
       <FocusPanel
         ticket={selectedTicket}
+        onClose={() => setSelectedTicket(null)}
         onStatusChange={(status) => {
           if (selectedTicket) {
             handleStatusChange(selectedTicket.id, status)
           }
         }}
-        onNoteAdd={(note) => {
-          // TODO: Save note
-          console.log('Add note:', note)
+        onMessageSend={async (message) => {
+          // TODO: Send message to customer via API
+          console.log('Send message to customer:', message)
+          // For now, just show an alert
+          alert(`Message would be sent: ${message}`)
         }}
       />
     </div>
