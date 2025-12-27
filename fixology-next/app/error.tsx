@@ -46,11 +46,23 @@ export default function GlobalError({
                 fontSize: 12,
                 lineHeight: 1.6,
                 marginBottom: 16,
+                maxHeight: '400px',
+                overflow: 'auto',
               }}
             >
               <div style={{ color: 'rgba(196,181,253,.9)', fontWeight: 900, marginBottom: 6 }}>Error details</div>
               <div>Digest: {error.digest || 'n/a'}</div>
-              <div style={{ marginTop: 8, opacity: 0.9 }}>{String(error.message || 'Unknown error')}</div>
+              <div style={{ marginTop: 8, opacity: 0.9, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                {String(error.message || 'Unknown error')}
+              </div>
+              {error.stack && (
+                <details style={{ marginTop: 8 }}>
+                  <summary style={{ cursor: 'pointer', color: 'rgba(196,181,253,.8)' }}>Stack trace</summary>
+                  <pre style={{ marginTop: 4, fontSize: 10, opacity: 0.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                    {error.stack}
+                  </pre>
+                </details>
+              )}
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
               <button

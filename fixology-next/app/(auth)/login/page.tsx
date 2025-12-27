@@ -223,6 +223,11 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading || !email || !password}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    console.log('Button clicked, email:', email, 'password length:', password.length)
+                    handleSubmit(e as any)
+                  }}
                   className="glow-button"
                   style={{ width: '100%', marginTop: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
                   aria-label={loading ? 'Signing in' : 'Sign in'}
