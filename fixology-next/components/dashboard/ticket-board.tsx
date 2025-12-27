@@ -141,14 +141,17 @@ function BoardColumn({
       <ColumnHeader column={column} count={tickets.length} />
       <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
         <div className="space-y-2 min-h-[200px]">
-          {tickets.map((ticket) => (
-            <SortableTicketCard
-              key={ticket.id}
-              ticket={ticket}
-              onClick={() => onTicketClick(ticket)}
-              isSelected={selectedTicketId === ticket.id}
-            />
-          ))}
+            {tickets.map((ticket) => (
+              <SortableTicketCard
+                key={ticket.id}
+                ticket={{
+                  ...ticket,
+                  createdAt: ticket.createdAt,
+                }}
+                onClick={() => onTicketClick(ticket)}
+                isSelected={selectedTicketId === ticket.id}
+              />
+            ))}
           {tickets.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 rounded-xl border-2 border-dashed border-white/10">
               <Ticket className="w-8 h-8 text-white/20 mb-2" />
