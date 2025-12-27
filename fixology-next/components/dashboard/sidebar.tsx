@@ -1,9 +1,9 @@
 'use client'
 
 // components/dashboard/sidebar.tsx
-// Dashboard sidebar navigation
+// Dashboard sidebar navigation with hover-based toggle
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
@@ -23,8 +23,6 @@ import {
   UserPlus,
   Settings,
   Sparkles,
-  ChevronLeft,
-  ChevronRight,
   LogOut,
 } from 'lucide-react'
 
@@ -74,8 +72,84 @@ interface SidebarProps {
 export function Sidebar({ user, shop }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [collapsed, setCollapsed] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
+  const sidebarRef = useRef<HTMLElement>(null)
+  const hoverZoneRef = useRef<HTMLDivElement>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Handle hover on left edge of page
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      // Check if mouse is in the left edge zone (0-30px from left)
+      if (e.clientX <= 30) {
+        setIsOpen(true)
+        // Clear any pending timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      } else if (e.clientX > 30 && e.clientX < (isOpen ? 256 : 72)) {
+        // Mouse is in sidebar area, keep it open
+        setIsOpen(true)
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = null
+        }
+      }
+    }
+
+    // Handle mouse leaving sidebar area
+    const handleMouseLeave = (e: MouseEvent) => {
+      // Only close if mouse is not in the hover zone
+      if (e.clientX > 30) {
+        // Delay collapse to allow moving to hover zone
+        timeoutRef.current = setTimeout(() => {
+          setIsOpen(false)
+        }, 200)
+      }
+    }
+
+    // Handle mouse entering sidebar
+    const handleMouseEnter = () => {
+      setIsOpen(true)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    const sidebar = sidebarRef.current
+
+    if (sidebar) {
+      sidebar.addEventListener('mouseleave', handleMouseLeave as any)
+      sidebar.addEventListener('mouseenter', handleMouseEnter)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      if (sidebar) {
+        sidebar.removeEventListener('mouseleave', handleMouseLeave as any)
+        sidebar.removeEventListener('mouseenter', handleMouseEnter)
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+  }, [isOpen])
+
+  // Update main content padding when sidebar state changes
+  useEffect(() => {
+    const main = document.querySelector('.dash-main') as HTMLElement
+    if (main) {
+      if (isOpen) {
+        main.style.paddingLeft = '288px' // 256px sidebar + 32px gap
+      } else {
+        main.style.paddingLeft = '0px'
+      }
+    }
+  }, [isOpen])
 
   const handleSignOut = async () => {
     try {
@@ -101,7 +175,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
           'transition-all duration-200 ease-out cursor-pointer',
           'hover:bg-white/5 hover:text-white',
           isActive && 'bg-white/10 text-[#a78bfa]',
-          collapsed && 'justify-center px-3'
+          !isOpen && 'justify-center px-3'
         )}
       >
         <span className={cn(
@@ -110,7 +184,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         )}>
           {item.icon}
         </span>
-        {!collapsed && (
+        {isOpen && (
           <>
             <span className="flex-1">{item.label}</span>
             {item.badge && (
@@ -125,130 +199,121 @@ export function Sidebar({ user, shop }: SidebarProps) {
   }
 
   return (
-    <aside
-      className={cn(
-        'fixed left-0 top-0 h-screen',
-        'bg-black/30 backdrop-blur-xl',
-        'border-r border-white/10',
-        'flex flex-col transition-all duration-300 ease-out z-40',
-        collapsed ? 'w-[72px]' : 'w-64'
-      )}
-    >
-      {/* Logo */}
-      <div className={cn(
-        'flex items-center h-16 px-4 border-b border-white/10',
-        collapsed && 'justify-center'
-      )}>
-        <Logo showText={!collapsed} size={collapsed ? 'sm' : 'md'} />
-      </div>
+    <>
+      {/* Hover zone on left edge */}
+      <div
+        ref={hoverZoneRef}
+        className="fixed left-0 top-0 w-[30px] h-screen z-50 pointer-events-none"
+      />
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-6">
-        {/* Main */}
-        <div>
-          {!collapsed && (
-            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-              Main
-            </p>
-          )}
-          <div className="space-y-1">
-            {mainNavItems.map((item) => (
-              <NavLink key={item.href} item={item} />
-            ))}
-          </div>
-        </div>
-
-        {/* Tools */}
-        <div>
-          {!collapsed && (
-            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-              Tools
-            </p>
-          )}
-          <div className="space-y-1">
-            {toolsNavItems.map((item) => (
-              <NavLink key={item.href} item={item} />
-            ))}
-          </div>
-        </div>
-
-        {/* Other */}
-        <div>
-          {!collapsed && (
-            <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-              Other
-            </p>
-          )}
-          <div className="space-y-1">
-            {otherNavItems.map((item) => (
-              <NavLink key={item.href} item={item} />
-            ))}
-          </div>
-        </div>
-      </nav>
-
-      {/* User section */}
-      <div className={cn(
-        'p-3 border-t border-white/10',
-        collapsed && 'flex flex-col items-center'
-      )}>
-        {!collapsed && shop && (
-          <div className="px-4 py-3 mb-2 rounded-2xl bg-white/[0.04] border border-white/10">
-            <p className="text-sm font-semibold text-white truncate">
-              {shop.name}
-            </p>
-            <p className="text-xs text-white/50">
-              {[shop.city, shop.state].filter(Boolean).join(', ') || '—'} • {shop.plan.toLowerCase()} plan
-            </p>
-          </div>
+      <aside
+        ref={sidebarRef}
+        className={cn(
+          'fixed left-0 top-0 h-screen',
+          'bg-black/30 backdrop-blur-xl',
+          'border-r border-white/10',
+          'flex flex-col transition-all duration-300 ease-out z-40',
+          isOpen ? 'w-64' : 'w-[72px]'
         )}
-
+      >
+        {/* Logo */}
         <div className={cn(
-          'flex items-center gap-3 px-4 py-2',
-          collapsed && 'px-0 justify-center'
+          'flex items-center h-16 px-4 border-b border-white/10',
+          !isOpen && 'justify-center'
         )}>
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
-            {user?.name?.charAt(0).toUpperCase() || 'U'}
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {user?.name || 'User'}
+          <Logo showText={isOpen} size={isOpen ? 'md' : 'sm'} />
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto p-3 space-y-6">
+          {/* Main */}
+          <div>
+            {isOpen && (
+              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+                Main
               </p>
-              <p className="text-xs text-white/50 truncate">
-                {user?.role || 'Owner'}
+            )}
+            <div className="space-y-1">
+              {mainNavItems.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+
+          {/* Tools */}
+          <div>
+            {isOpen && (
+              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+                Tools
+              </p>
+            )}
+            <div className="space-y-1">
+              {toolsNavItems.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+
+          {/* Other */}
+          <div>
+            {isOpen && (
+              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+                Other
+              </p>
+            )}
+            <div className="space-y-1">
+              {otherNavItems.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+        </nav>
+
+        {/* User section */}
+        <div className={cn(
+          'p-3 border-t border-white/10',
+          !isOpen && 'flex flex-col items-center'
+        )}>
+          {isOpen && shop && (
+            <div className="px-4 py-3 mb-2 rounded-2xl bg-white/[0.04] border border-white/10">
+              <p className="text-sm font-semibold text-white truncate">
+                {shop.name}
+              </p>
+              <p className="text-xs text-white/50">
+                {[shop.city, shop.state].filter(Boolean).join(', ') || '—'} • {shop.plan.toLowerCase()} plan
               </p>
             </div>
           )}
-          <button
-            onClick={handleSignOut}
-            disabled={signingOut}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-60"
-            aria-label={signingOut ? 'Signing out' : 'Sign out'}
-          >
-            <LogOut className="w-4 h-4 text-white/50" />
-          </button>
-        </div>
-      </div>
 
-      {/* Collapse button */}
-      <button
-        onClick={() => setCollapsed(!collapsed)}
-        className={cn(
-          'absolute top-20 -right-3 w-6 h-6 rounded-full',
-          'bg-white/10 backdrop-blur-sm border border-white/20',
-          'flex items-center justify-center',
-          'text-white/60 hover:text-white',
-          'transition-colors shadow-sm'
-        )}
-      >
-        {collapsed ? (
-          <ChevronRight className="w-3 h-3" />
-        ) : (
-          <ChevronLeft className="w-3 h-3" />
-        )}
-      </button>
-    </aside>
+          <div className={cn(
+            'flex items-center gap-3 px-4 py-2',
+            !isOpen && 'px-0 justify-center'
+          )}>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            {isOpen && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">
+                  {user?.name || 'User'}
+                </p>
+                <p className="text-xs text-white/50 truncate">
+                  {user?.role || 'Owner'}
+                </p>
+              </div>
+            )}
+            <button
+              onClick={handleSignOut}
+              disabled={signingOut}
+              className="p-2 hover:bg-white/5 rounded-lg transition-colors disabled:opacity-60"
+              aria-label={signingOut ? 'Signing out' : 'Sign out'}
+            >
+              <LogOut className="w-4 h-4 text-white/50" />
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
   )
 }
 

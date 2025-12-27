@@ -20,7 +20,7 @@ body{background:#0f0a1a;min-height:100vh;overflow-x:hidden;color:#EDE9FE}
 .vertical-rail.right{right:clamp(20px, 5vw, 80px)}
 .glow-spot{position:absolute;width:640px;height:640px;background:radial-gradient(circle,rgba(167,139,250,0.10) 0%,transparent 70%);filter:blur(90px);pointer-events:none;z-index:0}
 .dash-shell{min-height:100vh;position:relative}
-.dash-main{min-height:100vh;padding-left:288px}
+.dash-main{min-height:100vh;padding-left:0;transition:padding-left 0.3s ease-out}
 @media (max-width: 1024px){.dash-main{padding-left:0}}
 `
 
