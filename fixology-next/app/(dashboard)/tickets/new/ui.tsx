@@ -383,6 +383,7 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
   const slug = slugify(model)
   const rawModel = (model || '').trim()
   const rawLower = rawModel.toLowerCase()
+  const raw = rawLower
   const underscoreRaw = toUnderscoreKey(rawModel)
   const rawUnderscorePreserve = rawModel.replace(/\s+/g, '_')
   const normKey = rawLower.trim()
