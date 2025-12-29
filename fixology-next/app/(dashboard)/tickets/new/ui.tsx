@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import NextImage from 'next/image'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Button } from '@/components/ui/button'
@@ -586,9 +585,16 @@ type ModelButtonProps = {
 
 function ModelButton({ model, category, isSelected, onSelect, priority }: ModelButtonProps) {
   const [failed, setFailed] = useState(false)
-  const candidates = useMemo(() => modelImageCandidates(category, model), [category, model])
-  const src = candidates[0] || deviceCatalog[category].imageSrc
+  const candidates = useMemo(() => {
+    const list = modelImageCandidates(category, model)
+    // Always include category image as final fallback
+    const catImg = deviceCatalog[category].imageSrc
+    if (!list.includes(catImg)) list.push(catImg)
+    return list
+  }, [category, model])
+
   const isOther = model.toLowerCase().includes('other')
+  const src = isOther ? deviceCatalog[category].imageSrc : candidates[0]
 
   return (
     <button
@@ -603,20 +609,22 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
     >
       {!failed ? (
         <div className={cn('w-24 h-24 sm:w-28 sm:h-28', !isSelected && 'bg-white')}>
-          <NextImage
-            src={isOther ? deviceCatalog[category].imageSrc : src}
+          <img
+            src={src}
             alt={model}
             width={120}
             height={120}
-            className="object-contain w-full h-full"
-            placeholder="blur"
-            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMyMTIxMjEiLz48L3N2Zz4="
-            priority={priority}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
-            sizes="120px"
-            unoptimized
-            onError={() => setFailed(true)}
+            className="object-contain w-full h-full"
+            onError={(e) => {
+              const next = candidates.find((c) => c !== (e.currentTarget as HTMLImageElement).src)
+              if (next && next !== e.currentTarget.src) {
+                e.currentTarget.src = next
+              } else {
+                setFailed(true)
+              }
+            }}
           />
         </div>
       ) : (
