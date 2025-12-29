@@ -696,18 +696,18 @@ export function NewTicketClient() {
                             'rounded-2xl border p-4 text-left transition-all',
                             // White tile treatment for the category cards only (so white/transparent images read cleanly).
                             selected
-                              ? 'bg-white/95 border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.28)]'
-                              : 'bg-white/90 border-black/10 hover:bg-white hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
+                              ? 'bg-white border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.28)]'
+                              : 'bg-white border-black/10 hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
                           )}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-4">
                             {/* No bubble container — show the image directly so the new white/transparent pics feel native. */}
                             <img
                               src={c.imageSrc}
                               alt={c.label}
-                              className="w-11 h-11 opacity-95 object-contain"
+                              className="w-14 h-14 sm:w-16 sm:h-16 opacity-95 object-contain"
                             />
-                            <div className="min-w-0">
+                            <div className="min-w-0 ml-1">
                               <div className={cn('text-sm font-semibold', selected ? 'text-black/90' : 'text-black/80')}>{c.label}</div>
                               <div className="text-[11px] text-black/45 mt-0.5">{c.deviceType}</div>
                             </div>
