@@ -136,11 +136,10 @@ ${partsBreakdown.some(p => p.isMarketRate)
         await prisma.invoice.update({
           where: { id: ticket.invoice.id },
           data: {
-            metadata: {
-              ...(ticket.invoice.metadata as any || {}),
-              aiExplanation: explanation,
-              pricingBreakdown: result.breakdown,
-            },
+            // Store AI explanation in notes or create a separate field if needed
+            notes: ticket.invoice.notes 
+              ? `${ticket.invoice.notes}\n\nAI Explanation: ${explanation}`
+              : `AI Explanation: ${explanation}`,
           },
         })
       }

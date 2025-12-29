@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Mail, Lock, ArrowRight } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { ReticleIcon } from '@/components/shared/reticle-icon'
 import { toast } from '@/components/ui/toaster'
 
 export default function LoginPage() {
@@ -21,16 +21,18 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [rememberMe, setRememberMe] = useState(false)
 
-  const validate = () => {
+  const validate = (vals?: { email?: string; password?: string }) => {
     const newErrors: { email?: string; password?: string } = {}
+    const emailToCheck = (vals?.email ?? email).trim()
+    const passwordToCheck = vals?.password ?? password
     
-    if (!email) {
+    if (!emailToCheck) {
       newErrors.email = 'Email is required'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToCheck)) {
       newErrors.email = 'Invalid email address'
     }
     
-    if (!password) {
+    if (!passwordToCheck) {
       newErrors.password = 'Password is required'
     }
     
@@ -40,51 +42,53 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // IMPORTANT: capture browser autofill values even if React state didn't update
+    const form = e.currentTarget as HTMLFormElement
+    const fd = new FormData(form)
+    const emailFromForm = String(fd.get('email') || email).trim()
+    const passwordFromForm = String(fd.get('password') || password)
+
+    if (emailFromForm !== email) setEmail(emailFromForm)
+    if (passwordFromForm !== password) setPassword(passwordFromForm)
     
-    if (!validate()) return
+    if (!validate({ email: emailFromForm, password: passwordFromForm })) return
     
     setLoading(true)
     
     try {
-      console.log('Attempting login for:', email)
-      const supabase = createClient()
-      console.log('Supabase client created, URL:', process.env.NEXT_PUBLIC_SUPABASE_URL)
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailFromForm, password: passwordFromForm }),
       })
-      
-      console.log('Login response:', { data: data?.user?.id, error: error?.message })
-      
-      if (error) {
-        console.error('Login error:', error)
-        if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid email or password')
-        } else {
-          toast.error(error.message || 'Failed to sign in')
-        }
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        const msg = data?.error || 'Failed to sign in'
+        toast.error(msg.includes('Invalid login credentials') ? 'Invalid email or password' : msg)
         setLoading(false)
         return
       }
-      
-      if (data?.user) {
-        console.log('Login successful, redirecting to:', redirect)
-        toast.success('Welcome back!')
-        // Small delay to ensure toast shows, then redirect
-        setTimeout(() => {
-          window.location.href = redirect
-        }, 500)
-      } else {
-        console.error('No user data returned')
-        toast.error('Sign in failed. Please try again.')
-        setLoading(false)
-      }
+
+      toast.success('Welcome back!')
+      router.push(redirect)
+      router.refresh()
     } catch (error: any) {
       console.error('Login exception:', error)
       toast.error(error?.message || 'Something went wrong. Please try again.')
       setLoading(false)
     }
+  }
+
+  const enterDemo = () => {
+    // UI-only access for building out dashboard flows without backend dependencies.
+    // Clears any prior real-session cookies by moving the app into demo mode explicitly.
+    document.cookie = `fx_demo=1; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`
+    toast.success('Entered demo mode')
+    router.push('/dashboard')
+    router.refresh()
   }
 
   return (
@@ -151,6 +155,7 @@ export default function LoginPage() {
                     <input
                       type="email"
                       id="email"
+                      name="email"
                       value={email}
                       onChange={(e) => {
                         setEmail(e.target.value)
@@ -187,6 +192,7 @@ export default function LoginPage() {
                     <input
                       type="password"
                       id="password"
+                      name="password"
                       value={password}
                       onChange={(e) => {
                         setPassword(e.target.value)
@@ -222,12 +228,7 @@ export default function LoginPage() {
 
                 <button
                   type="submit"
-                  disabled={loading || !email || !password}
-                  onClick={(e) => {
-                    e.preventDefault()
-                    console.log('Button clicked, email:', email, 'password length:', password.length)
-                    handleSubmit(e as any)
-                  }}
+                  disabled={loading}
                   className="glow-button"
                   style={{ width: '100%', marginTop: 8, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
                   aria-label={loading ? 'Signing in' : 'Sign in'}
@@ -239,6 +240,15 @@ export default function LoginPage() {
                       Sign in <ArrowRight style={{ width: 18, height: 18 }} aria-hidden="true" />
                     </>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={enterDemo}
+                  className="glow-button glow-button-secondary"
+                  style={{ width: '100%' }}
+                >
+                  Continue in demo mode
                 </button>
 
                 <div style={{ marginTop: 8, fontSize: 12, color: 'rgba(196,181,253,.55)', display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'center' }}>
@@ -256,49 +266,67 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Left (desktop): value prop / social proof */}
+          {/* Left (desktop): subtle background + watermark (no marketing copy) */}
           <div className="order-2 lg:order-1 fade-in">
-            <div style={{ maxWidth: 720 }}>
-              <span className="auth-kicker">✨ Built for repair shops</span>
-              <h2 className="section-title" style={{ fontSize: 44, marginTop: 18, marginBottom: 14 }}>
-                Your techs stop guessing.
-                <br />
-                <span style={{ color: '#a78bfa' }}>Your tickets write themselves.</span>
-              </h2>
-              <p className="auth-muted" style={{ fontSize: 16, lineHeight: 1.7, marginBottom: 22 }}>
-                Fixology turns messy customer messages into diagnoses, tickets, pricing, inventory actions, and customer updates — automatically.
-              </p>
-
-              <div style={{ display: 'grid', gap: 12, marginBottom: 22 }}>
-                {[
-                  'Works with how your shop already runs',
-                  'Fewer comebacks with guided steps + risk alerts',
-                  'Tickets created from one sentence',
-                ].map((t) => (
-                  <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(196,181,253,.82)' }}>
-                    <span style={{ color: '#4ade80', fontWeight: 900 }} aria-hidden="true">
-                      ✓
-                    </span>
-                    <span style={{ fontSize: 15 }}>{t}</span>
-                  </div>
-                ))}
+            <div style={{ position: 'relative', minHeight: 520 }}>
+              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '10%',
+                    left: '12%',
+                    width: 520,
+                    height: 520,
+                    borderRadius: 9999,
+                    background: 'radial-gradient(circle, rgba(167,139,250,.12) 0%, transparent 70%)',
+                    filter: 'blur(70px)',
+                    opacity: 0.9,
+                  }}
+                />
+                <div style={{ position: 'absolute', top: '18%', left: '8%', opacity: 0.14 }}>
+                  <ReticleIcon size="xl" color="purple" variant="idle" className="w-[280px] h-[280px]" />
+                </div>
               </div>
 
-              <div className="glass-card" style={{ padding: 22, borderRadius: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(167,139,250,.75)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 14 }}>
-                  Low-key social proof
+              {/* Copy layer (kept subtle; auth is task-first) */}
+              <div className="hidden lg:block" style={{ position: 'relative', zIndex: 2, paddingTop: 34, maxWidth: 520 }}>
+                <div className="auth-kicker" style={{ display: 'inline-flex', marginBottom: 14 }}>
+                  Secure access
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 16 }}>
+                <h2 className="section-title" style={{ fontSize: 28, marginBottom: 10 }}>
+                  Sign in and get back to the workbench.
+                </h2>
+                <p className="auth-muted" style={{ fontSize: 14, lineHeight: 1.7, marginBottom: 18 }}>
+                  Fixology is built for repair professionals — fast intake, clear next steps, and calm AI signals when something looks risky.
+                </p>
+
+                <div style={{ display: 'grid', gap: 10 }}>
                   {[
-                    { k: '⚡ Avg setup time', v: 'Under 2 minutes' },
-                    { k: '📉 Fewer repeats', v: 'Guided steps + risk alerts' },
-                    { k: '✅ Built for', v: 'Phone, console, PC shops' },
-                  ].map((s) => (
-                    <div key={s.k} style={{ padding: 14, borderRadius: 14, border: '1px solid rgba(167,139,250,.12)', background: 'rgba(15,10,26,.55)' }}>
-                      <div style={{ fontSize: 12, color: 'rgba(196,181,253,.75)', marginBottom: 6 }}>{s.k}</div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>{s.v}</div>
+                    'Tickets from one sentence (no busywork)',
+                    'IMEI + risk signals before you touch it',
+                    'Clean customer updates that write themselves',
+                  ].map((t) => (
+                    <div
+                      key={t}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 10,
+                        color: 'rgba(196,181,253,.82)',
+                      }}
+                    >
+                      <span style={{ color: '#4ade80', fontWeight: 900, lineHeight: 1.2 }} aria-hidden="true">
+                        ✓
+                      </span>
+                      <span style={{ fontSize: 14, lineHeight: 1.5 }}>{t}</span>
                     </div>
                   ))}
+                </div>
+
+                <div style={{ marginTop: 18, opacity: 0.7 }}>
+                  <span className="auth-muted" style={{ fontSize: 12 }}>
+                    Secure access for repair professionals
+                  </span>
                 </div>
               </div>
             </div>

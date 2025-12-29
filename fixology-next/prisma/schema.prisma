@@ -7,6 +7,9 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
+  // Use a direct (non-pgbouncer) connection for migrations/introspection.
+  // Keep DATABASE_URL pointed at the Supabase pooler (port 6543) for app runtime.
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================================
@@ -326,7 +329,8 @@ model InventoryItem {
   name        String
   sku         String?
   description String?
-  category    InventoryCategory
+  // Default allows adding this required column to existing databases safely.
+  category    InventoryCategory @default(PARTS)
 
   // Pricing
   costPrice Decimal? @map("cost_price") @db.Decimal(10, 2)

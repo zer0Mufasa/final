@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { Sparkles, Loader2, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { ReticleIcon, ReticleLoader } from '@/components/shared/reticle-icon'
 
 interface AIDraft {
   customer: {
@@ -30,6 +31,15 @@ interface AIDraft {
     max: number
   }
   questionsToAsk: string[]
+  confidence?: {
+    customer: number
+    device: number
+    issue: number
+    overall: number
+  }
+  riskFlags?: string[]
+  carrier?: string
+  passcode?: string
 }
 
 export function QuickAIIntake() {
@@ -127,15 +137,15 @@ export function QuickAIIntake() {
 
   return (
     <div className="mb-6 p-6 rounded-2xl bg-white/[0.03] backdrop-blur-xl border border-white/10">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <h3 className="text-lg font-bold text-white">Quick AI Intake</h3>
-          <p className="text-sm text-white/60">Describe a repair in one sentence</p>
-        </div>
-      </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-700/20 flex items-center justify-center border border-purple-500/30">
+              <ReticleIcon size="md" color="purple" variant="default" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Quick AI Intake</h3>
+              <p className="text-sm text-white/60">Describe a repair in one sentence</p>
+            </div>
+          </div>
 
       {!draft && !success && (
         <div className="space-y-4">
@@ -155,28 +165,29 @@ AI will auto-detect: names, phone numbers, device models, and whether it's a cus
               {error}
             </div>
           )}
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating || !input.trim()}
-            className={cn(
-              'w-full px-4 py-3 rounded-xl font-semibold transition-all',
-              'bg-gradient-to-r from-purple-500 to-purple-700 text-white',
-              'hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed',
-              'flex items-center justify-center gap-2'
-            )}
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Generating draft...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4" />
-                Generate Ticket Draft
-              </>
-            )}
-          </button>
+          {isGenerating ? (
+            <div className="w-full py-6 flex flex-col items-center justify-center">
+              <ReticleLoader 
+                size="lg" 
+                color="purple" 
+                text="Fixology analyzing..."
+              />
+            </div>
+          ) : (
+            <button
+              onClick={handleGenerate}
+              disabled={!input.trim()}
+              className={cn(
+                'w-full px-4 py-3 rounded-xl font-semibold transition-all',
+                'bg-gradient-to-r from-purple-500 to-purple-700 text-white',
+                'hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed',
+                'flex items-center justify-center gap-2'
+              )}
+            >
+              <Sparkles className="w-4 h-4" />
+              Generate Ticket Draft
+            </button>
+          )}
         </div>
       )}
 
@@ -370,10 +381,10 @@ AI will auto-detect: names, phone numbers, device models, and whether it's a cus
               )}
             >
               {isCreating ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating...
-                </>
+                <div className="flex items-center gap-2">
+                  <ReticleLoader size="sm" color="purple" />
+                  <span>Creating...</span>
+                </div>
               ) : (
                 <>
                   <Check className="w-4 h-4" />

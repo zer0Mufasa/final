@@ -6,11 +6,11 @@ import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-
 import { prisma } from '@/lib/prisma/client'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
-const statusTemplates: Record<string, { subject: string; body: (ticket: any) => string }> = {
+const statusTemplates: Record<string, { subject: (ticket: any) => string; body: (ticket: any) => string }> = {
   INTAKE: {
-    subject: 'Your repair ticket has been received',
+    subject: () => 'Your repair ticket has been received',
     body: (ticket) => `Hi ${ticket.customer.firstName || 'there'},
 
 We've received your repair request for ${ticket.deviceBrand} ${ticket.deviceType}.
@@ -23,7 +23,7 @@ We'll review your device and get back to you soon.
 Thank you for choosing us!`,
   },
   DIAGNOSED: {
-    subject: `Diagnosis complete for ${ticket => ticket.ticketNumber}`,
+    subject: (ticket: any) => `Diagnosis complete for ${ticket.ticketNumber}`,
     body: (ticket) => `Hi ${ticket.customer.firstName || 'there'},
 
 We've completed the diagnosis for your ${ticket.deviceBrand} ${ticket.deviceType}.
@@ -37,7 +37,7 @@ Please let us know if you'd like to proceed with the repair.
 Thank you!`,
   },
   IN_PROGRESS: {
-    subject: `Repair in progress - ${ticket => ticket.ticketNumber}`,
+    subject: (ticket: any) => `Repair in progress - ${ticket.ticketNumber}`,
     body: (ticket) => `Hi ${ticket.customer.firstName || 'there'},
 
 We've started working on your ${ticket.deviceBrand} ${ticket.deviceType}.
@@ -49,7 +49,7 @@ We'll keep you updated on the progress.
 Thank you!`,
   },
   READY: {
-    subject: `Your device is ready for pickup - ${ticket => ticket.ticketNumber}`,
+    subject: (ticket: any) => `Your device is ready for pickup - ${ticket.ticketNumber}`,
     body: (ticket) => `Hi ${ticket.customer.firstName || 'there'},
 
 Great news! Your ${ticket.deviceBrand} ${ticket.deviceType} is ready for pickup.
@@ -102,12 +102,12 @@ export async function POST(request: NextRequest) {
 
     if (!message && ticket.status in statusTemplates) {
       const template = statusTemplates[ticket.status]
-      subject = typeof template.subject === 'function' ? template.subject(ticket) : template.subject
+      subject = template.subject(ticket)
       body = template.body(ticket)
     }
 
     // Send email if customer has email
-    if (channel === 'email' && ticket.customer.email) {
+    if (channel === 'email' && ticket.customer.email && resend) {
       try {
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'noreply@fixology.ai',

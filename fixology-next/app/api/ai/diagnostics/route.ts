@@ -149,9 +149,9 @@ export async function POST(request: NextRequest) {
       
       likelyCause = topMatch.cause
       confidence = topMatch.confidence
-      recommendedTests = [...new Set(matches.flatMap(m => m.tests))]
-      partsSuggestions = [...new Set(matches.flatMap(m => m.parts))]
-      warnings = [...new Set(matches.flatMap(m => m.warnings || []))]
+      recommendedTests = Array.from(new Set(matches.flatMap(m => m.tests)))
+      partsSuggestions = Array.from(new Set(matches.flatMap(m => m.parts)))
+      warnings = Array.from(new Set(matches.flatMap(m => m.warnings || [])))
     }
 
     // Adjust confidence based on historical data

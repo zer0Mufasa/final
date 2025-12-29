@@ -2,18 +2,21 @@
 // Root layout for the entire application
 
 import type { Metadata } from 'next'
-import { Inter, Space_Grotesk } from 'next/font/google'
+import { IBM_Plex_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
 
-const inter = Inter({
+const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-ibm-plex-sans',
+  display: 'swap',
 })
 
-const spaceGrotesk = Space_Grotesk({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-space-grotesk',
+  variable: '--font-jetbrains-mono',
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -72,7 +75,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${inter.variable} ${spaceGrotesk.variable} font-sans antialiased`}
+        className={`${ibmPlexSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         {children}
         <Toaster />

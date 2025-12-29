@@ -5,6 +5,10 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 import { Sidebar } from '@/components/dashboard/sidebar'
+import { cookies } from 'next/headers'
+import { TopBar } from '@/components/dashboard/topbar'
+import { RoleProvider } from '@/contexts/role-context'
+import { ActorProvider } from '@/contexts/actor-context'
 
 const dashboardStyles = `
 html{scroll-behavior:smooth}
@@ -29,15 +33,64 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  const cookieStore = cookies()
+  const isDemo = cookieStore.get('fx_demo')?.value === '1'
+
+  // UI-only demo mode: no Supabase, no DB, no subscription gates.
+  // Used for building/previewing the dashboard without backend dependencies.
+  const renderDemo = () => {
+    const demoUser = {
+      name: 'Demo User',
+      email: 'demo@fixology.local',
+      role: 'OWNER',
+    }
+    const demoShop = {
+      name: 'Demo Shop',
+      plan: 'PRO',
+      city: 'Austin',
+      state: 'TX',
+    }
+
+    return (
+      <RoleProvider initialRole={demoUser.role as any}>
+        <ActorProvider initialOwnerName={demoUser.name}>
+          <div className="dash-shell">
+            <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
+            <div className="bg-structure">
+              <div className="bg-grid" />
+              <div className="vertical-rail left" />
+              <div className="vertical-rail right" />
+            </div>
+
+            <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
+            <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
+
+            <Sidebar user={demoUser} shop={demoShop} />
+            <main className="dash-main">
+              <TopBar user={demoUser} shop={demoShop} />
+              <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">{children}</div>
+            </main>
+          </div>
+        </ActorProvider>
+      </RoleProvider>
+    )
+  }
+
+  if (isDemo) return renderDemo()
+
   const supabase = createClient()
 
   const {
     data: { session },
   } = await supabase.auth.getSession()
 
-  if (!session) {
-    redirect('/login')
+  // Dev UX: if you aren't logged in, still show the UI in demo mode (fast iteration).
+  // Production still requires a real session.
+  if (!session && process.env.NODE_ENV !== 'production') {
+    return renderDemo()
   }
+
+  if (!session) redirect('/login')
 
   // Get shop user info
   let shopUser
@@ -60,6 +113,12 @@ export default async function DashboardLayout({
       timeoutPromise,
     ]) as any
   } catch (dbError: any) {
+    // Dev UX: if DB is unavailable, keep the UI accessible in demo mode.
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('Database connection error (dev) — falling back to demo UI:', dbError)
+      return renderDemo()
+    }
+
     // Database connection error - show helpful message
     console.error('Database connection error:', dbError)
     const errorMessage = dbError.message || 'Unknown database error'
@@ -87,8 +146,19 @@ export default async function DashboardLayout({
     redirect('/login?error=no_shop')
   }
 
-  if (shopUser.shop.status === 'CANCELLED' || shopUser.shop.status === 'SUSPENDED') {
-    redirect('/login?error=shop_inactive')
+  // Subscription gating:
+  // No dashboard access unless ACTIVE or an unexpired TRIAL.
+  const status = shopUser.shop.status
+  const now = new Date()
+  const trialEndsAt = shopUser.shop.trialEndsAt
+
+  if (status === 'TRIAL') {
+    if (!trialEndsAt || trialEndsAt.getTime() <= now.getTime()) {
+      redirect('/onboarding?billing=required&reason=trial_expired')
+    }
+  } else if (status !== 'ACTIVE') {
+    // PAST_DUE / SUSPENDED / CANCELLED and any other state is locked
+    redirect('/onboarding?billing=required&reason=subscription_inactive')
   }
 
   // Dashboard requires onboarding completion (so the UI is personalized).
@@ -97,34 +167,53 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="dash-shell">
-      <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
-      <div className="bg-structure">
-        <div className="bg-grid" />
-        <div className="vertical-rail left" />
-        <div className="vertical-rail right" />
-      </div>
+    <RoleProvider initialRole={shopUser.role as any}>
+      <ActorProvider initialOwnerName={shopUser.name}>
+        <div className="dash-shell">
+          <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
+          <div className="bg-structure">
+            <div className="bg-grid" />
+            <div className="vertical-rail left" />
+            <div className="vertical-rail right" />
+          </div>
 
-      <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
-      <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
+          <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
+          <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
 
-      {/* Sidebar for non-dashboard pages - dashboard page renders its own LeftRail */}
-      <Sidebar
-        user={{
-          name: shopUser.name,
-          email: shopUser.email,
-          role: shopUser.role,
-        }}
-        shop={{
-          name: shopUser.shop.name,
-          plan: shopUser.shop.plan,
-          city: shopUser.shop.city || undefined,
-          state: shopUser.shop.state || undefined,
-        }}
-      />
+          {/* Sidebar for non-dashboard pages - dashboard page renders its own LeftRail */}
+          <Sidebar
+            user={{
+              name: shopUser.name,
+              email: shopUser.email,
+              role: shopUser.role,
+            }}
+            shop={{
+              name: shopUser.shop.name,
+              plan: shopUser.shop.plan,
+              city: shopUser.shop.city || undefined,
+              state: shopUser.shop.state || undefined,
+            }}
+          />
 
-      <main className="dash-main">{children}</main>
-    </div>
+          <main className="dash-main">
+            <TopBar
+              user={{
+                name: shopUser.name,
+                email: shopUser.email,
+                role: shopUser.role,
+              }}
+              shop={{
+                name: shopUser.shop.name,
+                plan: shopUser.shop.plan,
+                city: shopUser.shop.city || undefined,
+                state: shopUser.shop.state || undefined,
+              }}
+            />
+            <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">{children}</div>
+          </main>
+        </div>
+      </ActorProvider>
+    </RoleProvider>
   )
 }
 

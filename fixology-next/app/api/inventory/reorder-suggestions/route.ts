@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
       const similarItems = allInventory.filter(inv => 
         inv.id !== inventoryId &&
         inv.name.toLowerCase().includes(data.name.toLowerCase().split(' ')[0]) &&
-        Math.abs(inv.sellPrice - (data as any).sellPrice) < 20 // Similar price
+        Math.abs(Number(inv.sellPrice) - Number((data as any).sellPrice || 0)) < 20 // Similar price
       )
 
       return {

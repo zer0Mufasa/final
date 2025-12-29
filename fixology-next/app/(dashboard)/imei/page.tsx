@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { Header } from '@/components/dashboard/header'
 import { Smartphone, Loader2, CheckCircle, AlertTriangle, XCircle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { ReticleIcon, ReticleLoader } from '@/components/shared/reticle-icon'
 
 export default function IMEIPage() {
   const [imei, setImei] = useState('')
@@ -51,16 +52,24 @@ export default function IMEIPage() {
 
   const getStatusIcon = () => {
     if (!result) return null
-    if (result.status === 'clean') return <CheckCircle className="w-6 h-6 text-green-400" />
-    if (result.status === 'flagged') return <AlertTriangle className="w-6 h-6 text-red-400" />
-    return <XCircle className="w-6 h-6 text-yellow-400" />
+    if (result.status === 'clean') return <ReticleIcon size="lg" color="green" variant="default" />
+    // Use calm focus emphasis (no constant motion) for high-risk status
+    if (result.status === 'flagged') return <ReticleIcon size="lg" color="red" variant="focus" />
+    return <ReticleIcon size="lg" color="amber" variant="default" />
   }
 
   const getStatusColor = () => {
     if (!result) return ''
     if (result.status === 'clean') return 'text-green-400'
     if (result.status === 'flagged') return 'text-red-400'
-    return 'text-yellow-400'
+    return 'text-amber-400'
+  }
+  
+  const getReticleColor = () => {
+    if (!result) return 'purple' as const
+    if (result.status === 'clean') return 'green' as const
+    if (result.status === 'flagged') return 'red' as const
+    return 'amber' as const
   }
 
   return (
@@ -73,8 +82,8 @@ export default function IMEIPage() {
       <div className="p-6">
         <div className="glass-card max-w-2xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
-              <Smartphone className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-700/20 border border-blue-500/30 flex items-center justify-center">
+              <ReticleIcon size="md" color="purple" variant="default" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">IMEI Risk Check</h2>
@@ -113,38 +122,47 @@ export default function IMEIPage() {
               </div>
             )}
 
-            <button
-              onClick={handleCheck}
-              disabled={isChecking || !imei || imei.length < 14}
-              className={cn(
-                'w-full px-6 py-4 rounded-xl font-semibold transition-all',
-                'bg-gradient-to-r from-blue-500 to-blue-700 text-white',
-                'hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed',
-                'flex items-center justify-center gap-2'
-              )}
-            >
-              {isChecking ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Checking...
-                </>
-              ) : (
-                <>
-                  <Smartphone className="w-5 h-5" />
-                  Check IMEI
-                </>
-              )}
-            </button>
+            {isChecking ? (
+              <div className="w-full py-8 flex flex-col items-center justify-center">
+                <ReticleLoader size="lg" color="purple" text="Fixology analyzing IMEI..." />
+              </div>
+            ) : (
+              <button
+                onClick={handleCheck}
+                disabled={!imei || imei.length < 14}
+                className={cn(
+                  'w-full px-6 py-4 rounded-xl font-semibold transition-all',
+                  'bg-gradient-to-r from-blue-500 to-blue-700 text-white',
+                  'hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed',
+                  'flex items-center justify-center gap-2'
+                )}
+              >
+                <Smartphone className="w-5 h-5" />
+                Check IMEI
+              </button>
+            )}
 
             {result && (
               <div className="mt-6 p-6 rounded-xl bg-white/[0.03] border border-white/10 space-y-4">
-                <div className="flex items-center gap-3 mb-4">
-                  {getStatusIcon()}
-                  <div>
-                    <h3 className="text-lg font-bold text-white">Status: <span className={getStatusColor()}>{result.status.toUpperCase()}</span></h3>
-                    <p className="text-sm text-white/60">Confidence: {result.confidence}%</p>
-                  </div>
-                </div>
+            <div className="flex items-center gap-3 mb-4">
+              {getStatusIcon()}
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  Status: <span className={getStatusColor()}>{result.status.toUpperCase()}</span>
+                  {result.riskLevel && (
+                    <span className={cn(
+                      'px-2 py-0.5 rounded text-xs font-semibold',
+                      result.riskLevel === 'HIGH' && 'bg-red-500/20 text-red-400',
+                      result.riskLevel === 'MEDIUM' && 'bg-amber-500/20 text-amber-400',
+                      result.riskLevel === 'LOW' && 'bg-green-500/20 text-green-400'
+                    )}>
+                      {result.riskLevel} RISK
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm text-white/60">Confidence: {result.confidence}%</p>
+              </div>
+            </div>
 
                 {result.reasons && result.reasons.length > 0 && (
                   <div>

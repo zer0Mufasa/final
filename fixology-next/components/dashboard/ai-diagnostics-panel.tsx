@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react'
 import { Cpu, Loader2, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { ReticleIcon, ReticleLoader } from '@/components/shared/reticle-icon'
 
 interface DiagnosticsResult {
   likelyCauses: Array<{ cause: string; confidence: number }>
@@ -88,8 +89,8 @@ export function AIDiagnosticsPanel({
     <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
-            <Cpu className="w-4 h-4 text-purple-400" />
+          <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
+            <ReticleIcon size="sm" color="purple" variant="default" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-white">AI Diagnosis</h3>
@@ -114,7 +115,7 @@ export function AIDiagnosticsPanel({
 
       {isAnalyzing && !result && (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-purple-400" />
+          <ReticleLoader size="lg" color="purple" text="Fixology analyzing..." />
         </div>
       )}
 
@@ -123,7 +124,11 @@ export function AIDiagnosticsPanel({
           {/* Primary Cause */}
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <CheckCircle className="w-4 h-4 text-green-400" />
+              <ReticleIcon 
+                size="sm" 
+                color={result.overallConfidence >= 80 ? 'green' : result.overallConfidence >= 60 ? 'amber' : 'red'}
+                variant="default"
+              />
               <p className="text-sm font-semibold text-white">Most Likely Cause</p>
             </div>
             <p className="text-sm text-white/90 mb-1">{result.primaryCause}</p>
@@ -133,7 +138,7 @@ export function AIDiagnosticsPanel({
                   className={cn(
                     "h-full transition-all",
                     result.overallConfidence >= 80 ? "bg-green-500" :
-                    result.overallConfidence >= 60 ? "bg-yellow-500" : "bg-red-500"
+                    result.overallConfidence >= 60 ? "bg-amber-500" : "bg-red-500"
                   )}
                   style={{ width: `${result.overallConfidence}%` }}
                 />

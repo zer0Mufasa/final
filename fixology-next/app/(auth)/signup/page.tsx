@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { toast } from '@/components/ui/toaster'
 import { Mail, Lock, User, Building, Phone, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { ReticleIcon } from '@/components/shared/reticle-icon'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -141,14 +142,6 @@ export default function SignupPage() {
       setLoading(false)
     }
   }
-
-  const features = [
-    'AI diagnosis from one sentence',
-    'Tickets + pricing auto-generated',
-    'IMEI / risk checks before you touch it',
-    'Inventory intelligence + reorder prompts',
-    'Customer updates that write themselves',
-  ]
 
   return (
     <div className="min-h-screen">
@@ -480,53 +473,67 @@ export default function SignupPage() {
             </div>
           </div>
 
-          {/* Left (desktop): value prop */}
+          {/* Left (desktop): subtle background + watermark (no marketing copy) */}
           <div className="order-2 lg:order-1 fade-in">
-            <div style={{ maxWidth: 720 }}>
-              <span className="auth-kicker">14-day free trial</span>
-              <h2 className="section-title" style={{ fontSize: 44, marginTop: 18, marginBottom: 14 }}>
-                Built for real tech workflows.
-                <br />
-                <span style={{ color: '#a78bfa' }}>Not generic software.</span>
-              </h2>
-              <p className="auth-muted" style={{ fontSize: 16, lineHeight: 1.7, marginBottom: 22 }}>
-                You’ll feel the difference on day one: faster intake, clearer diagnosis, fewer mistakes, cleaner communication.
-              </p>
-
-              <div style={{ display: 'grid', gap: 12, marginBottom: 22 }}>
-                {features.map((t) => (
-                  <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'rgba(196,181,253,.82)' }}>
-                    <span style={{ color: '#4ade80', fontWeight: 900 }} aria-hidden="true">
-                      ✓
-                    </span>
-                    <span style={{ fontSize: 15 }}>{t}</span>
-                  </div>
-                ))}
+            <div style={{ position: 'relative', minHeight: 560 }}>
+              <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '12%',
+                    left: '10%',
+                    width: 560,
+                    height: 560,
+                    borderRadius: 9999,
+                    background: 'radial-gradient(circle, rgba(167,139,250,.10) 0%, transparent 70%)',
+                    filter: 'blur(80px)',
+                    opacity: 0.9,
+                  }}
+                />
+                <div style={{ position: 'absolute', top: '16%', left: '8%', opacity: 0.14 }}>
+                  <ReticleIcon size="xl" color="purple" variant="idle" className="w-[300px] h-[300px]" />
+                </div>
               </div>
 
-              <div className="glass-card" style={{ padding: 22, borderRadius: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 800, color: 'rgba(167,139,250,.75)', letterSpacing: '.12em', textTransform: 'uppercase', marginBottom: 10 }}>
-                  Calm social proof
+              {/* Copy layer (kept subtle; auth is task-first) */}
+              <div className="hidden lg:block" style={{ position: 'relative', zIndex: 2, paddingTop: 34, maxWidth: 540 }}>
+                <div className="auth-kicker" style={{ display: 'inline-flex', marginBottom: 14 }}>
+                  14-day free trial
                 </div>
-                <div style={{ color: 'rgba(196,181,253,.80)', lineHeight: 1.7, fontSize: 14 }}>
-                  Used by phone, console, and PC repair shops. Designed to fit the way shops already work — no forced process change.
-                </div>
-                <div style={{ marginTop: 14, display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  {['Avg setup: under 2 min', 'Guided steps reduce comebacks', 'Tickets from one sentence'].map((p) => (
-                    <span
-                      key={p}
+                <h2 className="section-title" style={{ fontSize: 28, marginBottom: 10 }}>
+                  Set up your shop in minutes.
+                </h2>
+                <p className="auth-muted" style={{ fontSize: 14, lineHeight: 1.7, marginBottom: 18 }}>
+                  Start with a calm workflow: intake → diagnosis → pricing → customer updates, with AI signals only when they matter.
+                </p>
+
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {[
+                    'AI draft intake → creates clean tickets',
+                    'Risk / warning indicators when needed',
+                    'Upgrade anytime (Enterprise = contact sales)',
+                  ].map((t) => (
+                    <div
+                      key={t}
                       style={{
-                        padding: '8px 12px',
-                        borderRadius: 999,
-                        background: 'rgba(15,10,26,.55)',
-                        border: '1px solid rgba(167,139,250,.14)',
-                        fontSize: 12,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 10,
                         color: 'rgba(196,181,253,.82)',
                       }}
                     >
-                      {p}
-                    </span>
+                      <span style={{ color: '#4ade80', fontWeight: 900, lineHeight: 1.2 }} aria-hidden="true">
+                        ✓
+                      </span>
+                      <span style={{ fontSize: 14, lineHeight: 1.5 }}>{t}</span>
+                    </div>
                   ))}
+                </div>
+
+                <div style={{ marginTop: 18, opacity: 0.7 }}>
+                  <span className="auth-muted" style={{ fontSize: 12 }}>
+                    Secure access for repair professionals
+                  </span>
                 </div>
               </div>
             </div>

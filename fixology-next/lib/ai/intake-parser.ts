@@ -429,7 +429,7 @@ export function parseIntakeText(text: string): ParsedDraft {
     }
   }
   // Remove duplicates
-  const uniqueParts = [...new Set(suggestedParts)]
+  const uniqueParts = Array.from(new Set(suggestedParts))
 
   // Estimate price range based on device and issue
   let estimatedPriceRange: { min: number; max: number } | undefined

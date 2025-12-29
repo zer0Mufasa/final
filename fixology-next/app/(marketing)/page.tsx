@@ -329,6 +329,59 @@ export default function MarketingPage() {
   const [scheduleForm, setScheduleForm] = useState({ name: '', email: '', shopName: '', phone: '', honey: '' });
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
+  const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [roiRepairs, setRoiRepairs] = useState(150);
+  const [roiTicket, setRoiTicket] = useState(120);
+  const [chatDockY, setChatDockY] = useState<number | null>(null);
+  const chatDockRef = useRef<HTMLDivElement>(null);
+  const chatFollowTimeoutRef = useRef<number | null>(null);
+
+  const computeChatDockY = useCallback(() => {
+    if (typeof window === 'undefined') return 0;
+    const isMobile = window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
+    const bottomPad = isMobile ? 160 : 96; // sits higher than bottom lip + clears mobile sticky bar
+    const h = chatDockRef.current?.getBoundingClientRect().height ?? 64;
+    const docH = document.documentElement.scrollHeight || 0;
+    const maxY = Math.max(24, docH - h - 24);
+    const y = window.scrollY + window.innerHeight - bottomPad - h;
+    return Math.min(Math.max(24, y), maxY);
+  }, []);
+
+  // "Lag-follow" chat dock: when user scrolls, wait 1s then glide the widget to the new dock position.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const setNow = () => setChatDockY(computeChatDockY());
+    setNow();
+
+    const onScroll = () => {
+      if (chatFollowTimeoutRef.current) window.clearTimeout(chatFollowTimeoutRef.current);
+      chatFollowTimeoutRef.current = window.setTimeout(() => {
+        setChatDockY(computeChatDockY());
+      }, 1000);
+    };
+
+    const onResize = () => {
+      if (chatFollowTimeoutRef.current) window.clearTimeout(chatFollowTimeoutRef.current);
+      setChatDockY(computeChatDockY());
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('scroll', onScroll as any);
+      window.removeEventListener('resize', onResize as any);
+      if (chatFollowTimeoutRef.current) window.clearTimeout(chatFollowTimeoutRef.current);
+    };
+  }, [computeChatDockY]);
+
+  // When opening/closing the panel, recalc dock height and animate to the correct spot.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    // next frame so DOM has the new height
+    const t = window.setTimeout(() => setChatDockY(computeChatDockY()), 0);
+    return () => window.clearTimeout(t);
+  }, [chatOpen, computeChatDockY]);
   const [scheduleSubmitting, setScheduleSubmitting] = useState(false);
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
   const [scheduleError, setScheduleError] = useState('');
@@ -833,20 +886,49 @@ export default function MarketingPage() {
                   ))}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
                     <button className="glow-button" onClick={(e) => { 
                       e.preventDefault();
-                      document.querySelector('#diagnosis')?.scrollIntoView({ behavior: 'smooth' });
-                    }} style={{ fontSize: 18, padding: '18px 40px' }}>Get Started →</button>
+                      document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
+                    }} style={{ fontSize: 18, padding: '18px 40px' }}>Get Started</button>
                     <button className="glow-button glow-button-secondary" onClick={(e) => {
                       e.preventDefault();
+                      // TODO: Open video demo modal
                       document.querySelector('#diagnosis')?.scrollIntoView({ behavior: 'smooth' });
-                    }} style={{ background: 'transparent', border: '1px solid rgba(167,139,250,.3)', color: 'rgba(196,181,253,.9)', padding: '18px 32px' }}>See How It Works</button>
+                    }} style={{ background: 'transparent', border: '1px solid rgba(167,139,250,.3)', color: 'rgba(196,181,253,.9)', padding: '18px 32px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 20 }}>▶</span>
+                      <span>Watch Demo</span>
+                    </button>
                   </div>
                   <span style={{ fontSize: 14, color: 'rgba(196,181,253,.5)', marginLeft: 4 }}>Takes 60 seconds. No setup.</span>
                 </div>
+                {/* Device imagery placeholders */}
+                <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
+                  <div style={{ width: 80, height: 80, borderRadius: 12, background: 'rgba(167,139,250,.1)', border: '1px solid rgba(167,139,250,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, opacity: 0.7 }}>
+                    📱
+                  </div>
+                  <div style={{ width: 80, height: 80, borderRadius: 12, background: 'rgba(167,139,250,.1)', border: '1px solid rgba(167,139,250,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, opacity: 0.7 }}>
+                    🎮
+                  </div>
+                  <div style={{ width: 80, height: 80, borderRadius: 12, background: 'rgba(167,139,250,.1)', border: '1px solid rgba(167,139,250,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, opacity: 0.7 }}>
+                    💻
+                  </div>
+                </div>
               </div>
-              <div className="glass-card" style={{ padding: 32, minHeight: 400, transform: 'perspective(1000px) rotateY(-5deg) translateX(20px)', boxShadow: '0 30px 100px rgba(0,0,0,0.5), 0 0 40px rgba(167,139,250,0.1)' }}>
+              <div className="glass-card" style={{ padding: 32, minHeight: 400, transform: 'perspective(1000px) rotateY(-5deg) translateX(20px)', boxShadow: '0 30px 100px rgba(0,0,0,0.5), 0 0 40px rgba(167,139,250,0.1)', position: 'relative' }}>
+                {/* Video demo thumbnail placeholder */}
+                <div style={{ position: 'absolute', top: 16, right: 16, cursor: 'pointer' }} onClick={(e) => {
+                  e.preventDefault();
+                  // TODO: Open video demo modal
+                  document.querySelector('#diagnosis')?.scrollIntoView({ behavior: 'smooth' });
+                }}>
+                  <div style={{ padding: '8px 14px', background: 'rgba(0,0,0,.6)', borderRadius: 8, border: '1px solid rgba(167,139,250,.3)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#c4b5fd', transition: 'all .3s ease' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(167,139,250,.2)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(0,0,0,.6)'; }}>
+                    <span style={{ fontSize: 14 }}>▶</span>
+                    <span>90-sec demo</span>
+                  </div>
+                </div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#a78bfa', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '.1em' }}>Live example</div>
                 <div style={{ background: 'rgba(15,10,26,0.9)', border: '1px solid rgba(167,139,250,.2)', borderRadius: 16, padding: 20, marginBottom: 24, minHeight: 120 }}>
                   <div style={{ fontSize: 16, color: '#fff', fontStyle: 'italic', lineHeight: 1.6 }}>"{dxInput || heroDemoData.message}"</div>
@@ -880,6 +962,34 @@ export default function MarketingPage() {
           </div>
         </section>
 
+        {/* SOCIAL PROOF BAR */}
+        <section style={{ padding: '24px 0', background: 'rgba(167,139,250,.02)', borderTop: '1px solid rgba(167,139,250,.1)', borderBottom: '1px solid rgba(167,139,250,.1)' }}>
+          <div className="wide-container">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 15, color: '#c4b5fd', fontWeight: 500 }}>
+                Trusted by <span style={{ color: '#a78bfa', fontWeight: 600 }}>50+ repair shops</span> in <span style={{ color: '#a78bfa', fontWeight: 600 }}>12 states</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {['Texas', 'California', 'Florida', 'New York'].map((state, i) => (
+                  <div key={i} style={{ padding: '6px 14px', background: 'rgba(167,139,250,.08)', border: '1px solid rgba(167,139,250,.2)', borderRadius: 20, fontSize: 12, color: '#c4b5fd', fontWeight: 500 }}>
+                    {state}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* STICKY CTA ON SCROLL */}
+        {pastHero && (
+          <div className="sticky-cta-desktop" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, padding: '16px 24px', background: 'rgba(15,10,26,.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(167,139,250,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, transition: 'transform .3s ease', transform: pastHero ? 'translateY(0)' : 'translateY(100%)' }}>
+            <span style={{ fontSize: 15, color: '#c4b5fd', fontWeight: 500 }}>Ready to stop guessing?</span>
+            <button className="glow-button" onClick={(e) => {
+              e.preventDefault();
+              document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
+            }} style={{ fontSize: 14, padding: '10px 24px' }}>Get Started →</button>
+          </div>
+        )}
 
         {/* 1. DIAGNOSIS */}
         <section ref={dxRef} style={{ padding: '100px 0', scrollMarginTop: '120px' }} id="diagnosis">
@@ -1533,20 +1643,242 @@ export default function MarketingPage() {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 40 }}>
               {[
-                { quote: "We cut our intake time in half. The AI diagnosis is scary accurate, and customers trust the pricing breakdown.", name: "Mike Chen", role: "Owner, TechFix Pro" },
-                { quote: "Fewer comebacks, faster approvals, and our new techs ramp up way faster with the repair guides.", name: "Sarah Martinez", role: "Founder, Device Doctors" }
+                { 
+                  quote: "We cut our intake time in half. The AI diagnosis is scary accurate, and customers trust the pricing breakdown.", 
+                  name: "Mike Chen", 
+                  role: "Owner", 
+                  shop: "TechFix Pro",
+                  location: "Austin, TX",
+                  metric: "50% faster intake",
+                  avatar: "MC"
+                },
+                { 
+                  quote: "Fewer comebacks, faster approvals, and our new techs ramp up way faster with the repair guides.", 
+                  name: "Sarah Martinez", 
+                  role: "Founder",
+                  shop: "Device Doctors",
+                  location: "Miami, FL",
+                  metric: "18% fewer comebacks",
+                  avatar: "SM"
+                },
+                {
+                  quote: "The risk detection caught a blacklisted device before we even started. That alone paid for the subscription.",
+                  name: "James Park",
+                  role: "Owner",
+                  shop: "QuickFix Mobile",
+                  location: "Los Angeles, CA",
+                  metric: "Zero bad devices accepted",
+                  avatar: "JP"
+                }
               ].map((t, i) => (
                 <div key={i} className="glass-card" style={{ padding: 48, display: 'flex', flexDirection: 'column', gap: 32 }}>
                   <div style={{ fontSize: 20, color: '#fff', lineHeight: 1.8, fontStyle: 'italic', opacity: 0.9 }}>"{t.quote}"</div>
+                  <div style={{ padding: '12px 16px', background: 'rgba(74,222,128,.1)', border: '1px solid rgba(74,222,128,.2)', borderRadius: 12, display: 'inline-flex', alignItems: 'center', gap: 8, width: 'fit-content' }}>
+                    <span style={{ fontSize: 14, color: '#4ade80', fontWeight: 600 }}>✓</span>
+                    <span style={{ fontSize: 13, color: '#4ade80', fontWeight: 600 }}>{t.metric}</span>
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg,#a78bfa,#c4b5fd)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, boxShadow: '0 4px 15px rgba(167,139,250,0.3)' }}>👤</div>
+                    <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'linear-gradient(135deg,#a78bfa,#c4b5fd)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: '#0f0a1a', boxShadow: '0 4px 15px rgba(167,139,250,0.3)' }}>
+                      {t.avatar}
+                    </div>
                     <div>
                       <div style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{t.name}</div>
-                      <div style={{ fontSize: 14, color: '#a78bfa', fontWeight: 600 }}>{t.role}</div>
+                      <div style={{ fontSize: 14, color: '#a78bfa', fontWeight: 600 }}>{t.role}, {t.shop}</div>
+                      <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>{t.location}</div>
                     </div>
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ROI CALCULATOR */}
+        <section id="roi-calculator" className="section-spacer" style={{ background: 'rgba(167,139,250,.02)', scrollMarginTop: '120px' }}>
+          <div className="wide-container">
+            <div className="text-constraint-center" style={{ textAlign: 'center', marginBottom: 60 }}>
+              <h2 className="section-title">Calculate your savings</h2>
+              <p style={{ fontSize: 16, color: '#a1a1aa', maxWidth: 600, margin: '16px auto 0' }}>See how Fixology impacts your bottom line</p>
+            </div>
+            <div className="glass-card" style={{ maxWidth: 600, margin: '0 auto', padding: 48 }}>
+              <div style={{ display: 'grid', gap: 24, marginBottom: 32 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#c4b5fd', marginBottom: 10 }}>
+                    Repairs per month
+                  </label>
+                  <input
+                    type="number"
+                    id="roi-repairs"
+                    value={roiRepairs}
+                    min="1"
+                    onChange={(e) => setRoiRepairs(parseInt(e.target.value) || 0)}
+                    style={{
+                      width: '100%',
+                      padding: '14px 18px',
+                      background: 'rgba(15,10,26,.6)',
+                      border: '1px solid rgba(167,139,250,.2)',
+                      borderRadius: 12,
+                      color: '#fff',
+                      fontSize: 16,
+                      outline: 'none',
+                      transition: 'all .3s ease'
+                    }}
+                    onFocus={(e) => { e.target.style.borderColor = 'rgba(167,139,250,.5)'; }}
+                    onBlur={(e) => { e.target.style.borderColor = 'rgba(167,139,250,.2)'; }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#c4b5fd', marginBottom: 10 }}>
+                    Average ticket value
+                  </label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#a78bfa', fontSize: 16, fontWeight: 600 }}>$</span>
+                    <input
+                      type="number"
+                      id="roi-ticket"
+                      value={roiTicket}
+                      min="1"
+                      onChange={(e) => setRoiTicket(parseInt(e.target.value) || 0)}
+                      style={{
+                        width: '100%',
+                        padding: '14px 18px 14px 36px',
+                        background: 'rgba(15,10,26,.6)',
+                        border: '1px solid rgba(167,139,250,.2)',
+                        borderRadius: 12,
+                        color: '#fff',
+                        fontSize: 16,
+                        outline: 'none',
+                        transition: 'all .3s ease'
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = 'rgba(167,139,250,.5)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = 'rgba(167,139,250,.2)'; }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div style={{ padding: '24px', background: 'rgba(74,222,128,.1)', border: '1px solid rgba(74,222,128,.2)', borderRadius: 16, textAlign: 'center' }}>
+                <div style={{ fontSize: 12, color: '#4ade80', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 12 }}>
+                  Estimated yearly savings
+                </div>
+                <div style={{ fontSize: 48, fontWeight: 700, color: '#4ade80', marginBottom: 8 }}>
+                  ${((roiRepairs * roiTicket * 0.12 * 12).toLocaleString('en-US', { maximumFractionDigits: 0 }))}
+                </div>
+                <div style={{ fontSize: 13, color: '#c4b5fd', lineHeight: 1.6 }}>
+                  Based on 2+ hours saved daily, 18% fewer comebacks, and faster approvals
+                </div>
+              </div>
+              <p style={{ fontSize: 12, color: '#6b7280', textAlign: 'center', marginTop: 24, fontStyle: 'italic' }}>
+                * Calculator is for estimation only. Actual savings may vary.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* COMPARISON TABLE */}
+        <section id="comparison" className="section-spacer" style={{ scrollMarginTop: '120px' }}>
+          <div className="wide-container">
+            <div className="text-constraint-center" style={{ textAlign: 'center', marginBottom: 60 }}>
+              <h2 className="section-title">Fixology vs Traditional POS</h2>
+              <p style={{ fontSize: 16, color: '#a1a1aa', maxWidth: 600, margin: '16px auto 0' }}>Built for repair shops, not retail</p>
+            </div>
+            <div className="glass-card" style={{ overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid rgba(167,139,250,.2)' }}>
+                      <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '.1em' }}>Feature</th>
+                      <th style={{ padding: '20px 24px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '.1em' }}>Traditional POS</th>
+                      <th style={{ padding: '20px 24px', textAlign: 'center', fontSize: 13, fontWeight: 600, color: '#4ade80', textTransform: 'uppercase', letterSpacing: '.1em' }}>Fixology</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { feature: 'Intake speed', traditional: '4-5 minutes', fixology: '40 seconds' },
+                      { feature: 'Risk detection', traditional: 'Manual checks', fixology: 'Automatic IMEI + pattern alerts' },
+                      { feature: 'Customer updates', traditional: 'Manual texts/calls', fixology: 'Auto-generated, tone-aware' },
+                      { feature: 'Inventory intelligence', traditional: 'Basic tracking', fixology: 'Usage patterns + reorder suggestions' },
+                      { feature: 'Diagnostic guidance', traditional: 'Tech experience only', fixology: 'AI-powered step-by-step' },
+                      { feature: 'Pricing confidence', traditional: 'Guesswork', fixology: 'Market comparison + breakdown' },
+                    ].map((row, i) => (
+                      <tr key={i} style={{ borderBottom: '1px solid rgba(167,139,250,.1)' }}>
+                        <td style={{ padding: '20px 24px', fontSize: 15, fontWeight: 600, color: '#fff' }}>{row.feature}</td>
+                        <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 14, color: '#6b7280' }}>{row.traditional}</td>
+                        <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 14, color: '#4ade80', fontWeight: 600 }}>{row.fixology}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section id="faq" className="section-spacer" style={{ background: 'rgba(167,139,250,.02)', scrollMarginTop: '120px' }}>
+          <div className="wide-container">
+            <div className="text-constraint-center" style={{ textAlign: 'center', marginBottom: 60 }}>
+              <h2 className="section-title">Frequently asked questions</h2>
+              <p style={{ fontSize: 16, color: '#a1a1aa', maxWidth: 600, margin: '16px auto 0' }}>Everything you need to know</p>
+            </div>
+            <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {[
+                {
+                  q: 'Does this replace my POS?',
+                  a: 'No. Fixology works alongside your existing POS system. We handle repair-specific workflows (diagnostics, risk detection, customer updates) while your POS handles payments and inventory basics. Many shops use Fixology for repair operations and keep their POS for checkout.'
+                },
+                {
+                  q: 'How long does setup take?',
+                  a: 'About 60 seconds. No complex integrations or data migration. You create an account, add your shop details, and start creating tickets. Our AI learns from your repair patterns over time, but you can use it immediately.'
+                },
+                {
+                  q: 'What if the AI is wrong?',
+                  a: 'Fixology shows confidence scores and multiple possible causes. You\'re always in control—review the suggestions, choose what makes sense, or override with your own diagnosis. The system learns from your corrections to improve over time.'
+                },
+                {
+                  q: 'Can I keep my workflow?',
+                  a: 'Yes. Fixology adapts to how you work. Use it for intake only, or for full ticket management. Skip features you don\'t need. The system is designed to reduce friction, not force a new process.'
+                },
+                {
+                  q: 'What devices does it support?',
+                  a: 'All major devices: iPhones, Android phones, tablets, laptops, gaming consoles, and more. The AI recognizes device models, common issues, and repair patterns across all device types.'
+                },
+                {
+                  q: 'Is my data secure?',
+                  a: 'Yes. All data is encrypted in transit and at rest. We follow industry-standard security practices and never share your customer or repair data with third parties. You can export your data anytime.'
+                }
+              ].map((faq, i) => {
+                const open = faqOpen === i;
+                return (
+                  <div key={i} className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+                    <button
+                      onClick={() => setFaqOpen(open ? null : i)}
+                      style={{
+                        width: '100%',
+                        padding: '24px 28px',
+                        background: 'transparent',
+                        border: 'none',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 16,
+                        transition: 'all .3s ease'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(167,139,250,.05)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                    >
+                      <span style={{ fontSize: 16, fontWeight: 600, color: '#fff', flex: 1 }}>{faq.q}</span>
+                      <span style={{ fontSize: 20, color: '#a78bfa', transition: 'transform .3s ease', transform: open ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
+                    </button>
+                    {open && (
+                      <div style={{ padding: '0 28px 24px', fontSize: 14, color: '#c4b5fd', lineHeight: 1.7 }}>
+                        {faq.a}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -2196,6 +2528,119 @@ export default function MarketingPage() {
             </div>
           </div>
         </section>
+
+        {/* LIVE CHAT WIDGET */}
+        <div
+          ref={chatDockRef}
+          style={{
+            position: 'absolute',
+            top: chatDockY ?? 24,
+            right: 24,
+            zIndex: 100,
+            transition: 'top .55s cubic-bezier(.2,.9,.25,1)',
+            willChange: 'top',
+          }}
+        >
+          {chatOpen ? (
+            <div className="glass-card" style={{ width: 320, padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>Chat with Fixology</div>
+                <button
+                  onClick={() => setChatOpen(false)}
+                  style={{ background: 'transparent', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 20, padding: 4 }}
+                >
+                  ×
+                </button>
+              </div>
+              <div style={{ fontSize: 13, color: '#c4b5fd', marginBottom: 16, lineHeight: 1.6 }}>
+                Have questions? We're here to help. Send us a message and we'll get back to you soon.
+              </div>
+              <button
+                className="glow-button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
+                  setChatOpen(false);
+                }}
+                style={{ width: '100%', padding: '12px 20px', fontSize: 14 }}
+              >
+                Start Conversation →
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setChatOpen(true)}
+              className="glass-card"
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                border: '1px solid rgba(167,139,250,.3)',
+                boxShadow: '0 8px 30px rgba(167,139,250,.2)',
+                transition: 'all .3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.boxShadow = '0 12px 40px rgba(167,139,250,.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = '0 8px 30px rgba(167,139,250,.2)';
+              }}
+            >
+              <span style={{ fontSize: 24 }}>💬</span>
+            </button>
+          )}
+        </div>
+
+        {/* MOBILE STICKY BOTTOM BAR */}
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          padding: '12px 16px',
+          background: 'rgba(15,10,26,.98)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(167,139,250,.2)',
+          display: 'none',
+          gap: 12
+        }}
+        className="mobile-sticky-bar"
+        >
+          <button
+            className="glow-button"
+            onClick={(e) => {
+              e.preventDefault();
+              document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            style={{ flex: 1, padding: '14px 20px', fontSize: 15, fontWeight: 600 }}
+          >
+            Get Started
+          </button>
+          <a
+            href="tel:+15551234567"
+            className="glow-button glow-button-secondary"
+            style={{ flex: 1, padding: '14px 20px', fontSize: 15, fontWeight: 600, textAlign: 'center', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            Call Us
+          </a>
+        </div>
+
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media (max-width: 768px) {
+            .mobile-sticky-bar { display: flex !important; }
+            .sticky-cta-desktop { display: none !important; }
+          }
+          @media (min-width: 769px) {
+            .mobile-sticky-bar { display: none !important; }
+          }
+        ` }} />
 
         {/* FOOTER */}
         <footer style={{ padding: '80px 0 40px', borderTop: '1px solid rgba(167,139,250,.1)', background: 'rgba(15,10,26,0.5)' }}>

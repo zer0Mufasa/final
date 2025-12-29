@@ -13,8 +13,19 @@
     // CONFIGURATION
     // ═══════════════════════════════════════════════════════════════
     
+    function getFixologyApiBase() {
+        const fromWindow = typeof window !== 'undefined' ? window.FIXOLOGY_API_BASE : '';
+        const fromStorage = (() => {
+            try { return localStorage.getItem('FIXOLOGY_API_BASE') || ''; } catch { return ''; }
+        })();
+        return (fromWindow || fromStorage || '').trim().replace(/\/+$/, '');
+    }
+
     const CONFIG = {
-        apiEndpoint: 'https://final-bice-phi.vercel.app/api/fixology-chat',
+        apiEndpoint: (() => {
+            const base = getFixologyApiBase();
+            return base ? `${base}/api/fixology-chat` : '/api/fixology-chat';
+        })(),
         // For local development, use:
         // apiEndpoint: 'http://localhost:3000/api/fixology-chat',
         

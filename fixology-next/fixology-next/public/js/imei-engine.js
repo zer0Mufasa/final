@@ -3,8 +3,20 @@
  * Frontend for IMEI verification with Basic & Deep check support
  */
 
+function getFixologyApiBase() {
+  const fromWindow = typeof window !== 'undefined' ? window.FIXOLOGY_API_BASE : '';
+  const fromStorage = (() => {
+    try { return localStorage.getItem('FIXOLOGY_API_BASE') || ''; } catch { return ''; }
+  })();
+  const base = (fromWindow || fromStorage || '').trim().replace(/\/+$/, '');
+  return base;
+}
+
 const IMEI_CONFIG = {
-  apiEndpoint: 'https://final-bice-phi.vercel.app/api/imei-check',
+  apiEndpoint: (() => {
+    const base = getFixologyApiBase();
+    return base ? `${base}/api/imei-check` : '/api/imei-check';
+  })(),
   debugMode: true // Set to false for production
 };
 

@@ -7,7 +7,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
-import { Logo } from '@/components/shared/logo'
+import { FixologyLogo } from '@/components/shared/fixology-logo'
+import { ReticleIcon } from '@/components/shared/reticle-icon'
 import { createClient } from '@/lib/supabase/client'
 import {
   LayoutDashboard,
@@ -15,15 +16,28 @@ import {
   Users,
   Package,
   FileText,
-  Cpu,
-  Smartphone,
-  Calendar,
-  MessageSquare,
   BarChart3,
-  UserPlus,
   Settings,
-  Sparkles,
+  Stethoscope,
+  LifeBuoy,
   LogOut,
+  ChevronLeft,
+  ChevronRight,
+  Building2,
+  Calendar,
+  UserCheck,
+  History,
+  Smartphone,
+  DollarSign,
+  MessageSquare,
+  Shield,
+  AlertTriangle,
+  FileCheck,
+  FileCode,
+  GraduationCap,
+  Plug,
+  TrendingUp,
+  HelpCircle,
 } from 'lucide-react'
 
 interface NavItem {
@@ -36,23 +50,42 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
   { label: 'Tickets', href: '/tickets', icon: <Ticket className="w-5 h-5" /> },
-  { label: 'Customers', href: '/customers', icon: <Users className="w-5 h-5" /> },
+  { label: 'To Do', href: '/daily-ops', icon: <Calendar className="w-5 h-5" /> },
   { label: 'Inventory', href: '/inventory', icon: <Package className="w-5 h-5" /> },
-  { label: 'Invoices', href: '/invoices', icon: <FileText className="w-5 h-5" /> },
+  { label: 'Diagnostics', href: '/diagnostics', icon: <Stethoscope className="w-5 h-5" /> },
 ]
 
-const toolsNavItems: NavItem[] = [
-  { label: 'AI Diagnostics', href: '/diagnostics', icon: <Cpu className="w-5 h-5" /> },
-  { label: 'IMEI Lookup', href: '/imei', icon: <Smartphone className="w-5 h-5" /> },
-  { label: 'Calendar', href: '/calendar', icon: <Calendar className="w-5 h-5" /> },
-  { label: 'Messages', href: '/messages', icon: <MessageSquare className="w-5 h-5" /> },
+const salesNavItems: NavItem[] = [
+  { label: 'Invoices', href: '/invoices', icon: <FileText className="w-5 h-5" /> },
+  { label: 'Pricing & Quotes', href: '/pricing', icon: <DollarSign className="w-5 h-5" /> },
+  { label: 'Communications', href: '/communications', icon: <MessageSquare className="w-5 h-5" /> },
+]
+
+const managementNavItems: NavItem[] = [
+  { label: 'Staff & Roles', href: '/staff', icon: <UserCheck className="w-5 h-5" /> },
+  { label: 'Reports', href: '/reports', icon: <BarChart3 className="w-5 h-5" /> },
+  { label: 'Business Health', href: '/business-health', icon: <TrendingUp className="w-5 h-5" /> },
+]
+
+const riskNavItems: NavItem[] = [
+  { label: 'Risk Center', href: '/risk', icon: <AlertTriangle className="w-5 h-5" /> },
+  { label: 'Warranty & Liability', href: '/warranty', icon: <Shield className="w-5 h-5" /> },
+]
+
+const intelligenceNavItems: NavItem[] = [
+  { label: 'Device Intelligence', href: '/device-intelligence', icon: <Smartphone className="w-5 h-5" /> },
+]
+
+const operationsNavItems: NavItem[] = [
+  { label: 'Audit & Logs', href: '/audit', icon: <FileCheck className="w-5 h-5" /> },
+  { label: 'Templates & Presets', href: '/templates', icon: <FileCode className="w-5 h-5" /> },
+  { label: 'Training Mode', href: '/training', icon: <GraduationCap className="w-5 h-5" /> },
+  { label: 'Integrations', href: '/integrations', icon: <Plug className="w-5 h-5" /> },
 ]
 
 const otherNavItems: NavItem[] = [
-  { label: 'Reports', href: '/reports', icon: <BarChart3 className="w-5 h-5" /> },
-  { label: 'Team', href: '/team', icon: <UserPlus className="w-5 h-5" /> },
-  { label: 'Autopilot', href: '/autopilot', icon: <Sparkles className="w-5 h-5" />, badge: 'New' },
   { label: 'Settings', href: '/settings', icon: <Settings className="w-5 h-5" /> },
+  { label: 'Help & Support', href: '/support', icon: <HelpCircle className="w-5 h-5" /> },
 ]
 
 interface SidebarProps {
@@ -73,13 +106,19 @@ export function Sidebar({ user, shop }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const [isManuallyCollapsed, setIsManuallyCollapsed] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
   const sidebarRef = useRef<HTMLElement>(null)
   const hoverZoneRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Handle hover on left edge of page
+  // Respect manual collapse state
+  const effectiveOpen = isOpen && !isManuallyCollapsed
+
+  // Handle hover on left edge of page (only if not manually collapsed)
   useEffect(() => {
+    if (isManuallyCollapsed) return
+
     const handleMouseMove = (e: MouseEvent) => {
       // Check if mouse is in the left edge zone (0-30px from left)
       if (e.clientX <= 30) {
@@ -137,23 +176,30 @@ export function Sidebar({ user, shop }: SidebarProps) {
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [isOpen])
+  }, [isOpen, isManuallyCollapsed])
 
   // Update main content padding when sidebar state changes
   useEffect(() => {
     const main = document.querySelector('.dash-main') as HTMLElement
     if (main) {
-      if (isOpen) {
+      if (effectiveOpen) {
         main.style.paddingLeft = '288px' // 256px sidebar (w-64) + 32px gap
       } else {
         main.style.paddingLeft = '88px' // 72px sidebar (collapsed) + 16px gap
       }
     }
-  }, [isOpen])
+  }, [effectiveOpen])
 
   const handleSignOut = async () => {
     try {
       setSigningOut(true)
+      // Demo mode (UI-only): clear demo cookie and return to login.
+      if (typeof document !== 'undefined' && document.cookie.includes('fx_demo=1')) {
+        document.cookie = 'fx_demo=; path=/; max-age=0; samesite=lax'
+        router.push('/login')
+        router.refresh()
+        return
+      }
       const supabase = createClient()
       await supabase.auth.signOut()
       router.push('/login')
@@ -170,21 +216,25 @@ export function Sidebar({ user, shop }: SidebarProps) {
       <Link
         href={item.href}
         className={cn(
-          'flex items-center gap-3 px-4 py-3 rounded-xl',
+          'relative flex items-center gap-3 px-4 py-3 rounded-xl',
           'text-white/60 text-sm font-medium',
           'transition-all duration-200 ease-out cursor-pointer',
           'hover:bg-white/5 hover:text-white',
           isActive && 'bg-white/10 text-[#a78bfa]',
-          !isOpen && 'justify-center px-3'
+          !effectiveOpen && 'justify-center px-3'
         )}
       >
+        {/* Active indicator glow pill */}
+        {isActive && (
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-gradient-to-b from-purple-400 to-purple-600 shadow-[0_0_12px_rgba(168,85,247,0.6)]" />
+        )}
         <span className={cn(
           'flex-shrink-0 transition-transform group-hover:scale-110',
           isActive && 'text-[#a78bfa]'
         )}>
           {item.icon}
         </span>
-        {isOpen && (
+        {effectiveOpen && (
           <>
             <span className="flex-1">{item.label}</span>
             {item.badge && (
@@ -213,27 +263,54 @@ export function Sidebar({ user, shop }: SidebarProps) {
           'bg-black/30 backdrop-blur-xl',
           'border-r border-white/10',
           'flex flex-col transition-all duration-300 ease-out z-40',
-          isOpen ? 'w-64' : 'w-[72px]'
+          effectiveOpen ? 'w-64' : 'w-[72px]'
         )}
       >
-        {/* Logo */}
+        {/* Logo + Toggle */}
         <div className={cn(
-          'flex items-center justify-center h-16 border-b border-white/10 w-full',
-          isOpen ? 'px-4' : 'px-0'
+          'flex items-center justify-between h-16 border-b border-white/10 w-full',
+          effectiveOpen ? 'px-4' : 'px-0'
         )}>
           <div className={cn(
             'flex items-center',
-            isOpen ? 'gap-3' : 'justify-center'
+            effectiveOpen ? 'gap-3' : 'justify-center flex-1'
           )}>
-            <Logo showText={isOpen} size={isOpen ? 'md' : 'sm'} />
+            {effectiveOpen ? (
+              <FixologyLogo size="lg" animate={true} className="tracking-tight" />
+            ) : (
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-700/20 border border-purple-500/30 flex items-center justify-center">
+                <ReticleIcon size="lg" color="purple" variant="idle" className="opacity-95 scale-[1.08]" />
+              </div>
+            )}
           </div>
+          {effectiveOpen && (
+            <button
+              onClick={() => setIsManuallyCollapsed(true)}
+              className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-white/50 hover:text-white"
+              aria-label="Collapse sidebar"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+          {!effectiveOpen && (
+            <button
+              onClick={() => {
+                setIsManuallyCollapsed(false)
+                setIsOpen(true)
+              }}
+              className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-white/50 hover:text-white w-full flex items-center justify-center"
+              aria-label="Expand sidebar"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-6">
           {/* Main */}
           <div>
-            {isOpen && (
+            {effectiveOpen && (
               <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
                 Main
               </p>
@@ -245,15 +322,71 @@ export function Sidebar({ user, shop }: SidebarProps) {
             </div>
           </div>
 
-          {/* Tools */}
+          {/* Sales */}
           <div>
-            {isOpen && (
+            {effectiveOpen && (
               <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                Tools
+                Sales
               </p>
             )}
             <div className="space-y-1">
-              {toolsNavItems.map((item) => (
+              {salesNavItems.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+
+          {/* Management */}
+          <div>
+            {effectiveOpen && (
+              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+                Management
+              </p>
+            )}
+            <div className="space-y-1">
+              {managementNavItems.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+
+          {/* Risk & Compliance */}
+          <div>
+            {effectiveOpen && (
+              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+                Risk & Compliance
+              </p>
+            )}
+            <div className="space-y-1">
+              {riskNavItems.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+
+          {/* Intelligence */}
+          <div>
+            {effectiveOpen && (
+              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+                Intelligence
+              </p>
+            )}
+            <div className="space-y-1">
+              {intelligenceNavItems.map((item) => (
+                <NavLink key={item.href} item={item} />
+              ))}
+            </div>
+          </div>
+
+          {/* Operations */}
+          <div>
+            {effectiveOpen && (
+              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
+                Operations
+              </p>
+            )}
+            <div className="space-y-1">
+              {operationsNavItems.map((item) => (
                 <NavLink key={item.href} item={item} />
               ))}
             </div>
@@ -261,7 +394,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
 
           {/* Other */}
           <div>
-            {isOpen && (
+            {effectiveOpen && (
               <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
                 Other
               </p>
@@ -276,28 +409,44 @@ export function Sidebar({ user, shop }: SidebarProps) {
 
         {/* User section */}
         <div className={cn(
-          'p-3 border-t border-white/10',
-          !isOpen && 'flex flex-col items-center justify-center'
+          'p-3 border-t border-white/10 space-y-2',
+          !effectiveOpen && 'flex flex-col items-center justify-center'
         )}>
-          {isOpen && shop && (
-            <div className="px-4 py-3 mb-2 rounded-2xl bg-white/[0.04] border border-white/10">
-              <p className="text-sm font-semibold text-white truncate">
-                {shop.name}
-              </p>
-              <p className="text-xs text-white/50">
-                {[shop.city, shop.state].filter(Boolean).join(', ') || '—'} • {shop.plan.toLowerCase()} plan
-              </p>
-            </div>
+          {/* Switch shop card */}
+          {effectiveOpen && (
+            <button
+              onClick={() => {
+                // UI only - would open shop switcher modal
+                console.log('Switch shop (UI only)')
+              }}
+              className="w-full px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.06] hover:border-purple-400/30 transition-all text-left group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-700/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0 group-hover:border-purple-400/50 transition-colors">
+                  <Building2 className="w-4 h-4 text-purple-300" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-0.5">Current Shop</p>
+                  <p className="text-sm font-semibold text-white truncate">
+                    {shop?.name || 'Demo Shop'}
+                  </p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    {shop?.city && shop?.state ? `${shop.city}, ${shop.state}` : '—'} • {shop?.plan?.toLowerCase() || 'pro'} plan
+                  </p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/50 transition-colors flex-shrink-0" />
+              </div>
+            </button>
           )}
 
           <div className={cn(
             'flex items-center gap-3',
-            isOpen ? 'px-4 py-2' : 'px-0 py-2 justify-center w-full'
+            effectiveOpen ? 'px-4 py-2' : 'px-0 py-2 justify-center w-full'
           )}>
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm font-semibold flex-shrink-0">
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
-            {isOpen && (
+            {effectiveOpen && (
               <>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">

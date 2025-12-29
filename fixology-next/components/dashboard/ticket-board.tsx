@@ -27,6 +27,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { TicketCard } from './ticket-card'
 import { Ticket } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { ReticleIcon } from '@/components/shared/reticle-icon'
 
 interface Ticket {
   id: string
@@ -66,7 +67,15 @@ const STATUSES = [
   { id: 'PICKED_UP', title: 'Picked Up', color: 'gray' },
 ]
 
-function ColumnHeader({ column, count }: { column: typeof STATUSES[0]; count: number }) {
+function ColumnHeader({ 
+  column, 
+  count, 
+  isActive 
+}: { 
+  column: typeof STATUSES[0]
+  count: number
+  isActive?: boolean
+}) {
   return (
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-2">
@@ -74,6 +83,21 @@ function ColumnHeader({ column, count }: { column: typeof STATUSES[0]; count: nu
         <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/60 text-xs font-semibold">
           {count}
         </span>
+        {/* Reticle indicator */}
+        <div className={cn(
+          'transition-all duration-300',
+          isActive && 'scale-110'
+        )}>
+          <ReticleIcon 
+            size="sm" 
+            variant={isActive ? 'lock' : 'default'}
+            color="purple"
+            className={cn(
+              'opacity-40',
+              isActive && 'opacity-100 animate-pulse'
+            )}
+          />
+        </div>
       </div>
     </div>
   )
@@ -151,11 +175,13 @@ function BoardColumn({
   tickets,
   onTicketClick,
   selectedTicketId,
+  isDragTarget,
 }: {
   column: typeof STATUSES[0]
   tickets: Ticket[]
   onTicketClick: (ticket: Ticket) => void
   selectedTicketId?: string | null
+  isDragTarget?: boolean
 }) {
   const sortableIds = tickets.map((t) => t.id)
   const { setNodeRef, isOver } = useDroppable({
@@ -170,12 +196,16 @@ function BoardColumn({
     <div 
       ref={setNodeRef}
       className={cn(
-        "flex-shrink-0 w-80",
+        "flex-shrink-0 w-80 transition-all duration-300",
         isOver && "ring-2 ring-purple-500/50 rounded-xl"
       )}
       data-column-id={column.id}
     >
-      <ColumnHeader column={column} count={tickets.length} />
+      <ColumnHeader 
+        column={column} 
+        count={tickets.length} 
+        isActive={isOver || isDragTarget}
+      />
       <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
         <div className="space-y-2 min-h-[200px]" data-column-id={column.id}>
           {tickets.map((ticket) => (
@@ -209,6 +239,7 @@ export function TicketBoard({
 }: TicketBoardProps) {
   const [columns, setColumns] = useState<Column[]>([])
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [dragOverColumnId, setDragOverColumnId] = useState<string | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
   const [isRightClickPanning, setIsRightClickPanning] = useState(false)
   const [panStart, setPanStart] = useState({ x: 0, scrollLeft: 0 })
@@ -298,7 +329,10 @@ export function TicketBoard({
 
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event
-    if (!over) return
+    if (!over) {
+      setDragOverColumnId(null)
+      return
+    }
 
     const activeId = active.id as string
     const overId = over.id as string
@@ -308,7 +342,10 @@ export function TicketBoard({
       col.tickets.some((t) => t.id === activeId)
     )
 
-    if (!activeColumn) return
+    if (!activeColumn) {
+      setDragOverColumnId(null)
+      return
+    }
 
     // Check if dragging over a column (droppable area)
     let targetColumn = columns.find((col) => col.id === overId)
@@ -329,6 +366,13 @@ export function TicketBoard({
       if (containerId) {
         targetColumn = columns.find((col) => col.id === containerId)
       }
+    }
+
+    // Update drag over column for reticle effect
+    if (targetColumn && targetColumn.id !== activeColumn.id) {
+      setDragOverColumnId(targetColumn.id)
+    } else {
+      setDragOverColumnId(null)
     }
 
     if (!targetColumn || activeColumn.id === targetColumn.id) {
@@ -374,6 +418,7 @@ export function TicketBoard({
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
     setActiveId(null)
+    setDragOverColumnId(null)
 
     if (!over) return
 
@@ -440,6 +485,7 @@ export function TicketBoard({
               tickets={column.tickets}
               onTicketClick={(ticket) => onTicketSelect?.(ticket)}
               selectedTicketId={selectedTicketId}
+              isDragTarget={dragOverColumnId === column.id}
             />
           ))}
         </div>

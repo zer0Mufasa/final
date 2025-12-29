@@ -45,8 +45,9 @@ const config: Config = {
         'full': 'var(--radius-full)',
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-space-grotesk)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-ibm-plex-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-jetbrains-mono)', 'ui-monospace', 'monospace'],
+        display: ['var(--font-ibm-plex-sans)', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out forwards',

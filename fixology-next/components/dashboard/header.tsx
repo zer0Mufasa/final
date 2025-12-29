@@ -32,31 +32,37 @@ export function Header({ shopName, location, user, title, description, actions }
   return (
     <header className="sticky top-0 z-30 bg-black/30 backdrop-blur-xl border-b border-white/10">
       <div className={`flex items-center justify-between ${isCommandCenter ? 'h-16 px-6' : 'h-20 px-8'}`}>
-        {/* Left - Shop name + location (command center) or Title (legacy) */}
+        {/* Left - Shop name (command center) or Title (legacy). Fixology brand lives in the sidebar. */}
         <div className="flex items-center gap-4">
           {isCommandCenter ? (
-            shopName && (
-              <div>
-                <h1 className="text-lg font-bold text-white">
-                  {shopName}
-                </h1>
-                {location && (
-                  <p className="text-xs text-white/60">
-                    {location}
-                  </p>
-                )}
-              </div>
-            )
+            <>
+              {shopName && (
+                <div>
+                  <h1 className="text-lg font-bold text-white">
+                    {shopName}
+                  </h1>
+                  {location && (
+                    <p className="text-xs text-white/60">
+                      {location}
+                    </p>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
-            title && !searchOpen && (
-              <div>
-                <h1 className="text-xl font-bold text-white mb-1">
-                  {title}
-                </h1>
-                {description && (
-                  <p className="text-sm text-white/60 font-medium">
-                    {description}
-                  </p>
+            !searchOpen && (
+              <div className="flex items-center gap-4">
+                {title && (
+                  <div>
+                    <h1 className="text-xl font-bold text-white mb-1">
+                      {title}
+                    </h1>
+                    {description && (
+                      <p className="text-sm text-white/60 font-medium">
+                        {description}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
             )
