@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import NextImage from 'next/image'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Button } from '@/components/ui/button'
