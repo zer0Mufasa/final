@@ -381,11 +381,18 @@ const extVariants = (pathNoExt: string) => [
 const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
   const candidates: string[] = []
   const slug = slugify(model)
-  const raw = (model || '').toLowerCase()
   const rawModel = (model || '').trim()
+  const rawLower = rawModel.toLowerCase()
   const underscoreRaw = toUnderscoreKey(rawModel)
-  const rawUnderscorePreserve = (model || '').trim().replace(/\s+/g, '_')
-  const normKey = raw.trim()
+  const rawUnderscorePreserve = rawModel.replace(/\s+/g, '_')
+  const normKey = rawLower.trim()
+  const titleUnderscore = rawModel
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('_')
+  const dashLower = slug
+  const dashPreserve = rawModel.replace(/\s+/g, '-')
 
   // Override hits first
   const overrideList = modelImageOverrides[category]?.[normKey]
@@ -393,12 +400,20 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     candidates.push(...overrideList)
   }
 
-  // Generic: try straight matches in /public/devices using both slug and underscore, plus 130x130 variants.
-  candidates.push(...extVariants(`/devices/${underscoreRaw}`))
-  candidates.push(...extVariants(`/devices/${slug}`))
-  candidates.push(...extVariants(`/devices/${underscoreRaw}-130x130`))
-  candidates.push(...extVariants(`/devices/${rawUnderscorePreserve}`))
-  candidates.push(...extVariants(`/devices/${rawUnderscorePreserve}-130x130`))
+  // Helper to push multiple variants for a base (without extension)
+  const pushVariant = (base: string) => {
+    if (!base) return
+    candidates.push(...extVariants(`/devices/${base}`))
+    candidates.push(...extVariants(`/devices/${base}-130x130`))
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${base}`))
+  }
+
+  // Generic: try straight matches in /public/devices using slug/underscore/title/dash variants.
+  pushVariant(underscoreRaw)
+  pushVariant(rawUnderscorePreserve)
+  pushVariant(titleUnderscore)
+  pushVariant(dashLower)
+  pushVariant(dashPreserve)
 
   // Preferred convention (new, clean): /public/devices/models/<category>/<slug>.(png|jpg|webp)
   candidates.push(...extVariants(`/devices/models/${category}/${slug}`))
@@ -408,22 +423,14 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     const m = normalizeForKey(model)
     const isSE = m.toLowerCase().includes('iphone se')
     const jobKey = isSE ? 'iPhone_SE' : toUnderscoreKey(m)
-    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${jobKey}`))
-
-    // Newer iPhone thumbs: iPhone_16_Pro_Max-130x130.png, etc.
+    pushVariant(jobKey)
+    // Newer iPhone thumbs
     const key130 = toUnderscoreKey(m)
     candidates.push(`/devices/${key130}-130x130.png`)
-
-    // iPhone 17 special-case files already in /public/devices/
-    if (m.toLowerCase() === 'iphone 17 pro max') {
-      candidates.push('/devices/apple-iphone-17-pro-max-cosmic-orange-official-image.webp')
-    }
-    if (m.toLowerCase() === 'iphone 17 pro') {
-      candidates.push('/devices/17 pro.jpg')
-    }
-    if (m.toLowerCase().startsWith('iphone 17')) {
-      candidates.push('/devices/iPhone-17-Black.jpg')
-    }
+    if (m.toLowerCase() === 'iphone 17 pro max') candidates.push('/devices/apple-iphone-17-pro-max-cosmic-orange-official-image.webp')
+    if (m.toLowerCase() === 'iphone 17 pro') candidates.push('/devices/17 pro.jpg')
+    if (m.toLowerCase().startsWith('iphone 17')) candidates.push('/devices/iPhone-17-Black.jpg')
+    pushVariant(`iPhone_${titleUnderscore || rawUnderscorePreserve || underscoreRaw}`)
   }
 
   if (category === 'samsung') {
@@ -458,6 +465,11 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     if (m.toLowerCase() === 'galaxy s25') candidates.push('/devices/Samsung_Galaxy_S25-130x130.png')
     if (m.toLowerCase() === 'galaxy s25+') candidates.push('/devices/Samsung_Galaxy_S25_Plus-130x130.png')
     if (m.toLowerCase() === 'galaxy s25 ultra') candidates.push('/devices/Samsung_Galaxy_S25_Ultra-130x130.png')
+
+    // Samsung prefix variants
+    const base = titleUnderscore || rawUnderscorePreserve || underscoreRaw
+    pushVariant(`Samsung_Galaxy_${base}`)
+    pushVariant(`Samsung_${base}`)
   }
 
   if (category === 'google') {
@@ -559,6 +571,27 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     // Some iPad assets exist with slightly different names; try a couple extra known ones.
     if (m.toLowerCase() === 'ipad 10.2') candidates.push('/devices/Job_Details_Icon_-_Device_Model_-_iPad_10.2 (1).jpg')
     if (m.toLowerCase().startsWith('ipad (5th generation)')) candidates.push('/devices/Job_Details_Icon_-_Device_Model_-_iPad__5th_Generation_.jpg')
+  }
+
+  // de-dupe while preserving order
+  // Google Pixel variants
+  if (category === 'google') {
+    const base = titleUnderscore || rawUnderscorePreserve || underscoreRaw
+    pushVariant(`Google_Pixel_${base}`)
+    pushVariant(`GooglePixel${base ? '_' + base : ''}`)
+  }
+
+  // Motorola variants
+  if (category === 'motorola') {
+    const base = titleUnderscore || rawUnderscorePreserve || underscoreRaw
+    pushVariant(`Motorola_${base}`)
+    pushVariant(`Moto_${base}`)
+  }
+
+  // LG variants
+  if (category === 'lg') {
+    const base = titleUnderscore || rawUnderscorePreserve || underscoreRaw
+    pushVariant(`LG_${base}`)
   }
 
   // de-dupe while preserving order
