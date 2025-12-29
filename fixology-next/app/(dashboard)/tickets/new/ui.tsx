@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Button } from '@/components/ui/button'
@@ -603,7 +603,7 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
     >
       {!failed ? (
         <div className={cn('w-24 h-24 sm:w-28 sm:h-28', !isSelected && 'bg-white')}>
-          <Image
+          <NextImage
             src={isOther ? deviceCatalog[category].imageSrc : src}
             alt={model}
             width={120}
@@ -764,8 +764,8 @@ export function NewTicketClient() {
     Object.entries(topModels).forEach(([key, models]) => {
       (models || []).forEach((m) => {
         const src = modelImageCandidates(key as DeviceCategoryKey, m)[0]
-        if (src) {
-          const img = new Image()
+        if (src && typeof window !== 'undefined' && window.Image) {
+          const img = new window.Image()
           img.src = src
         }
       })
@@ -777,8 +777,8 @@ export function NewTicketClient() {
     const models = deviceCatalog[cat]?.models || []
     models.slice(0, 24).forEach((m) => {
       const src = modelImageCandidates(cat, m)[0]
-      if (src) {
-        const img = new Image()
+      if (src && typeof window !== 'undefined' && window.Image) {
+        const img = new window.Image()
         img.src = src
       }
     })
