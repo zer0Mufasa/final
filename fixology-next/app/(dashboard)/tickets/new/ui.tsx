@@ -106,7 +106,7 @@ const deviceCatalog: Record<
       'iPhone 17 Pro',
       'iPhone 17 Pro Max',
     ],
-    imageSrc: '/devices/iphone.svg',
+    imageSrc: '/devices/iPhone_16_Pro_Max-130x130.png',
   },
   samsung: {
     key: 'samsung',
@@ -186,7 +186,7 @@ const deviceCatalog: Record<
       'Galaxy A01',
       'Other / Custom',
     ],
-    imageSrc: '/devices/samsung.svg',
+    imageSrc: '/devices/Samsung_Galaxy_S25_Ultra-130x130.png',
   },
   google: {
     key: 'google',
@@ -326,8 +326,8 @@ const deviceCatalog: Record<
     label: 'Nintendo Switch',
     deviceType: 'Console',
     brand: 'Nintendo',
-    models: ['Switch OLED', 'Switch', 'Switch Lite'],
-    imageSrc: '/devices/switch.svg',
+    models: ['Switch', 'Switch Lite', 'Switch 2'],
+    imageSrc: '/devices/nintendoswitch.avif',
   },
   ps5: {
     key: 'ps5',
@@ -343,7 +343,7 @@ const deviceCatalog: Record<
     deviceType: 'Console',
     brand: 'Microsoft',
     models: ['Xbox Series X', 'Xbox Series S'],
-    imageSrc: '/devices/xbox.png',
+    imageSrc: '/devices/xboxseriess.webp',
   },
 }
 
@@ -373,6 +373,7 @@ const extVariants = (pathNoExt: string) => [
   `${pathNoExt}.jpg`,
   `${pathNoExt}.jpeg`,
   `${pathNoExt}.webp`,
+  `${pathNoExt}.avif`,
 ]
 
 const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
@@ -483,6 +484,22 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     } else if (raw.includes('razr+')) {
       candidates.push('/devices/Motorola_Razr_Plus-130x130.png')
     }
+  }
+
+  if (category === 'switch') {
+    const m = normalizeForKey(model).toLowerCase()
+    // Category-wide images for the main Switch family
+    candidates.push('/devices/nintendoswitch.avif')
+    if (m.includes('lite')) candidates.push('/devices/Nintendo-Switch-Lite-Console-Dialga-and-Palkia-Edition.avif')
+    if (m.includes('switch 2') || m.includes('2')) candidates.push('/devices/nintendo-switch-2.avif')
+  }
+
+  if (category === 'xbox') {
+    const m = normalizeForKey(model).toLowerCase()
+    // New Series S image and existing series assets
+    candidates.push('/devices/xboxseriess.webp')
+    if (m.includes('series x')) candidates.push('/devices/Job_Details_Icon_-_Device_Model_-_Xbox_Series_X.png')
+    if (m.includes('series s')) candidates.push('/devices/xboxseriess.webp')
   }
 
   if (category === 'lg') {
