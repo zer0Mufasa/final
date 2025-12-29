@@ -33,6 +33,9 @@ import { parseIntakeText } from '@/lib/ai/intake-parser'
 type DeviceCategoryKey =
   | 'iphone'
   | 'samsung'
+  | 'google'
+  | 'motorola'
+  | 'lg'
   | 'ipad'
   | 'tablet'
   | 'macbook'
@@ -185,12 +188,113 @@ const deviceCatalog: Record<
     ],
     imageSrc: '/devices/samsung.svg',
   },
+  google: {
+    key: 'google',
+    label: 'Google',
+    deviceType: 'Phone',
+    brand: 'Google',
+    models: [
+      'Pixel XL',
+      'Pixel 2',
+      'Pixel 2 XL',
+      'Pixel 3',
+      'Pixel 3 XL',
+      'Pixel 3a',
+      'Pixel 3a XL',
+      'Pixel 4',
+      'Pixel 4 XL',
+      'Pixel 4a',
+      'Pixel 4a 5G',
+      'Pixel 5',
+      'Pixel 5a',
+      'Pixel 6',
+      'Pixel 6 Pro',
+      'Pixel 6a',
+      'Pixel 7',
+      'Pixel 7 Pro',
+      'Pixel 7a',
+      'Pixel 8',
+      'Pixel 8 Pro',
+      'Pixel 9',
+      'Pixel 9 Pro',
+      'Pixel 9 Pro XL',
+      'Pixel 9 Pro Fold',
+      'Pixel 10',
+      'Pixel 10 Pro',
+      'Pixel 10 Pro XL',
+      'Pixel 10 Pro Fold',
+      'Other / Custom',
+    ],
+    // Use a real Pixel image as the category tile art (white card background makes it read cleanly).
+    imageSrc: '/devices/pixel_9.png',
+  },
+  motorola: {
+    key: 'motorola',
+    label: 'Motorola',
+    deviceType: 'Phone',
+    brand: 'Motorola',
+    models: [
+      'Razr+ (2024)',
+      'Razr 2024',
+      'Razr 40 (2023)',
+      'Razr+',
+      'One 5G Ace',
+      'One 5G',
+      'Moto Z4',
+      'Moto Z3',
+      'Moto Surf E6',
+      'Moto Rugby Go E5 Play',
+      'Moto Rugby E5',
+      'Moto G9 Power',
+      'Moto G9 Play',
+      'Moto G8 Stylus',
+      'Moto G8 Power',
+      'Moto G7 Power',
+      'Moto G Stylus 5G',
+      'Moto G Pure',
+      'Moto G Power',
+      'Moto G Play',
+      'Moto G Power (2021)',
+      'Other / Custom',
+    ],
+    imageSrc: '/devices/razr_plus_2024-130x130.png',
+  },
+  lg: {
+    key: 'lg',
+    label: 'LG',
+    deviceType: 'Phone',
+    brand: 'LG',
+    models: [
+      'G8 ThinQ',
+      'G8X ThinQ',
+      'G7 One',
+      'G7 ThinQ',
+      'Velvet 5G',
+      'Q70',
+      'V60 ThinQ 5G',
+      'V50',
+      'V40',
+      'Other / Custom',
+    ],
+    imageSrc: '/devices/Job_Details_Icon_-_Device_Model_-_LG_G8_ThinQ.jpg',
+  },
   ipad: {
     key: 'ipad',
     label: 'iPad',
     deviceType: 'Tablet',
     brand: 'Apple',
-    models: ['iPad Pro 12.9"', 'iPad Pro 11"', 'iPad Air', 'iPad mini', 'iPad (Standard)'],
+    models: [
+      'iPad (5th Generation)',
+      'iPad Pro 12.9',
+      'iPad Pro 11',
+      'iPad 10.2',
+      'iPad 9.7 (6th Gen)',
+      'iPad Air 4',
+      'iPad Air 3',
+      'iPad Mini 6',
+      'iPad Mini 5',
+      'Other / Custom',
+    ],
     imageSrc: '/devices/ipad.png',
   },
   tablet: {
@@ -274,6 +378,7 @@ const extVariants = (pathNoExt: string) => [
 const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
   const candidates: string[] = []
   const slug = slugify(model)
+  const raw = (model || '').toLowerCase()
 
   // Preferred convention (new, clean): /public/devices/models/<category>/<slug>.(png|jpg|webp)
   candidates.push(...extVariants(`/devices/models/${category}/${slug}`))
@@ -332,6 +437,75 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     if (m.toLowerCase() === 'galaxy s23 ultra 5g') candidates.push('/devices/Samsung_Galaxy_S23_Ultra-130x130.jpg')
   }
 
+  if (category === 'google') {
+    const m = normalizeForKey(model)
+    const rest = m.replace(/^google\s+/i, '').trim() // "Pixel 8 Pro"
+
+    // Job-details assets: Job_Details_Icon_-_Device_Model_-_Google_Pixel_7_Pro.png, etc.
+    const jobKey = `Google_${toUnderscoreKey(rest)}`
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${jobKey}`))
+
+    // Newer Pixel thumbs under /public/devices/
+    if (rest.toLowerCase() === 'pixel 8') candidates.push('/devices/GooglePixel8-130x130.png')
+    if (rest.toLowerCase() === 'pixel 8 pro') candidates.push('/devices/GooglePixel8Pro-130x130.png')
+    if (rest.toLowerCase() === 'pixel 7a') candidates.push('/devices/Google_Pixel_7a-130x130.png')
+
+    if (rest.toLowerCase() === 'pixel 10') candidates.push('/devices/Google_Pixel_10-130x130.png')
+    if (rest.toLowerCase() === 'pixel 10 pro') candidates.push('/devices/Google_Pixel_10_Pro-130x130.png')
+    if (rest.toLowerCase() === 'pixel 10 pro xl') candidates.push('/devices/Google_Pixel_10_Pro_XL-130x130.png')
+    if (rest.toLowerCase() === 'pixel 10 pro fold') candidates.push('/devices/Google_Pixel_10_Pro_Fold-130x130.png')
+
+    // Pixel 9 assets present (naming is a bit inconsistent)
+    if (rest.toLowerCase() === 'pixel 9') candidates.push('/devices/pixel_9.png')
+    if (rest.toLowerCase() === 'pixel 9 pro xl') {
+      candidates.push('/devices/Pixel_9_Pro_XL_Obsidian-130x130.png')
+      candidates.push('/devices/Pixel_9_Pro_XL_Rose_Quartz-130x130.png')
+    }
+    if (rest.toLowerCase() === 'pixel 9 pro fold') candidates.push('/devices/Pixel_9_Pro_Fold_2-130x130.png')
+  }
+
+  if (category === 'motorola') {
+    const m = normalizeForKey(model)
+    const rest = m.replace(/^motorola\s+/i, '').trim()
+
+    // Job-details assets: Job_Details_Icon_-_Device_Model_-_Motorola_Moto_G7_Power.png, etc.
+    const jobKey = `Motorola_${toUnderscoreKey(rest)}`
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${jobKey}`))
+
+    // Razr thumbs under /public/devices/
+    if (raw.includes('razr+') && raw.includes('2024')) {
+      candidates.push('/devices/razr_plus_2024-130x130.png')
+      candidates.push('/devices/Motorola_Razr_Plus-130x130.png')
+    } else if (raw.includes('razr 2024') || (raw.includes('razr') && raw.includes('2024'))) {
+      candidates.push('/devices/Moto_Razr_2024-130x130.png')
+    } else if (raw.includes('razr 40') || raw.includes('2023')) {
+      candidates.push('/devices/Motorola_Razr_40__2023_-130x130.png')
+    } else if (raw.includes('razr+')) {
+      candidates.push('/devices/Motorola_Razr_Plus-130x130.png')
+    }
+  }
+
+  if (category === 'lg') {
+    const m = normalizeForKey(model)
+    const rest = m.replace(/^lg\s+/i, '').trim()
+
+    // Job-details assets: Job_Details_Icon_-_Device_Model_-_LG_V60_ThinQ_5G.png, etc.
+    const keyBase = `LG_${toUnderscoreKey(rest)}`
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${keyBase}`))
+  }
+
+  if (category === 'ipad') {
+    const m = normalizeForKey(model)
+
+    // Job-details assets: Job_Details_Icon_-_Device_Model_-_iPad_Pro_11.png, etc.
+    const keyBase = toUnderscoreKey(m)
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${keyBase}`))
+
+    // Some iPad assets exist with slightly different names; try a couple extra known ones.
+    if (m.toLowerCase() === 'ipad 10.2') candidates.push('/devices/Job_Details_Icon_-_Device_Model_-_iPad_10.2 (1).jpg')
+    if (m.toLowerCase().startsWith('ipad (5th generation)')) candidates.push('/devices/Job_Details_Icon_-_Device_Model_-_iPad__5th_Generation_.jpg')
+  }
+
   // de-dupe while preserving order
   return Array.from(new Set(candidates))
 }
@@ -339,6 +513,9 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
 const deviceCategoryOrder: DeviceCategoryKey[] = [
   'iphone',
   'samsung',
+  'google',
+  'motorola',
+  'lg',
   'ipad',
   'tablet',
   'macbook',
@@ -353,6 +530,9 @@ function inferCategory(brand: string, model: string): DeviceCategoryKey | null {
   const m = (model || '').toLowerCase()
   if (m.includes('iphone')) return 'iphone'
   if (b.includes('samsung') || m.includes('galaxy')) return 'samsung'
+  if (b.includes('google') || m.includes('pixel')) return 'google'
+  if (b.includes('motorola') || m.includes('moto') || m.includes('razr')) return 'motorola'
+  if (b === 'lg' || b.includes('lg') || m.startsWith('lg ') || m.includes(' thinq') || m.includes(' velvet')) return 'lg'
   if (m.includes('ipad')) return 'ipad'
   if (m.includes('macbook')) return 'macbook'
   if (m.includes('switch') || b.includes('nintendo')) return 'switch'
