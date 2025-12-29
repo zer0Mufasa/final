@@ -694,16 +694,22 @@ export function NewTicketClient() {
                           }}
                           className={cn(
                             'rounded-2xl border p-4 text-left transition-all',
-                            selected ? 'bg-purple-500/15 border-purple-400/30' : 'bg-white/[0.04] border-white/10 hover:bg-white/[0.06]'
+                            // White tile treatment for the category cards only (so white/transparent images read cleanly).
+                            selected
+                              ? 'bg-white/95 border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.28)]'
+                              : 'bg-white/90 border-black/10 hover:bg-white hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
                           )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center overflow-hidden">
-                              <img src={c.imageSrc} alt={c.label} className="w-10 h-10 opacity-90 object-contain" />
-                            </div>
+                            {/* No bubble container — show the image directly so the new white/transparent pics feel native. */}
+                            <img
+                              src={c.imageSrc}
+                              alt={c.label}
+                              className="w-11 h-11 opacity-95 object-contain"
+                            />
                             <div className="min-w-0">
-                              <div className={cn('text-sm font-semibold', selected ? 'text-white' : 'text-white/80')}>{c.label}</div>
-                              <div className="text-[11px] text-white/45 mt-0.5">{c.deviceType}</div>
+                              <div className={cn('text-sm font-semibold', selected ? 'text-black/90' : 'text-black/80')}>{c.label}</div>
+                              <div className="text-[11px] text-black/45 mt-0.5">{c.deviceType}</div>
                             </div>
                           </div>
                         </button>
