@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   Sparkles,
   Ticket,
   Phone,
@@ -123,6 +124,19 @@ const deviceCatalog: Record<
     models: ['Xbox Series X', 'Xbox Series S'],
     imageSrc: '/devices/xbox.png',
   },
+}
+
+const slugify = (s: string) =>
+  (s || '')
+    .toLowerCase()
+    .replace(/["']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+
+const modelImageSrc = (category: DeviceCategoryKey, model: string) => {
+  // Convention: put model images here (UI-only): /public/devices/models/<category>/<slug>.png
+  // Example: /public/devices/models/ps5/ps5-slim.png
+  return `/devices/models/${category}/${slugify(model)}.png`
 }
 
 const deviceCategoryOrder: DeviceCategoryKey[] = [
@@ -239,6 +253,17 @@ export function NewTicketClient() {
   const [quickText, setQuickText] = useState('')
   const [quickStatus, setQuickStatus] = useState<{ ok: boolean; message: string } | null>(null)
   const [customModel, setCustomModel] = useState(false)
+  const [modelQuery, setModelQuery] = useState('')
+  const [showBackToTop, setShowBackToTop] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowBackToTop(window.scrollY > 520)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll as any)
+  }, [])
 
   // Auto-fill customer when phone is entered
   useEffect(() => {
@@ -371,7 +396,7 @@ export function NewTicketClient() {
     <div className="min-h-screen pb-12">
       {/* Sticky header */}
       <div className="sticky top-16 z-20 bg-black/40 backdrop-blur-xl border-b border-white/10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-3">
             <div>
               <h1 className="text-xl font-bold text-white/90">Front Desk Intake</h1>
@@ -437,7 +462,7 @@ export function NewTicketClient() {
       </div>
 
       {/* Main content */}
-      <div className="max-w-3xl mx-auto mt-6 px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto mt-6 px-4 sm:px-6">
         {/* Quick Intake (optional) */}
         {!form.ticketCreated && step <= 3 && (
           <GlassCard className="p-5 sm:p-6 rounded-3xl mb-6">
@@ -674,7 +699,7 @@ export function NewTicketClient() {
               <div className="space-y-4">
                 <div>
                   <label className="label mb-3">Device category *</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                     {deviceCategoryOrder.map((k) => {
                       const c = deviceCatalog[k]
                       const selected = form.deviceCategory === k
@@ -684,6 +709,7 @@ export function NewTicketClient() {
                           type="button"
                           onClick={() => {
                             setCustomModel(false)
+                            setModelQuery('')
                             setForm((p) => ({
                               ...p,
                               deviceCategory: k,
@@ -693,24 +719,21 @@ export function NewTicketClient() {
                             }))
                           }}
                           className={cn(
-                            'rounded-2xl border p-4 text-left transition-all',
+                            'rounded-2xl border p-4 transition-all text-center aspect-square flex flex-col items-center justify-center',
                             // White tile treatment for the category cards only (so white/transparent images read cleanly).
                             selected
                               ? 'bg-white border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.28)]'
                               : 'bg-white border-black/10 hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
                           )}
                         >
-                          <div className="flex items-center gap-4">
-                            {/* No bubble container — show the image directly so the new white/transparent pics feel native. */}
-                            <img
-                              src={c.imageSrc}
-                              alt={c.label}
-                              className="w-14 h-14 sm:w-16 sm:h-16 opacity-95 object-contain"
-                            />
-                            <div className="min-w-0 ml-1">
-                              <div className={cn('text-sm font-semibold', selected ? 'text-black/90' : 'text-black/80')}>{c.label}</div>
-                              <div className="text-[11px] text-black/45 mt-0.5">{c.deviceType}</div>
-                            </div>
+                          {/* Box layout: big picture + label under it (no sub-label). */}
+                          <img
+                            src={c.imageSrc}
+                            alt={c.label}
+                            className="mx-auto w-24 h-24 sm:w-28 sm:h-28 opacity-95 object-contain"
+                          />
+                          <div className={cn('mt-2 text-sm font-semibold tracking-tight', selected ? 'text-black/90' : 'text-black/80')}>
+                            {c.label}
                           </div>
                         </button>
                       )
@@ -722,30 +745,64 @@ export function NewTicketClient() {
                 {form.deviceCategory ? (
                   <div>
                     <label className="label mb-3">Which device is it? *</label>
-                    <div className="flex flex-wrap gap-2">
-                      {deviceCatalog[form.deviceCategory].models.map((m) => (
-                        <button
-                          key={m}
-                          type="button"
-                          onClick={() => {
-                            if (m.toLowerCase().includes('other')) {
-                              setCustomModel(true)
-                              setField('model', '')
-                              return
-                            }
-                            setCustomModel(false)
-                            setField('model', m)
-                          }}
-                          className={cn(
-                            'px-3 py-2 rounded-xl border text-xs font-semibold transition-colors',
-                            form.model === m && !customModel
-                              ? 'bg-purple-500/20 border-purple-400/30 text-white'
-                              : 'bg-white/[0.03] border-white/10 text-white/70 hover:bg-white/[0.06] hover:text-white'
-                          )}
-                        >
-                          {m}
-                        </button>
-                      ))}
+
+                    {/* Search models (UI-only) */}
+                    <div className="mt-1 flex items-center gap-3">
+                      <input
+                        value={modelQuery}
+                        onChange={(e) => setModelQuery(e.target.value)}
+                        placeholder="Search model (e.g., “14 Pro Max”, “PS5 Slim”)…"
+                        className="input bg-white/[0.04] border-white/10 w-full"
+                      />
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                      {deviceCatalog[form.deviceCategory].models
+                        .filter((m) => {
+                          const q = modelQuery.trim().toLowerCase()
+                          if (!q) return true
+                          return m.toLowerCase().includes(q)
+                        })
+                        .map((m) => {
+                          const isOther = m.toLowerCase().includes('other')
+                          const isSelected = (!customModel && form.model === m) || (customModel && isOther)
+                          return (
+                            <button
+                              key={m}
+                              type="button"
+                              onClick={() => {
+                                if (isOther) {
+                                  setCustomModel(true)
+                                  setField('model', '')
+                                  return
+                                }
+                                setCustomModel(false)
+                                setField('model', m)
+                              }}
+                              className={cn(
+                                'rounded-2xl border p-4 transition-all text-center aspect-square flex flex-col items-center justify-center',
+                                isSelected
+                                  ? 'bg-white border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
+                                  : 'bg-white border-black/10 hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.18)]'
+                              )}
+                            >
+                              <img
+                                src={isOther ? deviceCatalog[form.deviceCategory].imageSrc : modelImageSrc(form.deviceCategory, m)}
+                                alt={m}
+                                className="mx-auto w-24 h-24 sm:w-28 sm:h-28 opacity-95 object-contain"
+                                onError={(e) => {
+                                  const img = e.currentTarget
+                                  // Fallback: category image if model photo isn't uploaded yet.
+                                  img.onerror = null
+                                  img.src = deviceCatalog[form.deviceCategory].imageSrc
+                                }}
+                              />
+                              <div className={cn('mt-2 text-sm font-semibold tracking-tight', isSelected ? 'text-black/90' : 'text-black/80')}>
+                                {m}
+                              </div>
+                            </button>
+                          )
+                        })}
                     </div>
 
                     {customModel && (
@@ -1223,7 +1280,7 @@ export function NewTicketClient() {
         {/* Navigation buttons */}
         {step < 7 && !form.ticketCreated && (
           <div className="sticky bottom-0 bg-black/40 backdrop-blur-xl border-t border-white/10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
-            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+            <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
               <button
                 onClick={back}
                 disabled={step === 1}
@@ -1244,6 +1301,26 @@ export function NewTicketClient() {
           </div>
         )}
       </div>
+
+      {/* Back to top (follows user) */}
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className={cn(
+          'fixed bottom-6 right-6 z-[70]',
+          'rounded-2xl px-4 py-3 border',
+          'bg-black/35 backdrop-blur-xl border-white/10 text-white/85',
+          'shadow-[0_24px_60px_rgba(0,0,0,0.45)]',
+          'transition-all duration-300',
+          showBackToTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-3 pointer-events-none'
+        )}
+        aria-label="Back to top"
+      >
+        <span className="inline-flex items-center gap-2 text-sm font-semibold">
+          <ChevronUp className="w-4 h-4 text-purple-200" aria-hidden="true" />
+          Back to top
+        </span>
+      </button>
     </div>
   )
 }
