@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import Image from 'next/image'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,6 +26,7 @@ import {
   X,
   ScanLine,
   Zap,
+  Smartphone as DeviceIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { mockCustomers } from '@/lib/mock/data'
@@ -564,6 +566,66 @@ const topModels: Partial<Record<DeviceCategoryKey, string[]>> = {
   xbox: ['Xbox Series X', 'Xbox Series S'],
 }
 
+const shimmerClass =
+  'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.4s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent'
+
+const fallbackSilhouette = (
+  <div className="flex flex-col items-center justify-center w-full h-full rounded-xl bg-white/8 border border-white/10 text-white/60">
+    <DeviceIcon className="w-8 h-8" />
+    <span className="text-[11px] mt-1">No image</span>
+  </div>
+)
+
+type ModelButtonProps = {
+  model: string
+  category: DeviceCategoryKey
+  isSelected: boolean
+  onSelect: () => void
+  priority?: boolean
+}
+
+function ModelButton({ model, category, isSelected, onSelect, priority }: ModelButtonProps) {
+  const [failed, setFailed] = useState(false)
+  const candidates = useMemo(() => modelImageCandidates(category, model), [category, model])
+  const src = candidates[0] || deviceCatalog[category].imageSrc
+  const isOther = model.toLowerCase().includes('other')
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={cn(
+        'rounded-2xl border p-4 transition-all text-center aspect-square flex flex-col items-center justify-center',
+        isSelected
+          ? 'bg-white border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
+          : 'bg-white border-black/10 hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.18)]'
+      )}
+    >
+      {!failed ? (
+        <div className={cn('w-24 h-24 sm:w-28 sm:h-28', !isSelected && 'bg-white')}>
+          <Image
+            src={isOther ? deviceCatalog[category].imageSrc : src}
+            alt={model}
+            width={120}
+            height={120}
+            className="object-contain w-full h-full"
+            placeholder="blur"
+            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgdmlld0JveD0iMCAwIDEyMCAxMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEyMCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiMyMTIxMjEiLz48L3N2Zz4="
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            sizes="120px"
+            onError={() => setFailed(true)}
+          />
+        </div>
+      ) : (
+        fallbackSilhouette
+      )}
+      <div className={cn('mt-2 text-sm font-semibold tracking-tight', isSelected ? 'text-black/90' : 'text-black/80')}>{model}</div>
+    </button>
+  )
+}
+
 const deviceCategoryOrder: DeviceCategoryKey[] = [
   'iphone',
   'samsung',
@@ -686,6 +748,7 @@ export function NewTicketClient() {
   const [customModel, setCustomModel] = useState(false)
   const [modelQuery, setModelQuery] = useState('')
   const [showBackToTop, setShowBackToTop] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<DeviceCategoryKey | null>(null)
 
   useEffect(() => {
     const onScroll = () => {
@@ -708,6 +771,18 @@ export function NewTicketClient() {
       })
     })
   }, [])
+
+  // Preload when category is selected/hovered.
+  const preloadCategoryImages = (cat: DeviceCategoryKey) => {
+    const models = deviceCatalog[cat]?.models || []
+    models.slice(0, 24).forEach((m) => {
+      const src = modelImageCandidates(cat, m)[0]
+      if (src) {
+        const img = new Image()
+        img.src = src
+      }
+    })
+  }
 
   // Auto-fill customer when phone is entered
   useEffect(() => {
@@ -1161,6 +1236,8 @@ export function NewTicketClient() {
                               brand: c.brand,
                               model: '',
                             }))
+                            setActiveCategory(k)
+                            preloadCategoryImages(k)
                           }}
                           className={cn(
                             'rounded-2xl border p-4 transition-all text-center aspect-square flex flex-col items-center justify-center',
@@ -1169,6 +1246,7 @@ export function NewTicketClient() {
                               ? 'bg-white border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.28)]'
                               : 'bg-white border-black/10 hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
                           )}
+                          onMouseEnter={() => preloadCategoryImages(k)}
                         >
                           {/* Box layout: big picture + label under it (no sub-label). */}
                           <img
@@ -1207,57 +1285,24 @@ export function NewTicketClient() {
                           if (!q) return true
                           return m.toLowerCase().includes(q)
                         })
-                        .map((m) => {
-                          const isOther = m.toLowerCase().includes('other')
-                          const isSelected = (!customModel && form.model === m) || (customModel && isOther)
-                          const candidates = !isOther ? modelImageCandidates(form.deviceCategory, m) : []
-                          return (
-                            <button
-                              key={m}
-                              type="button"
-                              onClick={() => {
-                                if (isOther) {
-                                  setCustomModel(true)
-                                  setField('model', '')
-                                  return
-                                }
+                        .map((m, idx) => (
+                          <ModelButton
+                            key={m}
+                            model={m}
+                            category={form.deviceCategory as DeviceCategoryKey}
+                            isSelected={(!customModel && form.model === m) || (customModel && m.toLowerCase().includes('other'))}
+                            onSelect={() => {
+                              if (m.toLowerCase().includes('other')) {
+                                setCustomModel(true)
+                                setField('model', '')
+                              } else {
                                 setCustomModel(false)
                                 setField('model', m)
-                              }}
-                              className={cn(
-                                'rounded-2xl border p-4 transition-all text-center aspect-square flex flex-col items-center justify-center',
-                                isSelected
-                                  ? 'bg-white border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
-                                  : 'bg-white border-black/10 hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.18)]'
-                              )}
-                            >
-                              <img
-                                src={isOther ? deviceCatalog[form.deviceCategory].imageSrc : candidates[0]}
-                                alt={m}
-                                className="mx-auto w-24 h-24 sm:w-28 sm:h-28 opacity-95 object-contain"
-                                data-fallbacks={!isOther ? candidates.join('|') : ''}
-                                data-fidx="0"
-                                onError={(e) => {
-                                  const img = e.currentTarget
-                                  const fallbacks = (img.dataset.fallbacks || '').split('|').filter(Boolean)
-                                  const idx = Number(img.dataset.fidx || '0')
-                                  const next = fallbacks[idx + 1]
-                                  if (next) {
-                                    img.dataset.fidx = String(idx + 1)
-                                    img.src = next
-                                    return
-                                  }
-                                  // Final fallback: category image if no model assets exist.
-                                  img.onerror = null
-                                  img.src = deviceCatalog[form.deviceCategory].imageSrc
-                                }}
-                              />
-                              <div className={cn('mt-2 text-sm font-semibold tracking-tight', isSelected ? 'text-black/90' : 'text-black/80')}>
-                                {m}
-                              </div>
-                            </button>
-                          )
-                        })}
+                              }
+                            }}
+                            priority={idx < 8}
+                          />
+                        ))}
                     </div>
 
                     {customModel && (
