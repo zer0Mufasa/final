@@ -385,6 +385,13 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
   const rawModel = (model || '').trim()
   const underscoreRaw = toUnderscoreKey(rawModel)
   const rawUnderscorePreserve = (model || '').trim().replace(/\s+/g, '_')
+  const normKey = raw.trim()
+
+  // Override hits first
+  const overrideList = modelImageOverrides[category]?.[normKey]
+  if (overrideList?.length) {
+    candidates.push(...overrideList)
+  }
 
   // Generic: try straight matches in /public/devices using both slug and underscore, plus 130x130 variants.
   candidates.push(...extVariants(`/devices/${underscoreRaw}`))
@@ -578,6 +585,38 @@ const fallbackSilhouette = (
     <span className="text-[11px] mt-1">No image</span>
   </div>
 )
+
+// Hard overrides for model-specific filenames that don't follow our slug/underscore pattern.
+const modelImageOverrides: Partial<Record<DeviceCategoryKey, Record<string, string[]>>> = {
+  iphone: {
+    'iphone 17 pro max': [
+      '/devices/apple-iphone-17-pro-max-cosmic-orange-official-image.webp',
+      '/devices/iPhone-17-Black.jpg',
+    ],
+    'iphone 17 pro': ['/devices/iPhone-17-Black.jpg'],
+    'iphone 17 air': ['/devices/iPhone-17-Black.jpg'],
+    'iphone 17': ['/devices/iPhone-17-Black.jpg'],
+    'iphone 16 pro max': ['/devices/iPhone_16_Pro_Max-130x130.png'],
+    'iphone 16 pro': ['/devices/iPhone_16_Pro-130x130.png'],
+    'iphone 16 plus': ['/devices/iPhone_16_Plus-130x130.png'],
+    'iphone 16': ['/devices/iPhone_16-130x130.png'],
+    'iphone 15 pro max': ['/devices/iPhone_15_Pro_Max-130x130.png'],
+    'iphone 15 pro': ['/devices/iPhone_15_Pro-130x130.png'],
+    'iphone 15 plus': ['/devices/iPhone_15_Plus-130x130.png'],
+    'iphone 15': ['/devices/iPhone_15-130x130.png'],
+  },
+  samsung: {
+    'galaxy s25 ultra': ['/devices/Samsung_Galaxy_S25_Ultra-130x130.png'],
+    'galaxy s25+': ['/devices/Samsung_Galaxy_S25_Plus-130x130.png'],
+    'galaxy s25': ['/devices/Samsung_Galaxy_S25-130x130.png'],
+    'galaxy s24 ultra': ['/devices/Samsung24Ultra-130x130.png'],
+    'galaxy s24+': ['/devices/Samsung24_plus-130x130.png'],
+    'galaxy s24': ['/devices/samsung_galaxy_s24.png'],
+    'galaxy s23+ 5g': ['/devices/samsung-galaxy-s23-plus-thumbnail.jpeg'],
+    'galaxy s23 fe': ['/devices/Samsung_Galaxy_S23_FE-130x130.png'],
+    'galaxy s23 ultra 5g': ['/devices/Samsung_Galaxy_S23_Ultra-130x130.jpg'],
+  },
+}
 
 type ModelButtonProps = {
   model: string
