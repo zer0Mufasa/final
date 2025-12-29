@@ -343,7 +343,7 @@ const deviceCatalog: Record<
     deviceType: 'Console',
     brand: 'Microsoft',
     models: ['Xbox Series X', 'Xbox Series S'],
-    imageSrc: '/devices/xboxseriess.webp',
+    imageSrc: '/devices/xbox.png',
   },
 }
 
@@ -501,18 +501,30 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
 
   if (category === 'switch') {
     const m = normalizeForKey(model).toLowerCase()
-    // Category-wide images for the main Switch family
-    candidates.push('/devices/nintendoswitch.avif')
-    if (m.includes('lite')) candidates.push('/devices/Nintendo-Switch-Lite-Console-Dialga-and-Palkia-Edition.avif')
-    if (m.includes('switch 2') || m.includes('2')) candidates.push('/devices/nintendo-switch-2.avif')
+    // Exact matches for the three Switch variants
+    if (m.includes('switch 2') || m === 'switch 2') {
+      candidates.push('/devices/nintendo-switch-2.avif')
+    } else if (m.includes('lite')) {
+      candidates.push('/devices/Nintendo-Switch-Lite-Console-Dialga-and-Palkia-Edition.avif')
+    } else {
+      candidates.push('/devices/nintendoswitch.avif')
+    }
+    // fallback
+    candidates.push('/devices/switch.svg')
   }
 
   if (category === 'xbox') {
     const m = normalizeForKey(model).toLowerCase()
     // New Series S image and existing series assets
-    candidates.push('/devices/xboxseriess.webp')
-    if (m.includes('series x')) candidates.push('/devices/Job_Details_Icon_-_Device_Model_-_Xbox_Series_X.png')
-    if (m.includes('series s')) candidates.push('/devices/xboxseriess.webp')
+    if (m.includes('series x')) {
+      candidates.push('/devices/Job_Details_Icon_-_Device_Model_-_Xbox_Series_X.png')
+      candidates.push('/devices/xbox.png')
+    }
+    if (m.includes('series s')) {
+      candidates.push('/devices/xboxseriess.webp')
+    }
+    // generic fallback
+    candidates.push('/devices/xbox.png')
   }
 
   if (category === 'lg') {
