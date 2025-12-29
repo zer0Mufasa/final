@@ -380,6 +380,13 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
   const candidates: string[] = []
   const slug = slugify(model)
   const raw = (model || '').toLowerCase()
+  const rawModel = (model || '').trim()
+  const underscoreRaw = toUnderscoreKey(rawModel)
+
+  // Generic: try straight matches in /public/devices using both slug and underscore, plus 130x130 variants.
+  candidates.push(...extVariants(`/devices/${underscoreRaw}`))
+  candidates.push(...extVariants(`/devices/${slug}`))
+  candidates.push(...extVariants(`/devices/${underscoreRaw}-130x130`))
 
   // Preferred convention (new, clean): /public/devices/models/<category>/<slug>.(png|jpg|webp)
   candidates.push(...extVariants(`/devices/models/${category}/${slug}`))
@@ -436,6 +443,9 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     if (m.toLowerCase() === 'galaxy s23+') candidates.push('/devices/samsung-galaxy-s23-plus-thumbnail.jpeg')
     if (m.toLowerCase() === 'galaxy s23 fe') candidates.push('/devices/Samsung_Galaxy_S23_FE-130x130.png')
     if (m.toLowerCase() === 'galaxy s23 ultra 5g') candidates.push('/devices/Samsung_Galaxy_S23_Ultra-130x130.jpg')
+    if (m.toLowerCase() === 'galaxy s25') candidates.push('/devices/Samsung_Galaxy_S25-130x130.png')
+    if (m.toLowerCase() === 'galaxy s25+') candidates.push('/devices/Samsung_Galaxy_S25_Plus-130x130.png')
+    if (m.toLowerCase() === 'galaxy s25 ultra') candidates.push('/devices/Samsung_Galaxy_S25_Ultra-130x130.png')
   }
 
   if (category === 'google') {
@@ -484,6 +494,9 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     } else if (raw.includes('razr+')) {
       candidates.push('/devices/Motorola_Razr_Plus-130x130.png')
     }
+
+    // Moto G/Z generic fallbacks (some assets don't have brand prefix)
+    candidates.push(...extVariants(`/devices/${toUnderscoreKey(rest)}`))
   }
 
   if (category === 'switch') {
@@ -509,6 +522,7 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
     // Job-details assets: Job_Details_Icon_-_Device_Model_-_LG_V60_ThinQ_5G.png, etc.
     const keyBase = `LG_${toUnderscoreKey(rest)}`
     candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${keyBase}`))
+    candidates.push(...extVariants(`/devices/${toUnderscoreKey(rest)}`))
   }
 
   if (category === 'ipad') {
