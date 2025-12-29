@@ -615,6 +615,7 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
             sizes="120px"
+            unoptimized
             onError={() => setFailed(true)}
           />
         </div>
@@ -1250,12 +1251,19 @@ export function NewTicketClient() {
                           )}
                           onMouseEnter={() => preloadCategoryImages(k)}
                         >
-                          {/* Box layout: big picture + label under it (no sub-label). */}
-                          <img
-                            src={c.imageSrc}
-                            alt={c.label}
-                            className="mx-auto w-24 h-24 sm:w-28 sm:h-28 opacity-95 object-contain"
-                          />
+                          <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28">
+                            <NextImage
+                              src={c.imageSrc}
+                              alt={c.label}
+                              width={120}
+                              height={120}
+                              className="opacity-95 object-contain w-full h-full"
+                              priority={selected}
+                              loading={selected ? 'eager' : 'lazy'}
+                              decoding="async"
+                              unoptimized
+                            />
+                          </div>
                           <div className={cn('mt-2 text-sm font-semibold tracking-tight', selected ? 'text-black/90' : 'text-black/80')}>
                             {c.label}
                           </div>
@@ -1302,7 +1310,7 @@ export function NewTicketClient() {
                                 setField('model', m)
                               }
                             }}
-                            priority={idx < 8}
+                            priority={idx < 12}
                           />
                         ))}
                     </div>
