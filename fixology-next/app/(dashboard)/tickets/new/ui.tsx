@@ -761,6 +761,7 @@ export function NewTicketClient() {
 
   // Preload hero images for the newest models in each category to make the grid feel instant.
   useEffect(() => {
+    if (typeof window === 'undefined') return
     Object.entries(topModels).forEach(([key, models]) => {
       (models || []).forEach((m) => {
         const src = modelImageCandidates(key as DeviceCategoryKey, m)[0]
@@ -774,6 +775,7 @@ export function NewTicketClient() {
 
   // Preload when category is selected/hovered.
   const preloadCategoryImages = (cat: DeviceCategoryKey) => {
+    if (typeof window === 'undefined') return
     const models = deviceCatalog[cat]?.models || []
     models.slice(0, 24).forEach((m) => {
       const src = modelImageCandidates(cat, m)[0]
