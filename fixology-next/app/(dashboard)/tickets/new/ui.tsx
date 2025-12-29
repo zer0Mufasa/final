@@ -384,11 +384,14 @@ const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
   const raw = (model || '').toLowerCase()
   const rawModel = (model || '').trim()
   const underscoreRaw = toUnderscoreKey(rawModel)
+  const rawUnderscorePreserve = (model || '').trim().replace(/\s+/g, '_')
 
   // Generic: try straight matches in /public/devices using both slug and underscore, plus 130x130 variants.
   candidates.push(...extVariants(`/devices/${underscoreRaw}`))
   candidates.push(...extVariants(`/devices/${slug}`))
   candidates.push(...extVariants(`/devices/${underscoreRaw}-130x130`))
+  candidates.push(...extVariants(`/devices/${rawUnderscorePreserve}`))
+  candidates.push(...extVariants(`/devices/${rawUnderscorePreserve}-130x130`))
 
   // Preferred convention (new, clean): /public/devices/models/<category>/<slug>.(png|jpg|webp)
   candidates.push(...extVariants(`/devices/models/${category}/${slug}`))
@@ -570,7 +573,7 @@ const shimmerClass =
   'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.4s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent'
 
 const fallbackSilhouette = (
-  <div className="flex flex-col items-center justify-center w-full h-full rounded-xl bg-white/8 border border-white/10 text-white/60">
+  <div className="flex flex-col items-center justify-center w-full h-full rounded-xl bg-black/25 border border-white/15 text-white/80">
     <DeviceIcon className="w-8 h-8" />
     <span className="text-[11px] mt-1">No image</span>
   </div>
@@ -595,7 +598,7 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
   }, [category, model])
 
   const isOther = model.toLowerCase().includes('other')
-  const src = isOther ? deviceCatalog[category].imageSrc : candidates[0]
+  const src = isOther ? deviceCatalog[category].imageSrc : candidates[0] || deviceCatalog[category].imageSrc
 
   return (
     <button
@@ -619,12 +622,19 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
             decoding="async"
             className="object-contain w-full h-full"
             onError={(e) => {
-              const next = candidates.find((c) => c !== (e.currentTarget as HTMLImageElement).src)
-              if (next && next !== e.currentTarget.src) {
+              const current = (e.currentTarget as HTMLImageElement).src
+              const next = candidates.find((c) => c && c !== current)
+              if (next && next !== current) {
                 e.currentTarget.src = next
-              } else {
-                setFailed(true)
+                return
               }
+              // final fallback to category image
+              const catImg = deviceCatalog[category].imageSrc
+              if (catImg && current !== catImg) {
+                e.currentTarget.src = catImg
+                return
+              }
+              setFailed(true)
             }}
           />
         </div>
