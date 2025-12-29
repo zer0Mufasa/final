@@ -57,7 +57,52 @@ const deviceCatalog: Record<
     label: 'iPhone',
     deviceType: 'Phone',
     brand: 'Apple',
-    models: ['iPhone 15 Pro Max', 'iPhone 15 Pro', 'iPhone 14 Pro Max', 'iPhone 14 Pro', 'iPhone 14', 'iPhone 13 Pro Max', 'iPhone 13', 'iPhone 12'],
+    models: [
+      'iPhone 5s',
+      'iPhone 5c',
+      'iPhone 6',
+      'iPhone 6 Plus',
+      'iPhone 6s',
+      'iPhone 6s Plus',
+      'iPhone SE (1st Gen)',
+      'iPhone 7',
+      'iPhone 7 Plus',
+      'iPhone 8',
+      'iPhone 8 Plus',
+      'iPhone X',
+      'iPhone XS',
+      'iPhone XS Max',
+      'iPhone XR',
+      'iPhone 11',
+      'iPhone 11 Pro',
+      'iPhone 11 Pro Max',
+      'iPhone SE (2nd Gen)',
+      'iPhone 12 Mini',
+      'iPhone 12',
+      'iPhone 12 Pro',
+      'iPhone 12 Pro Max',
+      'iPhone 13 Mini',
+      'iPhone 13',
+      'iPhone 13 Pro',
+      'iPhone 13 Pro Max',
+      'iPhone SE (3rd Gen)',
+      'iPhone 14',
+      'iPhone 14 Plus',
+      'iPhone 14 Pro',
+      'iPhone 14 Pro Max',
+      'iPhone 15',
+      'iPhone 15 Plus',
+      'iPhone 15 Pro',
+      'iPhone 15 Pro Max',
+      'iPhone 16',
+      'iPhone 16 Plus',
+      'iPhone 16 Pro',
+      'iPhone 16 Pro Max',
+      'iPhone 17',
+      'iPhone 17 Air',
+      'iPhone 17 Pro',
+      'iPhone 17 Pro Max',
+    ],
     imageSrc: '/devices/iphone.svg',
   },
   samsung: {
@@ -65,7 +110,79 @@ const deviceCatalog: Record<
     label: 'Samsung',
     deviceType: 'Phone',
     brand: 'Samsung',
-    models: ['Galaxy S24 Ultra', 'Galaxy S24', 'Galaxy S23 Ultra', 'Galaxy S23', 'Galaxy S22 Ultra', 'Galaxy S22', 'Galaxy A54'],
+    models: [
+      'Galaxy Z Fold7',
+      'Galaxy Z Flip7 FE',
+      'Galaxy Z Flip7',
+      'Galaxy S25',
+      'Galaxy S25+',
+      'Galaxy S25 Ultra',
+      'Galaxy Z Flip6',
+      'Galaxy Z Fold6',
+      'Galaxy S24 Ultra',
+      'Galaxy S24+',
+      'Galaxy S24',
+      'Galaxy Z Fold5',
+      'Galaxy S23 FE',
+      'Galaxy S23 5G',
+      'Galaxy S23 Ultra 5G',
+      'Galaxy S23+ 5G',
+      'Galaxy Z Fold4',
+      'Galaxy Z Fold3 5G',
+      'Galaxy Z Fold2 5G',
+      'Galaxy Z Flip4',
+      'Galaxy Z Flip3 5G',
+      'Galaxy Z Flip',
+      'Galaxy Fold',
+      'Galaxy S22 Ultra 5G',
+      'Galaxy S22+ 5G',
+      'Galaxy S22 5G',
+      'Galaxy S21 Ultra 5G',
+      'Galaxy S21 FE 5G',
+      'Galaxy S21+ 5G',
+      'Galaxy S21 5G',
+      'Galaxy S20 Ultra',
+      'Galaxy S20+',
+      'Galaxy S20 FE 5G',
+      'Galaxy S20 5G',
+      'Galaxy S20',
+      'Galaxy S10',
+      'Galaxy S10 Plus',
+      'Galaxy S10 Plus Ceramic',
+      'Galaxy S10e',
+      'Galaxy S10 5G',
+      'Galaxy S10 Lite',
+      'Galaxy Note 10',
+      'Galaxy Note 10 Plus',
+      'Galaxy Note 10 Plus 5G',
+      'Galaxy Note 20 5G',
+      'Galaxy Note 20 Ultra 5G',
+      'Galaxy A71 5G',
+      'Galaxy A71',
+      'Galaxy A70',
+      'Galaxy A54 5G',
+      'Galaxy A53 5G',
+      'Galaxy A52 5G',
+      'Galaxy A51 5G',
+      'Galaxy A51',
+      'Galaxy A50',
+      'Galaxy A42 5G',
+      'Galaxy A32 5G',
+      'Galaxy A23',
+      'Galaxy A22 5G',
+      'Galaxy A21',
+      'Galaxy A20',
+      'Galaxy A13 5G',
+      'Galaxy A12',
+      'Galaxy A11',
+      'Galaxy A10e',
+      'Galaxy A10',
+      'Galaxy A03',
+      'Galaxy A03s',
+      'Galaxy A02',
+      'Galaxy A01',
+      'Other / Custom',
+    ],
     imageSrc: '/devices/samsung.svg',
   },
   ipad: {
@@ -133,10 +250,90 @@ const slugify = (s: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
 
-const modelImageSrc = (category: DeviceCategoryKey, model: string) => {
-  // Convention: put model images here (UI-only): /public/devices/models/<category>/<slug>.png
-  // Example: /public/devices/models/ps5/ps5-slim.png
-  return `/devices/models/${category}/${slugify(model)}.png`
+const normalizeForKey = (s: string) =>
+  (s || '')
+    .trim()
+    // drop parenthetical notes like "(1st Gen)"
+    .replace(/\([^)]*\)/g, '')
+    .replace(/["']/g, '')
+    .replace(/\s+/g, ' ')
+
+const toUnderscoreKey = (s: string) =>
+  normalizeForKey(s)
+    .replace(/\+/g, ' Plus')
+    .replace(/5g/gi, '5G')
+    .replace(/ /g, '_')
+
+const extVariants = (pathNoExt: string) => [
+  `${pathNoExt}.png`,
+  `${pathNoExt}.jpg`,
+  `${pathNoExt}.jpeg`,
+  `${pathNoExt}.webp`,
+]
+
+const modelImageCandidates = (category: DeviceCategoryKey, model: string) => {
+  const candidates: string[] = []
+  const slug = slugify(model)
+
+  // Preferred convention (new, clean): /public/devices/models/<category>/<slug>.(png|jpg|webp)
+  candidates.push(...extVariants(`/devices/models/${category}/${slug}`))
+
+  // Legacy / imported assets currently living directly under /public/devices/
+  if (category === 'iphone') {
+    const m = normalizeForKey(model)
+    const isSE = m.toLowerCase().includes('iphone se')
+    const jobKey = isSE ? 'iPhone_SE' : toUnderscoreKey(m)
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${jobKey}`))
+
+    // Newer iPhone thumbs: iPhone_16_Pro_Max-130x130.png, etc.
+    const key130 = toUnderscoreKey(m)
+    candidates.push(`/devices/${key130}-130x130.png`)
+
+    // iPhone 17 special-case files already in /public/devices/
+    if (m.toLowerCase() === 'iphone 17 pro max') {
+      candidates.push('/devices/apple-iphone-17-pro-max-cosmic-orange-official-image.webp')
+    }
+    if (m.toLowerCase() === 'iphone 17 pro') {
+      candidates.push('/devices/17 pro.jpg')
+    }
+    if (m.toLowerCase().startsWith('iphone 17')) {
+      candidates.push('/devices/iPhone-17-Black.jpg')
+    }
+  }
+
+  if (category === 'samsung') {
+    const m = normalizeForKey(model)
+
+    // Z/Fold/Flip 7 thumbnails
+    if (m.toLowerCase() === 'galaxy z fold7') candidates.push('/devices/Fold7-130x130.png')
+    if (m.toLowerCase() === 'galaxy z flip7') candidates.push('/devices/Flip7-130x130.png')
+    if (m.toLowerCase() === 'galaxy z flip7 fe') candidates.push('/devices/Flip7_FE-130x130.png')
+
+    // Standardized keys for the "Job Details" assets: Samsung_Galaxy_...
+    const galaxy = m.replace(/^samsung\s+/i, '').replace(/^galaxy\s+/i, '').trim()
+    const keyBase = `Samsung_Galaxy_${toUnderscoreKey(galaxy)}`
+
+    // Try a few variants for "+" models (some assets use "_" placeholder)
+    const plusVariantA = keyBase.replace(/_Plus$/i, '_Plus')
+    const plusVariantB = keyBase.replace(/_Plus$/i, '_')
+
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${plusVariantA}`))
+    candidates.push(...extVariants(`/devices/Job_Details_Icon_-_Device_Model_-_${plusVariantB}`))
+
+    // Newer Samsung thumbs: Samsung_Galaxy_S25_Ultra-130x130.png, etc.
+    candidates.push(`/devices/${keyBase}-130x130.png`)
+
+    // A couple one-off newer thumbs already present
+    if (m.toLowerCase() === 'galaxy s24 ultra') candidates.push('/devices/Samsung24Ultra-130x130.png')
+    if (m.toLowerCase() === 'galaxy s24+') candidates.push('/devices/Samsung24_plus-130x130.png')
+    if (m.toLowerCase() === 'galaxy s24') candidates.push('/devices/samsung_galaxy_s24.png')
+    if (m.toLowerCase() === 'galaxy s23+') candidates.push('/devices/samsung-galaxy-s23-plus-thumbnail.jpeg')
+    if (m.toLowerCase() === 'galaxy s23 fe') candidates.push('/devices/Samsung_Galaxy_S23_FE-130x130.png')
+    if (m.toLowerCase() === 'galaxy s23 ultra 5g') candidates.push('/devices/Samsung_Galaxy_S23_Ultra-130x130.jpg')
+  }
+
+  // de-dupe while preserving order
+  return Array.from(new Set(candidates))
 }
 
 const deviceCategoryOrder: DeviceCategoryKey[] = [
@@ -766,6 +963,7 @@ export function NewTicketClient() {
                         .map((m) => {
                           const isOther = m.toLowerCase().includes('other')
                           const isSelected = (!customModel && form.model === m) || (customModel && isOther)
+                          const candidates = !isOther ? modelImageCandidates(form.deviceCategory, m) : []
                           return (
                             <button
                               key={m}
@@ -787,12 +985,22 @@ export function NewTicketClient() {
                               )}
                             >
                               <img
-                                src={isOther ? deviceCatalog[form.deviceCategory].imageSrc : modelImageSrc(form.deviceCategory, m)}
+                                src={isOther ? deviceCatalog[form.deviceCategory].imageSrc : candidates[0]}
                                 alt={m}
                                 className="mx-auto w-24 h-24 sm:w-28 sm:h-28 opacity-95 object-contain"
+                                data-fallbacks={!isOther ? candidates.join('|') : ''}
+                                data-fidx="0"
                                 onError={(e) => {
                                   const img = e.currentTarget
-                                  // Fallback: category image if model photo isn't uploaded yet.
+                                  const fallbacks = (img.dataset.fallbacks || '').split('|').filter(Boolean)
+                                  const idx = Number(img.dataset.fidx || '0')
+                                  const next = fallbacks[idx + 1]
+                                  if (next) {
+                                    img.dataset.fidx = String(idx + 1)
+                                    img.src = next
+                                    return
+                                  }
+                                  // Final fallback: category image if no model assets exist.
                                   img.onerror = null
                                   img.src = deviceCatalog[form.deviceCategory].imageSrc
                                 }}
