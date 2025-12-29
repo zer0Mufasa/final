@@ -73,7 +73,7 @@ const deviceCatalog: Record<
     deviceType: 'Tablet',
     brand: 'Apple',
     models: ['iPad Pro 12.9"', 'iPad Pro 11"', 'iPad Air', 'iPad mini', 'iPad (Standard)'],
-    imageSrc: '/devices/ipad.svg',
+    imageSrc: '/devices/ipad.png',
   },
   tablet: {
     key: 'tablet',
@@ -81,7 +81,7 @@ const deviceCatalog: Record<
     deviceType: 'Tablet',
     brand: 'Other',
     models: ['Galaxy Tab S9', 'Galaxy Tab A8', 'Amazon Fire HD', 'Other / Custom'],
-    imageSrc: '/devices/tablet.svg',
+    imageSrc: '/devices/tablet.webp',
   },
   macbook: {
     key: 'macbook',
@@ -89,7 +89,7 @@ const deviceCatalog: Record<
     deviceType: 'Laptop',
     brand: 'Apple',
     models: ['MacBook Pro 16"', 'MacBook Pro 14"', 'MacBook Air 15"', 'MacBook Air 13"'],
-    imageSrc: '/devices/macbook.svg',
+    imageSrc: '/devices/macbook.jpg',
   },
   laptop: {
     key: 'laptop',
@@ -97,7 +97,7 @@ const deviceCatalog: Record<
     deviceType: 'Laptop',
     brand: 'Other',
     models: ['Dell XPS 13', 'Lenovo ThinkPad', 'HP Spectre', 'Acer Aspire', 'Other / Custom'],
-    imageSrc: '/devices/laptop.svg',
+    imageSrc: '/devices/laptop.png',
   },
   switch: {
     key: 'switch',
@@ -113,7 +113,7 @@ const deviceCatalog: Record<
     deviceType: 'Console',
     brand: 'Sony',
     models: ['PS5', 'PS5 Slim', 'PS5 Digital'],
-    imageSrc: '/devices/ps5.svg',
+    imageSrc: '/devices/ps5.png',
   },
   xbox: {
     key: 'xbox',
@@ -121,7 +121,7 @@ const deviceCatalog: Record<
     deviceType: 'Console',
     brand: 'Microsoft',
     models: ['Xbox Series X', 'Xbox Series S'],
-    imageSrc: '/devices/xbox.svg',
+    imageSrc: '/devices/xbox.png',
   },
 }
 
@@ -699,7 +699,7 @@ export function NewTicketClient() {
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center overflow-hidden">
-                              <img src={c.imageSrc} alt={c.label} className="w-10 h-10 opacity-90" />
+                              <img src={c.imageSrc} alt={c.label} className="w-10 h-10 opacity-90 object-contain" />
                             </div>
                             <div className="min-w-0">
                               <div className={cn('text-sm font-semibold', selected ? 'text-white' : 'text-white/80')}>{c.label}</div>
