@@ -445,7 +445,7 @@ export default function TicketSimple({ id }: { id: string }) {
 
         {/* Payment rail */}
         <div className="space-y-4">
-          <Section title="Payment" subtitle="POS-first — amount due is front and center.">
+          <Section title="Payment" subtitle="POS-first — amount due is front and center." className="bg-white/[0.08]">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
@@ -475,10 +475,7 @@ export default function TicketSimple({ id }: { id: string }) {
                 ))}
               </div>
 
-              <div
-                className="space-y-2 rounded-2xl border p-3"
-                style={{ background: theme.surfaces.payment, borderColor: theme.colors.border }}
-              >
+              <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
                 <DataRow label="Subtotal" value={fmtMoney(subtotal)} />
                 <DataRow label="Tax" value={fmtMoney(tax)} />
                 <DataRow label="Discount" value={fmtMoney(discount)} />

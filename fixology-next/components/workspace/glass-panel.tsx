@@ -17,9 +17,9 @@ export function GlassPanel({
       className={cn('rounded-2xl border', padding, className)}
       style={{
         background: theme.surfaces.panel,
-        borderColor: theme.borders.hairline,
-        boxShadow: theme.shadows.sm,
+        borderColor: theme.colors.border,
         backdropFilter: `blur(${theme.blur.md})`,
+        borderRadius: theme.radii.panel,
       }}
     >
       {children}

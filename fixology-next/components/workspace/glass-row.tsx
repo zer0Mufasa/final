@@ -15,14 +15,15 @@ export function GlassRow({
   return (
     <div
       className={cn(
-        'rounded-lg border flex items-center gap-3 px-4 py-3',
+        'border flex items-center gap-3 px-4 py-3',
         interactive && 'hover:bg-white/[0.05] transition',
         className
       )}
       style={{
         background: theme.surfaces.row,
-        borderColor: theme.borders.hairline,
+        borderColor: theme.colors.border,
         backdropFilter: `blur(${theme.blur.sm})`,
+        borderRadius: theme.radii.row,
       }}
     >
       {children}

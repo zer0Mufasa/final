@@ -17,9 +17,9 @@ export function GlassCard({
         className
       )}
       style={{
-        background: theme.colors.card,
+        background: theme.surfaces.panel,
         border: `1px solid ${theme.colors.border}`,
-        borderRadius: theme.radii.md,
+        borderRadius: theme.radii.panel,
         boxShadow: theme.shadows.sm,
         backdropFilter: `blur(${theme.blur.md})`,
       }}

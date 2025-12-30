@@ -3,34 +3,38 @@ export const theme = {
     // Base
     bgBase: '#0A0B14',
     bgDeep: '#0F1020',
-    bgOverlay: 'radial-gradient(circle at 18% 12%, rgba(183,148,255,0.12), transparent 45%), radial-gradient(circle at 82% 8%, rgba(183,148,255,0.10), transparent 40%)',
+    bgOverlay:
+      'radial-gradient(circle at 18% 18%, rgba(183,148,255,0.10), transparent 42%), radial-gradient(circle at 82% 8%, rgba(183,148,255,0.08), transparent 40%)',
     // Surfaces
-    card: 'rgba(255,255,255,0.035)',
-    cardHover: 'rgba(255,255,255,0.055)',
+    surface: 'rgba(255,255,255,0.035)',
+    surfaceAlt: 'rgba(255,255,255,0.055)',
+    row: 'rgba(255,255,255,0.02)',
     // Borders
     border: 'rgba(255,255,255,0.08)',
+    borderFocus: 'rgba(183,148,255,0.35)',
     // Text
     text: '#EDEBFF',
-    muted: '#8A88B5',
     secondary: '#B6B3D6',
+    muted: '#8A88B5',
     // Accent (desaturated lavender)
     lavender: '#B794FF',
-    lavenderDeep: '#C9B6FF',
-    // Status tones (soft)
+    lavenderDeep: '#9F86FF',
+    accentSoft: 'rgba(183,148,255,0.18)',
+    accentHover: '#C9B6FF',
+    // Status (soft)
     successTint: 'rgba(120,220,180,0.25)',
     warningTint: 'rgba(255,200,120,0.22)',
     dangerTint: 'rgba(255,120,140,0.22)',
-    infoTint: 'rgba(183,148,255,0.18)',
+    infoTint: 'rgba(140,180,255,0.20)',
   },
   radii: {
-    sm: '8px',   // rows
-    md: '12px',  // panels
-    lg: '16px',  // drawers/major
-    xl: '20px',
+    row: '8px',
+    panel: '12px',
+    drawer: '16px',
   },
   shadows: {
-    sm: '0 10px 26px rgba(0,0,0,0.22)',
-    md: '0 18px 48px rgba(0,0,0,0.26)',
+    sm: '0 10px 30px rgba(0,0,0,0.25)',
+    md: '0 20px 60px rgba(0,0,0,0.28)',
   },
   spacing: [4, 8, 12, 16, 20, 24, 28, 32, 36, 40],
   blur: {
@@ -40,12 +44,11 @@ export const theme = {
   },
   borders: {
     hairline: 'rgba(255,255,255,0.08)',
-    subtle: 'rgba(255,255,255,0.10)',
-    focus: 'rgba(183,148,255,0.35)',
+    subtle: 'rgba(255,255,255,0.12)',
   },
   surfaces: {
     panel: 'rgba(255,255,255,0.035)',
-    panelHover: 'rgba(255,255,255,0.055)',
+    panelAlt: 'rgba(255,255,255,0.055)',
     row: 'rgba(255,255,255,0.02)',
     payment: 'rgba(255,255,255,0.08)',
   },

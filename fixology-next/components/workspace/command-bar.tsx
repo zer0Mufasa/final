@@ -19,8 +19,13 @@ export function CommandBar({
   const [q, setQ] = useState('')
   return (
     <div
-      className="rounded-2xl border px-3 py-2 flex items-center gap-3"
-      style={{ background: theme.surfaces.panel, borderColor: theme.borders.hairline, backdropFilter: `blur(${theme.blur.sm})` }}
+      className="border px-3 py-2 flex items-center gap-3"
+      style={{
+        background: theme.surfaces.panelAlt,
+        borderColor: theme.colors.border,
+        backdropFilter: `blur(${theme.blur.sm})`,
+        borderRadius: theme.radii.panel,
+      }}
     >
       <div className="relative flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />

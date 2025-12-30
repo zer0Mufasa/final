@@ -58,7 +58,7 @@ export function DashboardClient() {
       />
 
       {/* Context strip */}
-      <GlassCard className="p-4 rounded-2xl">
+      <GlassCard className="p-4 rounded-[12px]">
         {loading ? (
           <div className="grid grid-cols-3 gap-3">
             <Skeleton className="h-10 rounded-xl" />
@@ -76,7 +76,7 @@ export function DashboardClient() {
 
       <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Primary: Today queue */}
-        <GlassCard className="p-0 rounded-3xl border border-white/8">
+        <GlassCard className="p-0 rounded-[12px] border border-white/8">
           <div className="px-6 py-5 flex items-center justify-between gap-4 border-b border-white/8">
             <div>
               <div className="text-sm font-semibold text-white/90">Today’s queue</div>
