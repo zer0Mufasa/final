@@ -1108,7 +1108,7 @@ export function NewTicketClient() {
       {/* Main content */}
       <div className="max-w-6xl mx-auto mt-6 px-4 sm:px-6">
         {/* Quick Intake (optional) */}
-        {!form.ticketCreated && step <= 3 && (
+        {!form.ticketCreated && step === 1 && (
           <GlassCard className="p-5 sm:p-6 rounded-3xl mb-6">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
