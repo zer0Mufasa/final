@@ -22,8 +22,8 @@ export function GlassRow({
       style={{
         background: theme.surfaces.row,
         borderColor: theme.colors.border,
-        backdropFilter: `blur(${theme.blur.sm})`,
         borderRadius: theme.radii.row,
+        boxShadow: theme.shadows.sm,
       }}
     >
       {children}

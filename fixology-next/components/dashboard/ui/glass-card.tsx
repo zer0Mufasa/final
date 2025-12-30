@@ -21,7 +21,6 @@ export function GlassCard({
         border: `1px solid ${theme.colors.border}`,
         borderRadius: theme.radii.panel,
         boxShadow: theme.shadows.sm,
-        backdropFilter: `blur(${theme.blur.md})`,
       }}
     >
       {children}

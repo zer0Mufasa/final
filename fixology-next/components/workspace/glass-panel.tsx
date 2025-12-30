@@ -14,12 +14,12 @@ export function GlassPanel({
 }) {
   return (
     <div
-      className={cn('rounded-2xl border', padding, className)}
+      className={cn('border', padding, className)}
       style={{
         background: theme.surfaces.panel,
         borderColor: theme.colors.border,
-        backdropFilter: `blur(${theme.blur.md})`,
         borderRadius: theme.radii.panel,
+        boxShadow: theme.shadows.sm,
       }}
     >
       {children}

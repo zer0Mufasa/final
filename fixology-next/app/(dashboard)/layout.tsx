@@ -17,13 +17,13 @@ html{scroll-behavior:smooth}
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
-body{background:#0A0B14;min-height:100vh;overflow-x:hidden;color:#EDEBFF}
+body{background:#F7F6FB;min-height:100vh;overflow-x:hidden;color:#1F1E2E}
 .bg-structure{position:fixed;top:0;left:0;right:0;bottom:0;background:
-  radial-gradient(circle at 18% 18%, rgba(183,148,255,0.10), transparent 42%),
-  radial-gradient(circle at 82% 8%, rgba(183,148,255,0.08), transparent 40%),
-  linear-gradient(180deg, #0A0B14 0%, #0F1020 100%);z-index:-1}
+  radial-gradient(circle at 18% 18%, rgba(139,124,246,0.10), transparent 40%),
+  radial-gradient(circle at 82% 8%, rgba(139,124,246,0.06), transparent 38%),
+  linear-gradient(180deg, #F7F6FB 0%, #FFFFFF 100%);z-index:-1}
 .bg-grid{position:absolute;top:0;left:0;right:0;bottom:0;background:none;z-index:-1}
-.vertical-rail{position:fixed;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(183,148,255,0.10),transparent);z-index:1;pointer-events:none}
+.vertical-rail{position:fixed;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(139,124,246,0.12),transparent);z-index:1;pointer-events:none}
 .vertical-rail.left{left:clamp(16px, 4vw, 72px)}
 .vertical-rail.right{right:clamp(16px, 4vw, 72px)}
 .glow-spot{position:absolute;width:540px;height:540px;background:radial-gradient(circle,rgba(185,166,255,0.12) 0%,transparent 70%);filter:blur(90px);pointer-events:none;z-index:0}

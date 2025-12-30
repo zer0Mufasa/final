@@ -10,13 +10,12 @@ export function ButtonPrimary({ className, children, ...rest }: ButtonProps) {
     <button
       {...rest}
       className={cn(
-        'inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-0',
-        'hover:translate-y-[-1px]',
+        'inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-[10px] transition focus:outline-none focus:ring-2 focus:ring-offset-0',
         className
       )}
       style={{
-        background: `linear-gradient(135deg, ${theme.colors.lavender} 0%, ${theme.colors.lavenderDeep} 100%)`,
-        color: '#0b0a14',
+        background: theme.colors.lavender,
+        color: '#ffffff',
         boxShadow: theme.shadows.sm,
       }}
     >
@@ -30,12 +29,12 @@ export function ButtonSecondary({ className, children, ...rest }: ButtonProps) {
     <button
       {...rest}
       className={cn(
-        'inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-offset-0',
-        'border',
+        'inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-[10px] transition focus:outline-none focus:ring-2 focus:ring-offset-0',
+        'border border-current',
         className
       )}
       style={{
-        background: 'rgba(255,255,255,0.04)',
+        background: '#ffffff',
         borderColor: theme.colors.border,
         color: theme.colors.text,
       }}
@@ -50,7 +49,7 @@ export function ButtonGhost({ className, children, ...rest }: ButtonProps) {
     <button
       {...rest}
       className={cn(
-        'inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold rounded-xl transition focus:outline-none focus:ring-2 focus:ring-offset-0',
+        'inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold rounded-[10px] transition focus:outline-none focus:ring-2 focus:ring-offset-0',
         className
       )}
       style={{
