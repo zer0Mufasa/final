@@ -150,16 +150,16 @@ export function TopBar({ user, shop }: TopBarProps) {
           <div className="flex items-center justify-between gap-3 py-3">
             {/* Left: breadcrumbs + subtle context */}
             <div className="min-w-0 flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 text-sm text-white/50">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-[#6b7280]">
                 {crumbs.map((c) => (
-                  <Link key={c.href} href={c.href} className="hover:text-white/80 transition-colors">
+                  <Link key={c.href} href={c.href} className="hover:text-[#111827] transition-colors">
                     {c.label}
                   </Link>
                 ))}
               </div>
               {shop?.name ? (
-                <div className="hidden md:flex items-center gap-2 text-xs text-white/45">
-                  <span className="w-1 h-1 rounded-full bg-purple-400/60" aria-hidden="true" />
+                <div className="hidden md:flex items-center gap-2 text-xs text-[#9ca3af]">
+                  <span className="w-1 h-1 rounded-full bg-[#8b5cf6]" aria-hidden="true" />
                   <span className="truncate max-w-[220px]">{shop.name}</span>
                 </div>
               ) : null}

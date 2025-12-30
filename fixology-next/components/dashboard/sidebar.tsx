@@ -221,10 +221,10 @@ export function Sidebar({ user, shop }: SidebarProps) {
         href={item.href}
         className={cn(
           'relative flex items-center gap-3 px-4 py-3 rounded-[10px]',
-          'text-[#5E5B7A] text-sm font-medium',
+          'text-[#374151] text-sm font-medium',
           'transition-all duration-200 ease-out cursor-pointer',
-          'hover:bg-[rgba(139,124,246,0.08)] hover:text-[#1F1E2E]',
-          isActive && 'bg-[rgba(139,124,246,0.12)] text-[#1F1E2E]',
+          'hover:bg-[rgba(139,124,246,0.08)] hover:text-[#111827]',
+          isActive && 'bg-[rgba(139,124,246,0.12)] text-[#111827]',
           !effectiveOpen && 'justify-center px-3'
         )}
       >
@@ -234,7 +234,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         )}
         <span className={cn(
           'flex-shrink-0 transition-transform group-hover:scale-105',
-          isActive ? 'text-[#8B7CF6]' : 'text-[#5E5B7A]'
+          isActive ? 'text-[#8B7CF6]' : 'text-[#6b7280]'
         )}>
           {item.icon}
         </span>
@@ -264,7 +264,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         ref={sidebarRef}
         className={cn(
           'fixed left-0 top-0 h-screen',
-          'bg-[#F2F1F8]/92 backdrop-blur-xl',
+          'bg-[#ffffff] backdrop-blur-xl',
           'border-r border-[rgba(30,30,60,0.08)] shadow-[0_12px_28px_rgba(15,16,32,0.08)]',
           'flex flex-col transition-all duration-300 ease-out z-40',
           effectiveOpen ? 'w-64' : 'w-[72px]'
@@ -272,7 +272,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
       >
         {/* Logo + Toggle */}
         <div className={cn(
-          'flex items-center justify-between h-16 border-b border-white/10 w-full',
+          'flex items-center justify-between h-16 border-b border-[rgba(30,30,60,0.08)] w-full',
           effectiveOpen ? 'px-4' : 'px-0'
         )}>
           <div className={cn(
@@ -280,9 +280,9 @@ export function Sidebar({ user, shop }: SidebarProps) {
             effectiveOpen ? 'gap-3' : 'justify-center flex-1'
           )}>
             {effectiveOpen ? (
-              <FixologyLogo size="lg" animate={true} className="tracking-tight" />
+              <FixologyLogo size="lg" animate={true} className="tracking-tight text-[#111827]" />
             ) : (
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-700/20 border border-purple-500/30 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#e0e7ff] to-[#f3e8ff] border border-[rgba(139,124,246,0.35)] flex items-center justify-center">
                 <ReticleIcon size="lg" color="purple" variant="idle" className="opacity-95 scale-[1.08]" />
               </div>
             )}
