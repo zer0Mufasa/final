@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { mockTickets } from '@/lib/mock/data'
 import { useRole } from '@/contexts/role-context'
+import { searchDevices } from '@/lib/devices-autocomplete'
 import {
   ArrowRight,
   Plus,
@@ -113,6 +114,7 @@ export default function TicketSimple({ id }: { id: string }) {
   const [payDrawerOpen, setPayDrawerOpen] = useState(false)
   const [method, setMethod] = useState<PayMethod>('cash')
   const [amount, setAmount] = useState<string>('')
+  const [deviceQuery, setDeviceQuery] = useState('')
 
   const canTakePayment = role !== 'TECH' // front desk + owner
   const lineItems = [
@@ -207,10 +209,26 @@ export default function TicketSimple({ id }: { id: string }) {
             <div className="relative">
               <Search className="w-4 h-4 text-white/50 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
+                value={deviceQuery}
+                onChange={(e) => setDeviceQuery(e.target.value)}
                 className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-9 pr-3 py-2 text-sm text-white/80 placeholder:text-white/40 focus:outline-none focus:border-purple-400/35"
                 placeholder="Search for device…"
               />
             </div>
+
+            {deviceQuery.trim().length > 0 && (
+              <div className="mt-2 rounded-2xl border border-white/10 bg-white/[0.02] max-h-48 overflow-y-auto">
+                {searchDevices(deviceQuery, 10).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDeviceQuery(d)}
+                    className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/5 border-b border-white/5 last:border-b-0"
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
               <div className="flex items-start justify-between gap-3">
