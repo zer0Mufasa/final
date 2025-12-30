@@ -1,7 +1,7 @@
 export const theme = {
   colors: {
     // Base light palette (higher contrast)
-    bgRoot: '#f8f9fa',
+    bgRoot: '#f9fafb',
     bgCanvas: '#ffffff',
     bgAlt: '#f5f5f7',
     // Back-compat keys

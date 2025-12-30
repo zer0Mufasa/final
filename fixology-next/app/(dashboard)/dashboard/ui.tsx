@@ -41,7 +41,7 @@ export function DashboardClient() {
   }, [])
 
   return (
-    <div className="space-y-5 text-[#374151] bg-[#f8f9fa] px-4 sm:px-6 pb-10">
+    <div className="space-y-5 text-[#374151] bg-[#f9fafb] px-4 sm:px-6 pb-10">
       <CommandBar roleLabel="Owner" shopName="Demo Shop" />
 
       <PageHeader
@@ -126,7 +126,7 @@ export function DashboardClient() {
                         {t.assignedTo ? <span>• Tech {t.assignedTo}</span> : null}
                       </div>
                     </div>
-                    <div className="text-xs text-white/55 flex items-center gap-1">
+                    <div className="text-xs text-[#6b7280] flex items-center gap-1">
                       <span>Open</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
