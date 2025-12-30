@@ -41,7 +41,7 @@ export function DashboardClient() {
   }, [])
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 text-[#374151] bg-[#f8f9fa]">
       <CommandBar roleLabel="Owner" shopName="Demo Shop" />
 
       <PageHeader
@@ -55,11 +55,11 @@ export function DashboardClient() {
             </ButtonPrimary>
           </Link>
         }
-        className="text-[#1F1E2E]"
+        className="text-[#111827]"
       />
 
       {/* Context strip */}
-      <GlassCard className="p-4 rounded-[12px]">
+      <GlassCard className="p-4 rounded-[12px] bg-white border border-[#e5e7eb] shadow-sm">
         {loading ? (
           <div className="grid grid-cols-3 gap-3">
             <Skeleton className="h-10 rounded-xl" />
@@ -77,18 +77,18 @@ export function DashboardClient() {
 
       <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Primary: Today queue */}
-      <GlassCard className="p-0 rounded-[14px] border border-[rgba(30,30,60,0.08)] shadow-sm bg-white">
-          <div className="px-6 py-5 flex items-center justify-between gap-4 border-b border-[rgba(30,30,60,0.08)] bg-white">
+            <GlassCard className="p-0 rounded-[14px] border border-[#e5e7eb] shadow-sm bg-white">
+          <div className="px-6 py-5 flex items-center justify-between gap-4 border-b border-[#e5e7eb] bg-white">
             <div>
-              <div className="text-sm font-semibold text-[#1F1E2E]">Today’s queue</div>
-              <div className="text-xs text-[#5E5B7A] mt-1">Task-like rows. Open to act.</div>
+              <div className="text-sm font-semibold text-[#111827]">Today’s queue</div>
+              <div className="text-xs text-[#5e5e7a] mt-1">Task-like rows. Open to act.</div>
             </div>
             <Link href="/tickets">
               <ButtonSecondary className="px-3 py-2 text-xs rounded-[10px]">View all</ButtonSecondary>
             </Link>
           </div>
 
-          <div className="divide-y divide-[rgba(30,30,60,0.08)]">
+          <div className="divide-y divide-[#e5e7eb] bg-white">
             {loading ? (
               <div className="p-4 space-y-3">
                 <Skeleton className="h-[68px] rounded-2xl" />
@@ -108,7 +108,7 @@ export function DashboardClient() {
                   >
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold text-[#1F1E2E]">
+                        <span className="text-sm font-semibold text-[#111827]">
                           {t.ticketNumber}
                         </span>
                         <StatusBadge status={t.status} />
@@ -139,15 +139,15 @@ export function DashboardClient() {
 
         {/* Side rail */}
         <div className="space-y-4">
-          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white">
+          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white border border-[#e5e7eb]">
             <div className="flex items-center gap-2">
               <AlertOctagon className="w-4 h-4 text-amber-300" />
-              <div className="text-sm font-semibold text-[#1F1E2E]">Signals</div>
+              <div className="text-sm font-semibold text-[#111827]">Signals</div>
             </div>
             {loading ? (
               <Skeleton className="h-14 rounded-xl" />
             ) : (
-              <div className="space-y-2 text-sm text-[#5E5B7A]">
+              <div className="space-y-2 text-sm text-[#5e5e7a]">
                 <div className="flex items-center justify-between rounded-[10px] bg-[#F7F6FB] border border-[rgba(30,30,60,0.08)] px-3 py-2">
                   <span>At risk</span>
                   <span className="text-[#C47A00] font-semibold">{stats.flagged}</span>
@@ -164,10 +164,10 @@ export function DashboardClient() {
             )}
           </GlassCard>
 
-          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white">
+          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white border border-[#e5e7eb]">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-purple-200" />
-              <div className="text-sm font-semibold text-[#1F1E2E]">Quick intake</div>
+              <div className="text-sm font-semibold text-[#111827]">Quick intake</div>
             </div>
             {loading ? (
               <Skeleton className="h-[140px] rounded-2xl" />
@@ -187,12 +187,12 @@ export function DashboardClient() {
             )}
           </GlassCard>
 
-          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white">
+          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white border border-[#e5e7eb]">
             <div className="flex items-center gap-2">
               <Info className="w-4 h-4 text-white/65" />
-              <div className="text-sm font-semibold text-[#1F1E2E]">Tips</div>
+              <div className="text-sm font-semibold text-[#111827]">Tips</div>
             </div>
-            <ul className="space-y-2 text-sm text-[#5E5B7A]">
+            <ul className="space-y-2 text-sm text-[#5e5e7a]">
               <li>Finish overdue tickets before new work.</li>
               <li>Always confirm promised time at intake.</li>
               <li>Keep payment ready — speed builds trust.</li>
