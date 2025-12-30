@@ -1,29 +1,36 @@
 export const theme = {
   colors: {
-    bgBase: '#070712',
-    bgDeep: '#080814',
-    bgOverlay: 'radial-gradient(circle at 20% 20%, rgba(185,166,255,0.12), transparent 45%), radial-gradient(circle at 80% 10%, rgba(124,92,255,0.16), transparent 40%)',
+    // Base
+    bgBase: '#0A0B14',
+    bgDeep: '#0F1020',
+    bgOverlay: 'radial-gradient(circle at 18% 12%, rgba(183,148,255,0.12), transparent 45%), radial-gradient(circle at 82% 8%, rgba(183,148,255,0.10), transparent 40%)',
+    // Surfaces
     card: 'rgba(255,255,255,0.035)',
     cardHover: 'rgba(255,255,255,0.055)',
-    border: 'rgba(255,255,255,0.10)',
-    text: 'rgba(255,255,255,0.92)',
-    muted: 'rgba(255,255,255,0.65)',
-    lavender: '#B9A6FF',
-    lavenderDeep: '#7C5CFF',
-    successTint: 'rgba(34,197,94,0.14)',
-    warningTint: 'rgba(251,191,36,0.14)',
-    dangerTint: 'rgba(248,113,113,0.14)',
-    infoTint: 'rgba(59,130,246,0.14)',
+    // Borders
+    border: 'rgba(255,255,255,0.08)',
+    // Text
+    text: '#EDEBFF',
+    muted: '#8A88B5',
+    secondary: '#B6B3D6',
+    // Accent (desaturated lavender)
+    lavender: '#B794FF',
+    lavenderDeep: '#C9B6FF',
+    // Status tones (soft)
+    successTint: 'rgba(120,220,180,0.25)',
+    warningTint: 'rgba(255,200,120,0.22)',
+    dangerTint: 'rgba(255,120,140,0.22)',
+    infoTint: 'rgba(183,148,255,0.18)',
   },
   radii: {
-    sm: '10px',
-    md: '14px',
-    lg: '18px',
-    xl: '22px',
+    sm: '8px',   // rows
+    md: '12px',  // panels
+    lg: '16px',  // drawers/major
+    xl: '20px',
   },
   shadows: {
-    sm: '0 10px 30px rgba(0,0,0,0.25)',
-    md: '0 20px 60px rgba(0,0,0,0.28)',
+    sm: '0 10px 26px rgba(0,0,0,0.22)',
+    md: '0 18px 48px rgba(0,0,0,0.26)',
   },
   spacing: [4, 8, 12, 16, 20, 24, 28, 32, 36, 40],
   blur: {
@@ -33,12 +40,14 @@ export const theme = {
   },
   borders: {
     hairline: 'rgba(255,255,255,0.08)',
-    subtle: 'rgba(255,255,255,0.12)',
+    subtle: 'rgba(255,255,255,0.10)',
+    focus: 'rgba(183,148,255,0.35)',
   },
   surfaces: {
     panel: 'rgba(255,255,255,0.035)',
     panelHover: 'rgba(255,255,255,0.055)',
     row: 'rgba(255,255,255,0.02)',
+    payment: 'rgba(255,255,255,0.08)',
   },
 } as const
 

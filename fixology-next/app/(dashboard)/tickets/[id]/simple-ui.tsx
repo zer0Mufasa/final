@@ -450,7 +450,7 @@ export default function TicketSimple({ id }: { id: string }) {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="text-xs text-white/55 uppercase tracking-[0.08em]">Total Due</div>
-                  <div className="text-3xl font-bold text-white">{fmtMoney(totalDue)}</div>
+                  <div className="text-4xl font-bold text-white">{fmtMoney(totalDue)}</div>
                 </div>
                 <Pill tone={totalDue > 0 ? 'warn' : 'good'}>
                   {totalDue > 0 ? 'UNPAID' : 'PAID'}
@@ -475,7 +475,10 @@ export default function TicketSimple({ id }: { id: string }) {
                 ))}
               </div>
 
-              <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+              <div
+                className="space-y-2 rounded-2xl border p-3"
+                style={{ background: theme.surfaces.payment, borderColor: theme.colors.border }}
+              >
                 <DataRow label="Subtotal" value={fmtMoney(subtotal)} />
                 <DataRow label="Tax" value={fmtMoney(tax)} />
                 <DataRow label="Discount" value={fmtMoney(discount)} />

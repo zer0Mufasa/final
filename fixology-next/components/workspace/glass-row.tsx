@@ -15,7 +15,7 @@ export function GlassRow({
   return (
     <div
       className={cn(
-        'rounded-xl border flex items-center gap-3 px-4 py-3',
+        'rounded-lg border flex items-center gap-3 px-4 py-3',
         interactive && 'hover:bg-white/[0.05] transition',
         className
       )}

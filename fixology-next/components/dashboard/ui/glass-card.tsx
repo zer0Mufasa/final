@@ -19,7 +19,7 @@ export function GlassCard({
       style={{
         background: theme.colors.card,
         border: `1px solid ${theme.colors.border}`,
-        borderRadius: theme.radii.xl,
+        borderRadius: theme.radii.md,
         boxShadow: theme.shadows.sm,
         backdropFilter: `blur(${theme.blur.md})`,
       }}
