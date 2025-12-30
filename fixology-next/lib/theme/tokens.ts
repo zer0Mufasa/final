@@ -44,6 +44,13 @@ export const theme = {
     panel: '14px',
     drawer: '18px',
   },
+  type: {
+    h1: 'text-3xl sm:text-4xl font-semibold text-[#111827]',
+    h2: 'text-2xl font-semibold text-[#111827]',
+    body: 'text-sm text-[#374151]',
+    meta: 'text-xs uppercase tracking-[0.08em] text-[#6b7280]',
+  },
+  spacingScale: [8, 12, 16, 20, 24, 32],
   shadows: {
     sm: '0 8px 18px rgba(17,24,39,0.06)',
     md: '0 16px 34px rgba(17,24,39,0.10)',
