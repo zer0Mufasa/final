@@ -76,18 +76,18 @@ export function DashboardClient() {
 
       <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Primary: Today queue */}
-        <GlassCard className="p-0 rounded-[12px] border border-white/8">
-          <div className="px-6 py-5 flex items-center justify-between gap-4 border-b border-white/8">
+      <GlassCard className="p-0 rounded-[14px] border border-[rgba(30,30,60,0.08)] shadow-sm">
+          <div className="px-6 py-5 flex items-center justify-between gap-4 border-b border-[rgba(30,30,60,0.08)] bg-white">
             <div>
-              <div className="text-sm font-semibold text-white/90">Today’s queue</div>
-              <div className="text-xs text-white/55 mt-1">Task-like rows. Open to act.</div>
+              <div className="text-sm font-semibold text-[#1F1E2E]">Today’s queue</div>
+              <div className="text-xs text-[#5E5B7A] mt-1">Task-like rows. Open to act.</div>
             </div>
             <Link href="/tickets">
-              <ButtonSecondary className="px-3 py-2 text-xs rounded-lg">View all</ButtonSecondary>
+              <ButtonSecondary className="px-3 py-2 text-xs rounded-[10px]">View all</ButtonSecondary>
             </Link>
           </div>
 
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-[rgba(30,30,60,0.08)]">
             {loading ? (
               <div className="p-4 space-y-3">
                 <Skeleton className="h-[68px] rounded-2xl" />
@@ -103,11 +103,11 @@ export function DashboardClient() {
                   <button
                     key={t.id}
                     onClick={() => router.push(`/tickets/${t.id}`)}
-                    className="w-full text-left px-5 py-4 hover:bg-white/[0.04] transition flex items-center gap-4"
+                    className="w-full text-left px-5 py-4 hover:bg-[rgba(139,124,246,0.06)] transition flex items-center gap-4 bg-white"
                   >
                     <div className="min-w-0 flex-1 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold" style={{ color: theme.colors.text }}>
+                        <span className="text-sm font-semibold text-[#1F1E2E]">
                           {t.ticketNumber}
                         </span>
                         <StatusBadge status={t.status} />
@@ -138,60 +138,60 @@ export function DashboardClient() {
 
         {/* Side rail */}
         <div className="space-y-4">
-          <GlassCard className="p-5 rounded-3xl space-y-3">
+          <GlassCard className="p-5 rounded-[14px] space-y-3">
             <div className="flex items-center gap-2">
               <AlertOctagon className="w-4 h-4 text-amber-300" />
-              <div className="text-sm font-semibold" style={{ color: theme.colors.text }}>Signals</div>
+              <div className="text-sm font-semibold text-[#1F1E2E]">Signals</div>
             </div>
             {loading ? (
               <Skeleton className="h-14 rounded-xl" />
             ) : (
-              <div className="space-y-2 text-sm" style={{ color: theme.colors.muted }}>
-                <div className="flex items-center justify-between rounded-xl bg-white/[0.04] border border-white/8 px-3 py-2">
+              <div className="space-y-2 text-sm text-[#5E5B7A]">
+                <div className="flex items-center justify-between rounded-[10px] bg-[#F7F6FB] border border-[rgba(30,30,60,0.08)] px-3 py-2">
                   <span>At risk</span>
-                  <span className="text-amber-200 font-semibold">{stats.flagged}</span>
+                  <span className="text-[#C47A00] font-semibold">{stats.flagged}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-xl bg-white/[0.04] border border-white/8 px-3 py-2">
+                <div className="flex items-center justify-between rounded-[10px] bg-[#F7F6FB] border border-[rgba(30,30,60,0.08)] px-3 py-2">
                   <span>Overdue</span>
-                  <span className="text-red-200 font-semibold">{stats.pastPromised}</span>
+                  <span className="text-[#C63939] font-semibold">{stats.pastPromised}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-xl bg-white/[0.04] border border-white/8 px-3 py-2">
+                <div className="flex items-center justify-between rounded-[10px] bg-[#F7F6FB] border border-[rgba(30,30,60,0.08)] px-3 py-2">
                   <span>Open revenue</span>
-                  <span className="text-white font-semibold">{fmtMoney(stats.estRevenue)}</span>
+                  <span className="text-[#1F1E2E] font-semibold">{fmtMoney(stats.estRevenue)}</span>
                 </div>
               </div>
             )}
           </GlassCard>
 
-          <GlassCard className="p-5 rounded-3xl space-y-3">
+          <GlassCard className="p-5 rounded-[14px] space-y-3">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-purple-200" />
-              <div className="text-sm font-semibold" style={{ color: theme.colors.text }}>Quick intake</div>
+              <div className="text-sm font-semibold text-[#1F1E2E]">Quick intake</div>
             </div>
             {loading ? (
               <Skeleton className="h-[140px] rounded-2xl" />
             ) : (
               <>
                 <textarea
-                  className="w-full rounded-2xl bg-white/[0.05] border border-white/10 p-4 text-sm text-white/85 placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40 min-h-[120px]"
+                  className="w-full rounded-[12px] bg-white border border-[rgba(30,30,60,0.08)] p-4 text-sm text-[#1F1E2E] placeholder:text-[#8C8AA3] focus:outline-none focus:ring-2 focus:ring-[rgba(139,124,246,0.35)] min-h-[120px]"
                   placeholder='e.g., "Jordan 5125550142 iPhone 14 Pro cracked screen same-day."'
                 />
                 <div className="flex items-center gap-2">
                   <Link href="/tickets/new">
-                    <ButtonPrimary className="px-4 py-2 text-sm rounded-xl">Start intake</ButtonPrimary>
+                    <ButtonPrimary className="px-4 py-2 text-sm rounded-[10px]">Start intake</ButtonPrimary>
                   </Link>
-                  <ButtonSecondary className="px-3 py-2 text-xs rounded-lg">Save note</ButtonSecondary>
+                  <ButtonSecondary className="px-3 py-2 text-xs rounded-[10px]">Save note</ButtonSecondary>
                 </div>
               </>
             )}
           </GlassCard>
 
-          <GlassCard className="p-5 rounded-3xl space-y-3">
+          <GlassCard className="p-5 rounded-[14px] space-y-3">
             <div className="flex items-center gap-2">
               <Info className="w-4 h-4 text-white/65" />
-              <div className="text-sm font-semibold" style={{ color: theme.colors.text }}>Tips</div>
+              <div className="text-sm font-semibold text-[#1F1E2E]">Tips</div>
             </div>
-            <ul className="space-y-2 text-sm" style={{ color: theme.colors.muted }}>
+            <ul className="space-y-2 text-sm text-[#5E5B7A]">
               <li>Finish overdue tickets before new work.</li>
               <li>Always confirm promised time at intake.</li>
               <li>Keep payment ready — speed builds trust.</li>

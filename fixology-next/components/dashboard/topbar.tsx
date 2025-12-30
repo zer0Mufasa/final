@@ -145,9 +145,9 @@ export function TopBar({ user, shop }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-30">
-      <div className="bg-[#0b0b17]/85 backdrop-blur-2xl border-b border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+      <div className="bg-white border-b border-[rgba(30,30,60,0.08)] shadow-[0_10px_30px_rgba(15,16,32,0.06)]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-3 py-4">
+          <div className="flex items-center justify-between gap-3 py-3">
             {/* Left: breadcrumbs + subtle context */}
             <div className="min-w-0 flex items-center gap-3">
               <div className="hidden sm:flex items-center gap-2 text-sm text-white/50">
@@ -170,17 +170,17 @@ export function TopBar({ user, shop }: TopBarProps) {
               <button
                 onClick={() => setCommandPaletteOpen(true)}
                 className={cn(
-                  'w-full relative flex items-center gap-3 px-4 py-2.5 rounded-xl',
-                  'bg-white/[0.05] border border-white/12',
-                  'hover:bg-white/[0.08] hover:border-white/20 transition-all',
-                  'text-left text-sm text-white/70 hover:text-white/90'
+                  'w-full relative flex items-center gap-3 px-4 py-2.5 rounded-[10px]',
+                  'bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)]',
+                  'hover:border-[rgba(139,124,246,0.35)] transition-all',
+                  'text-left text-sm text-[#5E5B7A]'
                 )}
               >
-                <Search className="w-4 h-4 text-white/40 flex-shrink-0" aria-hidden="true" />
+                <Search className="w-4 h-4 text-[#8C8AA3] flex-shrink-0" aria-hidden="true" />
                 <span className="flex-1">Search ticket #, phone, IMEI, device…</span>
-                <kbd className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-xs text-white/40 font-mono">
-                  <kbd className="px-1 py-0.5 rounded bg-white/10">⌘</kbd>
-                  <kbd className="px-1 py-0.5 rounded bg-white/10">K</kbd>
+                <kbd className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-[rgba(30,30,60,0.08)] text-xs text-[#8C8AA3] font-mono">
+                  <kbd className="px-1 py-0.5 rounded bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)]">⌘</kbd>
+                  <kbd className="px-1 py-0.5 rounded bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)]">K</kbd>
                 </kbd>
               </button>
             </div>
@@ -188,14 +188,14 @@ export function TopBar({ user, shop }: TopBarProps) {
             {/* Right: actions */}
             <div className="flex items-center gap-2">
               {/* Mode toggle */}
-              <div className="hidden lg:flex items-center gap-1 rounded-xl bg-white/[0.04] border border-white/10 p-1">
+              <div className="hidden lg:flex items-center gap-1 rounded-[12px] bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)] p-1">
                 <button
                   onClick={openFrontDeskSwitch}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                    'px-3 py-1.5 rounded-[10px] text-xs font-semibold transition-all',
                     actor.role === 'FRONT_DESK'
-                      ? 'bg-white/10 text-white'
-                      : 'text-white/50 hover:text-white/80'
+                      ? 'bg-white text-[#1F1E2E]'
+                      : 'text-[#5E5B7A] hover:text-[#1F1E2E]'
                   )}
                   title="Front Desk Mode"
                 >
@@ -205,10 +205,10 @@ export function TopBar({ user, shop }: TopBarProps) {
                 <button
                   onClick={openTechSwitch}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                    'px-3 py-1.5 rounded-[10px] text-xs font-semibold transition-all',
                     actor.role === 'TECHNICIAN'
-                      ? 'bg-white/10 text-white'
-                      : 'text-white/50 hover:text-white/80'
+                      ? 'bg-white text-[#1F1E2E]'
+                      : 'text-[#5E5B7A] hover:text-[#1F1E2E]'
                   )}
                   title="Technician Mode"
                 >
@@ -218,10 +218,10 @@ export function TopBar({ user, shop }: TopBarProps) {
                 <button
                   onClick={openOwnerPin}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                    'px-3 py-1.5 rounded-[10px] text-xs font-semibold transition-all',
                     actor.role === 'OWNER'
-                      ? 'bg-white/10 text-white'
-                      : 'text-white/50 hover:text-white/80'
+                      ? 'bg-white text-[#1F1E2E]'
+                      : 'text-[#5E5B7A] hover:text-[#1F1E2E]'
                   )}
                   title="Owner Mode"
                 >
@@ -288,9 +288,9 @@ export function TopBar({ user, shop }: TopBarProps) {
               {/* Notifications */}
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                  <ButtonSecondary className="px-3 py-2.5 rounded-xl relative">
+                  <ButtonSecondary className="px-3 py-2.5 rounded-[10px] relative">
                     <Bell className="w-4 h-4" aria-hidden="true" />
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_0_3px_rgba(0,0,0,0.35)]" aria-hidden="true" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#8B7CF6] shadow-[0_0_0_3px_rgba(30,30,60,0.12)]" aria-hidden="true" />
                   </ButtonSecondary>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
@@ -327,19 +327,19 @@ export function TopBar({ user, shop }: TopBarProps) {
               {/* User menu */}
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                  <ButtonSecondary className="px-3 py-2.5 rounded-xl inline-flex items-center gap-2">
-                    <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm font-semibold">
+                  <ButtonSecondary className="px-3 py-2.5 rounded-[10px] inline-flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-[10px] bg-[#8B7CF6] text-white flex items-center justify-center text-sm font-semibold">
                       {initials(actor?.name || user?.name)}
                     </span>
                     <div className="hidden lg:flex flex-col items-start leading-tight">
-                      <span className="text-sm font-semibold text-white/85 max-w-[160px] truncate">
+                      <span className="text-sm font-semibold text-[#1F1E2E] max-w-[160px] truncate">
                         {actor?.name || user?.name || 'Demo User'}
                       </span>
-                      <span className="text-xs text-white/45">
+                      <span className="text-xs text-[#5E5B7A]">
                         {actor?.role || user?.role || 'Owner'}
                       </span>
                     </div>
-                    <ChevronDown className="w-4 h-4 text-white/50 hidden lg:block" aria-hidden="true" />
+                    <ChevronDown className="w-4 h-4 text-[#8C8AA3] hidden lg:block" aria-hidden="true" />
                   </ButtonSecondary>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
