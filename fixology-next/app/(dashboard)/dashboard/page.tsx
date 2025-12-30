@@ -25,6 +25,7 @@ import {
   CheckCircle2,
   MessageCircle,
 } from 'lucide-react'
+import { Chip } from '@/components/workspace/chip'
 
 type Role = 'FRONT_DESK' | 'TECH' | 'OWNER'
 
