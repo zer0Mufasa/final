@@ -26,6 +26,7 @@ import {
   MessageCircle,
 } from 'lucide-react'
 import { Chip } from '@/components/workspace/chip'
+import { SoftButton } from '@/components/workspace/soft-button'
 
 type Role = 'FRONT_DESK' | 'TECH' | 'OWNER'
 
