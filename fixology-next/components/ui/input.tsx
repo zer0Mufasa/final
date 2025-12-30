@@ -1,5 +1,28 @@
 'use client'
 
+import { cn } from '@/lib/utils/cn'
+import { theme } from '@/lib/theme/tokens'
+
+type InputProps = React.InputHTMLAttributes<HTMLInputElement> & { iconLeft?: React.ReactNode }
+
+export function Input({ className, iconLeft, ...rest }: InputProps) {
+  return (
+    <div className="relative">
+      {iconLeft ? <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/45">{iconLeft}</div> : null}
+      <input
+        {...rest}
+        className={cn(
+          'w-full rounded-xl bg-white/[0.05] border px-3 py-2.5 text-sm text-white/90 placeholder:text-white/40',
+          iconLeft ? 'pl-10' : '',
+          className
+        )}
+        style={{ borderColor: theme.colors.border, boxShadow: '0 0 0 0px transparent' }}
+      />
+    </div>
+  )
+}
+'use client'
+
 // components/ui/input.tsx
 // Reusable input component
 

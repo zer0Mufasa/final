@@ -221,20 +221,20 @@ export function Sidebar({ user, shop }: SidebarProps) {
         href={item.href}
         className={cn(
           'relative flex items-center gap-3 px-4 py-3 rounded-xl',
-          'text-white/60 text-sm font-medium',
+          'text-white/65 text-sm font-medium',
           'transition-all duration-200 ease-out cursor-pointer',
           'hover:bg-white/5 hover:text-white',
-          isActive && 'bg-white/10 text-[#a78bfa]',
+          isActive && 'bg-white/[0.08] text-[#dcd3ff]',
           !effectiveOpen && 'justify-center px-3'
         )}
       >
         {/* Active indicator glow pill */}
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-gradient-to-b from-purple-400 to-purple-600 shadow-[0_0_12px_rgba(168,85,247,0.6)]" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-gradient-to-b from-[#b9a6ff] to-[#7c5cff] shadow-[0_0_14px_rgba(185,166,255,0.55)]" />
         )}
         <span className={cn(
-          'flex-shrink-0 transition-transform group-hover:scale-110',
-          isActive && 'text-[#a78bfa]'
+          'flex-shrink-0 transition-transform group-hover:scale-105',
+          isActive && 'text-[#d3c7ff]'
         )}>
           {item.icon}
         </span>
@@ -264,8 +264,8 @@ export function Sidebar({ user, shop }: SidebarProps) {
         ref={sidebarRef}
         className={cn(
           'fixed left-0 top-0 h-screen',
-          'bg-black/30 backdrop-blur-xl',
-          'border-r border-white/10',
+          'bg-[#0a0a16]/80 backdrop-blur-2xl',
+          'border-r border-white/10 shadow-[0_10px_60px_rgba(0,0,0,0.35)]',
           'flex flex-col transition-all duration-300 ease-out z-40',
           effectiveOpen ? 'w-64' : 'w-[72px]'
         )}

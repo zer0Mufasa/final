@@ -11,6 +11,7 @@ import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
 import { Clock, Ticket, TrendingUp, AlertTriangle, ArrowRight } from 'lucide-react'
+import { ButtonSecondary } from '@/components/ui/buttons'
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -80,8 +81,8 @@ export function DashboardClient() {
               <div className="text-sm font-semibold text-white/90">Today’s queue</div>
               <div className="text-xs text-white/50 mt-1">Quick-glance list — open, message, or push to next stage.</div>
             </div>
-            <Link href="/tickets" className="btn-secondary px-4 py-2 text-sm rounded-xl">
-              View all
+            <Link href="/tickets">
+              <ButtonSecondary className="px-4 py-2 text-sm rounded-xl">View all</ButtonSecondary>
             </Link>
           </div>
 

@@ -12,6 +12,8 @@ import { CommandPalette } from './command-palette'
 import { Modal } from '@/components/dashboard/ui/modal'
 import { StateBanner } from '@/components/dashboard/ui/state-banner'
 import { useActor } from '@/contexts/actor-context'
+import { ButtonPrimary, ButtonSecondary } from '@/components/ui/buttons'
+import { theme } from '@/lib/theme/tokens'
 import {
   Bell,
   ChevronDown,
@@ -143,7 +145,7 @@ export function TopBar({ user, shop }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-30">
-      <div className="bg-black/20 backdrop-blur-xl border-b border-white/10">
+      <div className="bg-[#0b0b17]/85 backdrop-blur-2xl border-b border-white/8 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="flex items-center justify-between gap-3 py-4">
             {/* Left: breadcrumbs + subtle context */}
@@ -169,9 +171,9 @@ export function TopBar({ user, shop }: TopBarProps) {
                 onClick={() => setCommandPaletteOpen(true)}
                 className={cn(
                   'w-full relative flex items-center gap-3 px-4 py-2.5 rounded-xl',
-                  'bg-white/[0.04] border border-white/10',
-                  'hover:bg-white/[0.06] hover:border-white/15 transition-all',
-                  'text-left text-sm text-white/60 hover:text-white/80'
+                  'bg-white/[0.05] border border-white/12',
+                  'hover:bg-white/[0.08] hover:border-white/20 transition-all',
+                  'text-left text-sm text-white/70 hover:text-white/90'
                 )}
               >
                 <Search className="w-4 h-4 text-white/40 flex-shrink-0" aria-hidden="true" />
@@ -231,11 +233,11 @@ export function TopBar({ user, shop }: TopBarProps) {
               {/* New dropdown */}
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                  <button className="btn-primary px-4 py-2.5 text-sm rounded-xl inline-flex items-center gap-2">
+                  <ButtonPrimary className="px-4 py-2.5 text-sm rounded-xl inline-flex items-center gap-2">
                     <Plus className="w-4 h-4" aria-hidden="true" />
                     <span className="hidden sm:inline">New</span>
                     <ChevronDown className="w-4 h-4 opacity-80" aria-hidden="true" />
-                  </button>
+                  </ButtonPrimary>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content
@@ -286,10 +288,10 @@ export function TopBar({ user, shop }: TopBarProps) {
               {/* Notifications */}
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                  <button className="btn-secondary px-3 py-2.5 rounded-xl relative">
+                  <ButtonSecondary className="px-3 py-2.5 rounded-xl relative">
                     <Bell className="w-4 h-4" aria-hidden="true" />
                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-purple-400 shadow-[0_0_0_3px_rgba(0,0,0,0.35)]" aria-hidden="true" />
-                  </button>
+                  </ButtonSecondary>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content
@@ -325,7 +327,7 @@ export function TopBar({ user, shop }: TopBarProps) {
               {/* User menu */}
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
-                  <button className="btn-secondary px-3 py-2.5 rounded-xl inline-flex items-center gap-2">
+                  <ButtonSecondary className="px-3 py-2.5 rounded-xl inline-flex items-center gap-2">
                     <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-sm font-semibold">
                       {initials(actor?.name || user?.name)}
                     </span>
@@ -338,7 +340,7 @@ export function TopBar({ user, shop }: TopBarProps) {
                       </span>
                     </div>
                     <ChevronDown className="w-4 h-4 text-white/50 hidden lg:block" aria-hidden="true" />
-                  </button>
+                  </ButtonSecondary>
                 </DropdownMenu.Trigger>
                 <DropdownMenu.Portal>
                   <DropdownMenu.Content
@@ -491,9 +493,9 @@ export function TopBar({ user, shop }: TopBarProps) {
           {pinError ? <StateBanner type="outdated" message={pinError} /> : null}
 
           <div className="flex items-center gap-2">
-            <button className="btn-secondary px-4 py-3 rounded-xl flex-1" onClick={() => setPinOpen(false)}>
+            <ButtonSecondary className="px-4 py-3 rounded-xl flex-1" onClick={() => setPinOpen(false)}>
               Cancel
-            </button>
+            </ButtonSecondary>
             <button className="btn-primary px-4 py-3 rounded-xl flex-1" onClick={submitPin}>
               Unlock
             </button>

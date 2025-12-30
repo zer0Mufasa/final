@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react'
 import { mockTickets } from '@/lib/mock/data'
 import { useRole } from '@/contexts/role-context'
 import { searchDevices } from '@/lib/devices-autocomplete'
+import { theme } from '@/lib/theme/tokens'
 import {
   ArrowRight,
   Plus,
@@ -34,14 +35,21 @@ function Pill({
   tone?: 'neutral' | 'good' | 'warn' | 'bad' | 'brand'
 }) {
   const map = {
-    neutral: 'bg-white/5 text-white/70 border-white/10',
-    good: 'bg-emerald-500/15 text-emerald-200 border-emerald-400/20',
-    warn: 'bg-amber-500/15 text-amber-200 border-amber-400/20',
-    bad: 'bg-red-500/15 text-red-200 border-red-400/20',
-    brand: 'bg-purple-500/20 text-purple-100 border-purple-400/25',
+    neutral: { bg: 'rgba(255,255,255,0.06)', text: theme.colors.text, border: theme.colors.border },
+    good: { bg: theme.colors.successTint, text: 'rgba(167,243,208,0.95)', border: 'rgba(34,197,94,0.25)' },
+    warn: { bg: theme.colors.warningTint, text: 'rgba(254,240,138,0.95)', border: 'rgba(251,191,36,0.3)' },
+    bad: { bg: theme.colors.dangerTint, text: 'rgba(254,202,202,0.98)', border: 'rgba(248,113,113,0.28)' },
+    brand: { bg: 'rgba(185,166,255,0.16)', text: theme.colors.text, border: 'rgba(185,166,255,0.35)' },
   }
   return (
-    <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs ${map[tone]}`}>
+    <span
+      className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs"
+      style={{
+        background: map[tone].bg,
+        color: map[tone].text,
+        borderColor: map[tone].border,
+      }}
+    >
       {children}
     </span>
   )
@@ -59,11 +67,21 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+    <section
+      className="rounded-2xl p-4 transition-all duration-150"
+      style={{
+        background: theme.colors.card,
+        border: `1px solid ${theme.colors.border}`,
+        boxShadow: theme.shadows.sm,
+        backdropFilter: `blur(${theme.blur.md})`,
+      }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-white">{title}</p>
-          {subtitle ? <p className="text-xs text-white/50 mt-0.5">{subtitle}</p> : null}
+          <p className="text-sm font-semibold" style={{ color: theme.colors.text }}>
+            {title}
+          </p>
+          {subtitle ? <p className="text-xs mt-0.5" style={{ color: theme.colors.muted }}>{subtitle}</p> : null}
         </div>
         {right}
       </div>

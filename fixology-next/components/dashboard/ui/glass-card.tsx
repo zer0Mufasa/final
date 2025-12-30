@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils/cn'
+import { theme } from '@/lib/theme/tokens'
 
 export function GlassCard({
   className,
@@ -9,7 +10,23 @@ export function GlassCard({
   className?: string
   children: React.ReactNode
 }) {
-  return <div className={cn('glass-card bg-white/[0.04] border-white/10 hover:-translate-y-0 hover:shadow-none', className)}>{children}</div>
+  return (
+    <div
+      className={cn(
+        'glass-card transition-all duration-150',
+        className
+      )}
+      style={{
+        background: theme.colors.card,
+        border: `1px solid ${theme.colors.border}`,
+        borderRadius: theme.radii.xl,
+        boxShadow: theme.shadows.sm,
+        backdropFilter: `blur(${theme.blur.md})`,
+      }}
+    >
+      {children}
+    </div>
+  )
 }
 
 
