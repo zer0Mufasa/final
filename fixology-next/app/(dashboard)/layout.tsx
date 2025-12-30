@@ -9,6 +9,7 @@ import { cookies } from 'next/headers'
 import { TopBar } from '@/components/dashboard/topbar'
 import { RoleProvider } from '@/contexts/role-context'
 import { ActorProvider } from '@/contexts/actor-context'
+import { OnboardingOverlay } from '@/components/dashboard/onboarding-overlay'
 
 const dashboardStyles = `
 html{scroll-behavior:smooth}
@@ -18,7 +19,7 @@ html{scroll-behavior:smooth}
 }
 body{background:#0f0a1a;min-height:100vh;overflow-x:hidden;color:#EDE9FE}
 .bg-structure{position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 50%,#1a0f2e 0%,#0f0a1a 100%);z-index:-1}
-.bg-grid{position:absolute;top:0;left:0;right:0;bottom:0;background-image:linear-gradient(rgba(167,139,250,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(167,139,250,0.03) 1px,transparent 1px);background-size:60px 60px;z-index:-1}
+.bg-grid{position:absolute;top:0;left:0;right:0;bottom:0;background:none;z-index:-1}
 .vertical-rail{position:fixed;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(167,139,250,0.08),transparent);z-index:1;pointer-events:none}
 .vertical-rail.left{left:clamp(20px, 5vw, 80px)}
 .vertical-rail.right{right:clamp(20px, 5vw, 80px)}
@@ -70,6 +71,7 @@ export default async function DashboardLayout({
               <TopBar user={demoUser} shop={demoShop} />
               <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">{children}</div>
             </main>
+            <OnboardingOverlay />
           </div>
         </ActorProvider>
       </RoleProvider>
