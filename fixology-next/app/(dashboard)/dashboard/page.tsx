@@ -16,7 +16,6 @@ import {
   CreditCard,
   Wallet,
   BarChart3,
-  Settings,
   Plus,
   Search,
   ArrowRight,
@@ -24,6 +23,7 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle2,
+  MessageCircle,
 } from 'lucide-react'
 
 type Role = 'FRONT_DESK' | 'TECH' | 'OWNER'
@@ -174,6 +174,7 @@ export default function DashboardPage() {
   const [role, setRole] = useState<Role>('OWNER')
   const [query, setQuery] = useState('')
   const [intakeText, setIntakeText] = useState('')
+  const [selectedId, setSelectedId] = useState(MOCK_QUEUE[0]?.id || '')
 
   const queue = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -187,6 +188,14 @@ export default function DashboardPage() {
   const activeCount = MOCK_QUEUE.filter((t) => t.stage !== 'Ready').length
   const atRiskCount = MOCK_QUEUE.filter((t) => t.risk === 'watch' || t.risk === 'high').length
   const openRevenue = MOCK_QUEUE.reduce((a, t) => a + t.price, 0)
+  const selected = queue.find((t) => t.id === selectedId) || queue[0] || MOCK_QUEUE[0]
+
+  const grouped = useMemo(() => {
+    const overdue = queue.filter((t) => t.due.toLowerCase().includes('late'))
+    const soon = queue.filter((t) => !t.due.toLowerCase().includes('late') && parseInt(t.due) <= 8)
+    const normal = queue.filter((t) => !overdue.includes(t) && !soon.includes(t))
+    return { overdue, soon, normal }
+  }, [queue])
 
   return (
     <div className="min-h-screen bg-[#F7F6FB] text-slate-900">
@@ -351,101 +360,121 @@ export default function DashboardPage() {
               <StatPill icon={<CreditCard className="w-4 h-4 text-slate-700" />} label="Open revenue" value={money(openRevenue)} sub="Work value in queue" />
             </div>
 
-            {/* Main grid: Queue + Inspector */}
-            <div className="grid gap-4 mt-5 lg:grid-cols-[1.6fr_0.9fr]">
-              {/* QUEUE */}
+            {/* Main grid: Timeline / Workbench / Money+Comms */}
+            <div className="grid gap-4 mt-5 xl:grid-cols-[1.2fr_1.4fr_1fr]">
+              {/* TIMELINE */}
               <section className="rounded-3xl border border-slate-200 bg-white/80 backdrop-blur-md overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-200/70 flex items-center justify-between">
-                  <SectionTitle title="Today's queue" hint="Task-like rows. Open to act." />
-                  <button className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:border-[#8B7CF6]/30 transition">
-                    View all
-                  </button>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-900">Timeline</div>
+                    <div className="text-xs text-slate-500">Overdue → Due soon → Normal</div>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500">
+                    <Chip muted>Today</Chip>
+                    <Chip muted>Overdue</Chip>
+                    <Chip muted>Upcoming</Chip>
+                  </div>
                 </div>
-
                 <div className="divide-y divide-slate-200/70">
-                  {queue.map((t) => (
-                    <Link
-                      key={t.id}
-                      href={`/tickets/${t.id}`}
-                      className="block px-5 py-4 hover:bg-[#8B7CF6]/[0.04] transition"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <div className="text-sm font-semibold text-slate-900">{t.id}</div>
-                            <StagePill stage={t.stage} />
-                            <span className="text-xs text-slate-500">Due in {t.due}</span>
-                          </div>
-
-                          <div className="text-sm text-slate-700 mt-1 truncate">
-                            {t.customer} • {t.device} • {t.issue}
-                          </div>
-
-                          <div className="text-xs text-slate-500 mt-1">
-                            Price {money(t.price)} • Tech {t.tech}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <RiskPill risk={t.risk} />
-                          <span className="text-sm font-semibold text-slate-600">Open →</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+                  {renderGroup('Overdue', grouped.overdue, setSelectedId)}
+                  {renderGroup('Due soon', grouped.soon, setSelectedId)}
+                  {renderGroup('Normal', grouped.normal, setSelectedId)}
                 </div>
               </section>
 
-              {/* INSPECTOR RAIL */}
+              {/* WORKBENCH */}
+              <section className="rounded-3xl border border-slate-200 bg-white/90 backdrop-blur-md p-5 space-y-4">
+                <SectionTitle title="Workbench" hint="Current ticket focus." />
+                {selected ? (
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="h-14 w-14 rounded-2xl border border-slate-200 bg-gradient-to-br from-[#EDE9FE] to-white flex items-center justify-center text-sm font-semibold text-[#6F5CF6]">
+                        {selected.device.split(' ')[0]}
+                      </div>
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <div className="text-lg font-semibold text-slate-900">{selected.customer}</div>
+                          <Chip muted>{selected.device}</Chip>
+                          <Chip muted>{selected.stage}</Chip>
+                        </div>
+                        <div className="text-sm text-slate-600">Issue: {selected.issue}</div>
+                        <div className="text-sm text-slate-500">Tech {selected.tech} • {selected.due}</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <SoftButton tone="outline">Continue Intake</SoftButton>
+                      <SoftButton tone="outline">Mark Ready</SoftButton>
+                      <SoftButton tone="primary">Take Payment</SoftButton>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-sm font-semibold text-slate-900">Next steps</div>
+                      <ul className="space-y-1 text-sm text-slate-600">
+                        <li>• Confirm parts arrival</li>
+                        <li>• Capture final diagnostics note</li>
+                        <li>• Prepare payment summary</li>
+                      </ul>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                      <div className="text-sm font-semibold text-slate-900 mb-1">Latest note</div>
+                      <div className="text-sm text-slate-600">“Customer approved estimate, wants ready by tonight.”</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-sm text-slate-500">Select a ticket in the timeline.</div>
+                )}
+              </section>
+
+              {/* MONEY + COMMS */}
               <aside className="space-y-4">
-                <section className="rounded-3xl border border-slate-200 bg-white/80 backdrop-blur-md p-5">
-                  <SectionTitle title="Signals" hint="Small, actionable alerts." />
-                  <div className="mt-3 space-y-2">
+                <section className="rounded-3xl border border-slate-200 bg-white/90 backdrop-blur-md p-5">
+                  <SectionTitle title="Payment snapshot" />
+                  <div className="space-y-1 mt-2 text-sm text-slate-700">
+                    <div className="flex items-center justify-between">
+                      <span>Open revenue</span>
+                      <span className="font-semibold">{money(openRevenue)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Deposit paid</span>
+                      <span className="font-semibold text-slate-600">{money(openRevenue * 0.15)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Remaining</span>
+                      <span className="font-semibold text-slate-900">{money(openRevenue * 0.85)}</span>
+                    </div>
+                  </div>
+                  <SoftButton className="w-full mt-3" tone="primary">
+                    Open Checkout
+                  </SoftButton>
+                </section>
+
+                <section className="rounded-3xl border border-slate-200 bg-white/90 backdrop-blur-md p-5">
+                  <SectionTitle title="Customer comms" />
+                  <div className="mt-2 space-y-2">
+                    <textarea
+                      className="w-full min-h-[90px] rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#8B7CF6]/45 focus:ring-2 focus:ring-[#8B7CF6]/15"
+                      placeholder="Type a quick update to the customer…"
+                    />
+                    <div className="flex items-center gap-2">
+                      <SoftButton tone="outline" className="flex-1">
+                        <MessageCircle className="w-4 h-4" /> Send update
+                      </SoftButton>
+                      <SoftButton tone="primary" className="flex-1">
+                        Request approval
+                      </SoftButton>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="rounded-3xl border border-slate-200 bg-white/90 backdrop-blur-md p-5">
+                  <SectionTitle title="Signals" />
+                  <div className="mt-3 space-y-2 text-sm text-slate-700">
+                    <SignalRow label="Overdue" value={`${grouped.overdue.length}`} tone="danger" />
                     <SignalRow label="At risk" value={`${atRiskCount}`} tone="warn" />
-                    <SignalRow label="Overdue" value="2" tone="danger" />
                     <SignalRow label="Open revenue" value={money(openRevenue)} tone="default" />
                   </div>
-                </section>
-
-                <section className="rounded-3xl border border-slate-200 bg-white/80 backdrop-blur-md p-5">
-                  <SectionTitle title="Quick intake" hint="One sentence → structured ticket later." />
-                  <div className="mt-3">
-                    <textarea
-                      value={intakeText}
-                      onChange={(e) => setIntakeText(e.target.value)}
-                      className="w-full min-h-[110px] rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-[#8B7CF6]/45 focus:ring-2 focus:ring-[#8B7CF6]/15"
-                      placeholder='e.g., "Jordan 5125550142 iPhone 14 Pro cracked screen same-day."'
-                    />
-                    <div className="flex items-center gap-2 mt-3">
-                      <button className="inline-flex items-center gap-2 rounded-2xl bg-[#8B7CF6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#7A6AF0] transition">
-                        <Sparkles className="w-4 h-4" /> Start intake
-                      </button>
-                      <button className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-[#8B7CF6]/30 transition">
-                        Save note
-                      </button>
-                    </div>
-                    <div className="text-xs text-slate-500 mt-2">
-                      Tip: Keep it short (name + device + problem + deadline).
-                    </div>
-                  </div>
-                </section>
-
-                <section className="rounded-3xl border border-slate-200 bg-white/80 backdrop-blur-md p-5">
-                  <SectionTitle title="Tips" hint="A little coaching, not clutter." />
-                  <ul className="mt-3 space-y-2 text-sm text-slate-700">
-                    <li className="flex gap-2">
-                      <span className="text-[#8B7CF6] mt-0.5">•</span>
-                      Finish overdue tickets before starting new work.
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="text-[#8B7CF6] mt-0.5">•</span>
-                      Confirm promised time at intake to avoid callbacks.
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="text-[#8B7CF6] mt-0.5">•</span>
-                      Use “Notes” for approvals and customer expectations.
-                    </li>
-                  </ul>
                 </section>
               </aside>
             </div>
@@ -522,6 +551,36 @@ function SignalRow({
     <div className={cn('flex items-center justify-between rounded-2xl border px-3 py-2.5', toneCls)}>
       <div className="text-sm font-semibold">{label}</div>
       <div className="text-sm font-semibold">{value}</div>
+    </div>
+  )
+}
+
+function renderGroup(label: string, items: typeof MOCK_QUEUE, onSelect: (id: string) => void) {
+  if (!items.length) return null
+  return (
+    <div className="p-3 space-y-2">
+      <div className="text-[11px] uppercase tracking-wide text-slate-500 px-1">{label}</div>
+      {items.map((t) => (
+        <button
+          key={t.id}
+          onClick={() => onSelect(t.id)}
+          className="w-full text-left px-3 py-2 rounded-2xl hover:bg-[#8B7CF6]/[0.05] transition flex items-start justify-between gap-3"
+        >
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-semibold text-slate-900">{t.id}</span>
+              <StagePill stage={t.stage} />
+            </div>
+            <div className="text-sm text-slate-700 truncate">
+              {t.customer} • {t.device}
+            </div>
+            <div className="text-xs text-slate-500">{t.due}</div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-slate-400" />
+          </div>
+        </button>
+      ))}
     </div>
   )
 }
