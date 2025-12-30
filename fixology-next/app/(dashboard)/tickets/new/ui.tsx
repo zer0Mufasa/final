@@ -638,6 +638,10 @@ const modelImageOverrides: Partial<Record<DeviceCategoryKey, Record<string, stri
     'iphone 15 pro': ['/devices/iPhone_15_Pro-130x130.png'],
     'iphone 15 plus': ['/devices/iPhone_15_Plus-130x130.png'],
     'iphone 15': ['/devices/iPhone_15-130x130.png'],
+    'iphone 14 pro max': ['/devices/Job_Details_Icon_-_Device_Model_-_iPhone_14_Pro_Max.png'],
+    'iphone 14 pro': ['/devices/Job_Details_Icon_-_Device_Model_-_iPhone_14_Pro.png'],
+    'iphone 14 plus': ['/devices/Job_Details_Icon_-_Device_Model_-_iPhone_14_Plus.png'],
+    'iphone 14': ['/devices/Job_Details_Icon_-_Device_Model_-_iPhone_14.png'],
   },
   samsung: {
     'galaxy s25 ultra': ['/devices/Samsung_Galaxy_S25_Ultra-130x130.png'],
@@ -687,6 +691,7 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
       {!failed ? (
         <div className={cn('w-24 h-24 sm:w-28 sm:h-28', !isSelected && 'bg-white')}>
           <img
+            data-candidate-idx={0}
             src={src}
             alt={model}
             width={120}
@@ -695,16 +700,23 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
             decoding="async"
             className="object-contain w-full h-full"
             onError={(e) => {
-              const current = (e.currentTarget as HTMLImageElement).src
-              const next = candidates.find((c) => c && c !== current)
+              if (failed) return
+              const el = e.currentTarget as HTMLImageElement
+              const currentFull = el.currentSrc || el.src || ''
+              const current = currentFull.replace(window.location.origin, '')
+              const currentIdx = Number(el.dataset.candidateIdx ?? '-1')
+              const idx = candidates.findIndex((c) => c === current || current.endsWith(c))
+              const nextIdx = (idx >= 0 ? idx : currentIdx) + 1
+              const next = candidates[nextIdx]
               if (next && next !== current) {
-                e.currentTarget.src = next
+                el.dataset.candidateIdx = String(nextIdx)
+                el.src = next
                 return
               }
               // final fallback to category image
               const catImg = deviceCatalog[category].imageSrc
               if (catImg && current !== catImg) {
-                e.currentTarget.src = catImg
+                el.src = catImg
                 return
               }
               setFailed(true)
