@@ -232,6 +232,8 @@ export default function TicketSimple({ id }: { id: string }) {
                         ...list,
                         { id: `${Date.now()}-${Math.random()}`, name: d, imei: '', passcode: '' },
                       ])
+                      // clear search and collapse list after selection
+                      setDeviceQuery('')
                     }}
                     className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/5 border-b border-white/5 last:border-b-0"
                   >
@@ -251,7 +253,8 @@ export default function TicketSimple({ id }: { id: string }) {
                     </div>
                     <div className="flex items-center gap-2">
                       <Pill tone="brand">Waiting for Diagnosis</Pill>
-                      {idx > 0 && (
+                      {/* allow delete even on first device if more than one exists */}
+                      {selectedDevices.length > 1 && (
                         <button
                           onClick={() => setSelectedDevices((list) => list.filter((x) => x.id !== d.id))}
                           className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-red-200 hover:border-red-400/40"
