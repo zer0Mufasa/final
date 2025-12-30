@@ -9,6 +9,7 @@ const methods = [
   { key: 'apple', label: 'Apple Pay', icon: <Smartphone className="w-4 h-4" /> },
   { key: 'zelle', label: 'Zelle', icon: <Banknote className="w-4 h-4" /> },
   { key: 'cashapp', label: 'Cash App', icon: <QrCode className="w-4 h-4" /> },
+  { key: 'acima', label: 'Acima', icon: <CreditCard className="w-4 h-4" /> },
   { key: 'other', label: 'Other', icon: <DollarSign className="w-4 h-4" /> },
 ]
 
