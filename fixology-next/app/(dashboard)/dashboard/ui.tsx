@@ -55,6 +55,7 @@ export function DashboardClient() {
             </ButtonPrimary>
           </Link>
         }
+        className="text-[#1F1E2E]"
       />
 
       {/* Context strip */}
@@ -76,7 +77,7 @@ export function DashboardClient() {
 
       <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* Primary: Today queue */}
-      <GlassCard className="p-0 rounded-[14px] border border-[rgba(30,30,60,0.08)] shadow-sm">
+      <GlassCard className="p-0 rounded-[14px] border border-[rgba(30,30,60,0.08)] shadow-sm bg-white">
           <div className="px-6 py-5 flex items-center justify-between gap-4 border-b border-[rgba(30,30,60,0.08)] bg-white">
             <div>
               <div className="text-sm font-semibold text-[#1F1E2E]">Today’s queue</div>
@@ -138,7 +139,7 @@ export function DashboardClient() {
 
         {/* Side rail */}
         <div className="space-y-4">
-          <GlassCard className="p-5 rounded-[14px] space-y-3">
+          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white">
             <div className="flex items-center gap-2">
               <AlertOctagon className="w-4 h-4 text-amber-300" />
               <div className="text-sm font-semibold text-[#1F1E2E]">Signals</div>
@@ -163,7 +164,7 @@ export function DashboardClient() {
             )}
           </GlassCard>
 
-          <GlassCard className="p-5 rounded-[14px] space-y-3">
+          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-4 h-4 text-purple-200" />
               <div className="text-sm font-semibold text-[#1F1E2E]">Quick intake</div>
@@ -186,7 +187,7 @@ export function DashboardClient() {
             )}
           </GlassCard>
 
-          <GlassCard className="p-5 rounded-[14px] space-y-3">
+          <GlassCard className="p-5 rounded-[14px] space-y-3 bg-white">
             <div className="flex items-center gap-2">
               <Info className="w-4 h-4 text-white/65" />
               <div className="text-sm font-semibold text-[#1F1E2E]">Tips</div>
