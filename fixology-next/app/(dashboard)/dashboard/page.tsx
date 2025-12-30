@@ -288,9 +288,7 @@ export default function DashboardPage() {
             <div className="px-4 lg:px-8 py-3 flex items-center gap-3">
               {/* Breadcrumb */}
               <div className="hidden md:flex items-center gap-2 text-sm text-slate-500">
-                <span className="font-medium text-slate-700">Dashboard</span>
-                <span className="text-slate-300">•</span>
-                <span>Demo Shop</span>
+                <span className="font-medium text-slate-700">Demo Shop</span>
               </div>
 
               {/* Search */}
