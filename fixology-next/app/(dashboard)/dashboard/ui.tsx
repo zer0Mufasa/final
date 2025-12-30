@@ -41,7 +41,7 @@ export function DashboardClient() {
   }, [])
 
   return (
-    <div className="space-y-5 text-[#374151] bg-[#f8f9fa]">
+    <div className="space-y-5 text-[#374151] bg-[#f8f9fa] px-4 sm:px-6 pb-10">
       <CommandBar roleLabel="Owner" shopName="Demo Shop" />
 
       <PageHeader
@@ -215,15 +215,18 @@ function ContextChip({
   value: string | number
   tone?: 'neutral' | 'warn'
 }) {
-  const colors = tone === 'warn' ? { bg: 'rgba(251,191,36,0.12)', text: 'rgba(255,241,207,0.95)' } : { bg: 'rgba(255,255,255,0.04)', text: theme.colors.text }
+  const colors =
+    tone === 'warn'
+      ? { bg: '#FFF7E6', text: '#92400e' }
+      : { bg: '#ffffff', text: '#111827' }
   return (
     <div
-      className="rounded-xl px-3 py-2.5 flex items-center gap-2 border"
-      style={{ background: colors.bg, borderColor: 'rgba(255,255,255,0.08)' }}
+      className="rounded-[10px] px-3 py-2.5 flex items-center gap-2 border"
+      style={{ background: colors.bg, borderColor: '#e5e7eb' }}
     >
-      <div className="text-white/70">{icon}</div>
+      <div className="text-[#6b7280]">{icon}</div>
       <div className="flex-1 min-w-0">
-        <div className="text-[11px] uppercase tracking-[0.08em] text-white/45 font-semibold">{label}</div>
+        <div className="text-[11px] uppercase tracking-[0.08em] text-[#6b7280] font-semibold">{label}</div>
         <div className="text-sm font-semibold" style={{ color: colors.text }}>{value}</div>
       </div>
     </div>
