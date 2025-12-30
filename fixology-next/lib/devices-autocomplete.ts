@@ -4,6 +4,10 @@
 export const devices = [
   // ==================== PHONES ====================
   // Apple iPhone
+  "iPhone 17 Pro Max",
+  "iPhone 17 Pro",
+  "iPhone 17 Air",
+  "iPhone 17",
   "iPhone 16 Pro Max",
   "iPhone 16 Pro",
   "iPhone 16 Plus",
