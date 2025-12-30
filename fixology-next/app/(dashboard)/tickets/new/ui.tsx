@@ -684,15 +684,16 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
 
   const isOther = model.toLowerCase().includes('other')
   const src = isOther ? deviceCatalog[category].imageSrc : sources[0] || deviceCatalog[category].imageSrc
+  const scaleClass = category === 'ps5' || category === 'xbox' ? 'scale-110' : ''
 
   return (
     <button
       type="button"
       onClick={onSelect}
       className={cn(
-        'rounded-2xl border p-4 transition-all text-center aspect-square flex flex-col items-center justify-center',
+        'rounded-2xl border p-4 transition-all text-center aspect-square flex flex-col items-center justify-center hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(0,0,0,0.12)]',
         isSelected
-          ? 'bg-white border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
+          ? 'bg-[#F5F3FF] border-purple-500/35 ring-2 ring-purple-500/20 shadow-[0_10px_28px_rgba(0,0,0,0.22)]'
           : 'bg-white border-black/10 hover:border-black/15 shadow-[0_10px_28px_rgba(0,0,0,0.18)]'
       )}
     >
@@ -709,7 +710,10 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
             decoding="async"
             fetchpriority={priority ? 'high' : 'auto'}
             style={{ contentVisibility: 'auto', containIntrinsicSize: '100px 100px' }}
-            className="object-contain w-full h-full relative z-10 opacity-0 transition-opacity duration-150"
+            className={cn(
+              'object-contain w-full h-full relative z-10 opacity-0 transition-opacity duration-150',
+              scaleClass
+            )}
             onLoad={(e) => {
               e.currentTarget.classList.remove('opacity-0')
             }}
