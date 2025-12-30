@@ -4,6 +4,10 @@ export const theme = {
     bgRoot: '#F7F6FB',
     bgCanvas: '#FFFFFF',
     bgAlt: '#F2F1F8',
+    // Back-compat keys
+    bgBase: '#F7F6FB',
+    bgDeep: '#FFFFFF',
+    bgOverlay: 'radial-gradient(circle at 18% 18%, rgba(139,124,246,0.10), transparent 40%), radial-gradient(circle at 82% 8%, rgba(139,124,246,0.06), transparent 38%), linear-gradient(180deg, #F7F6FB 0%, #FFFFFF 100%)',
 
     // Surfaces
     surface: '#FFFFFF',
@@ -24,6 +28,8 @@ export const theme = {
     lavenderHover: '#7A6AF0',
     lavenderTint: 'rgba(139,124,246,0.12)',
     lavenderGlass: 'rgba(139,124,246,0.08)',
+    // Back-compat accent
+    lavenderDeep: '#7A6AF0',
 
     // Status (pastel)
     successTint: '#CFEDE0',
@@ -46,6 +52,16 @@ export const theme = {
     sm: '4px',
     md: '8px',
     lg: '12px',
+  },
+  borders: {
+    hairline: 'rgba(30,30,60,0.08)',
+    subtle: 'rgba(30,30,60,0.12)',
+  },
+  surfaces: {
+    panel: '#FFFFFF',
+    panelAlt: '#F7F6FB',
+    row: '#FFFFFF',
+    payment: 'rgba(139,124,246,0.08)',
   },
 } as const
 
