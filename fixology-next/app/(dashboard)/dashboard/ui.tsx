@@ -4,14 +4,13 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { mockTickets } from '@/lib/mock/data'
-import { Button } from '@/components/ui/button'
 import { PageHeader } from '@/components/dashboard/ui/page-header'
-import { StatCard } from '@/components/dashboard/ui/stat-card'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
-import { Clock, Ticket, TrendingUp, AlertTriangle, ArrowRight } from 'lucide-react'
-import { ButtonSecondary } from '@/components/ui/buttons'
+import { Clock, Ticket, TrendingUp, AlertTriangle, ArrowRight, AlertOctagon, MessageSquare, Info } from 'lucide-react'
+import { ButtonPrimary, ButtonSecondary } from '@/components/ui/buttons'
+import { theme } from '@/lib/theme/tokens'
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -41,125 +40,187 @@ export function DashboardClient() {
   }, [])
 
   return (
-    <div>
+    <div className="space-y-5">
       <PageHeader
-        title="Dashboard"
-        description="A calm command center for today’s repairs — fast intake, clear next steps, and risk signals when they matter."
+        title="Today at Demo Shop"
+        description="A calm command center — see the queue first, then act."
         action={
           <Link href="/tickets/new">
-            <Button rightIcon={<ArrowRight className="w-4 h-4" aria-hidden="true" />}>
+            <ButtonPrimary>
               Create Ticket
-            </Button>
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </ButtonPrimary>
           </Link>
         }
       />
 
-      {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Context strip */}
+      <GlassCard className="p-4 rounded-2xl">
         {loading ? (
-          <>
-            <Skeleton className="h-[110px] rounded-3xl" />
-            <Skeleton className="h-[110px] rounded-3xl" />
-            <Skeleton className="h-[110px] rounded-3xl" />
-            <Skeleton className="h-[110px] rounded-3xl" />
-          </>
+          <div className="grid grid-cols-3 gap-3">
+            <Skeleton className="h-10 rounded-xl" />
+            <Skeleton className="h-10 rounded-xl" />
+            <Skeleton className="h-10 rounded-xl" />
+          </div>
         ) : (
-          <>
-            <StatCard label="Active tickets" value={String(stats.active)} hint="In progress today" icon={<Ticket className="w-5 h-5" />} />
-            <StatCard label="Past promised" value={String(stats.pastPromised)} hint="Needs attention" icon={<Clock className="w-5 h-5" />} />
-            <StatCard label="Risk flags" value={String(stats.flagged)} hint="Review before work" icon={<AlertTriangle className="w-5 h-5" />} />
-            <StatCard label="Est. revenue" value={fmtMoney(stats.estRevenue)} hint="Open work value" icon={<TrendingUp className="w-5 h-5" />} />
-          </>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+            <ContextChip icon={<Ticket className="w-4 h-4" />} label="Active" value={stats.active} />
+            <ContextChip icon={<AlertTriangle className="w-4 h-4" />} label="At risk" value={stats.flagged} tone="warn" />
+            <ContextChip icon={<TrendingUp className="w-4 h-4" />} label="Open revenue" value={fmtMoney(stats.estRevenue)} />
+          </div>
         )}
-      </div>
+      </GlassCard>
 
-      <div className="grid gap-4 mt-6 lg:grid-cols-3">
-        {/* Today queue */}
-        <GlassCard className="lg:col-span-2 p-0 overflow-hidden rounded-3xl">
-          <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between gap-4">
+      <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+        {/* Primary: Today queue */}
+        <GlassCard className="p-0 rounded-3xl border border-white/8">
+          <div className="px-6 py-5 flex items-center justify-between gap-4 border-b border-white/8">
             <div>
               <div className="text-sm font-semibold text-white/90">Today’s queue</div>
-              <div className="text-xs text-white/50 mt-1">Quick-glance list — open, message, or push to next stage.</div>
+              <div className="text-xs text-white/55 mt-1">Task-like rows. Open to act.</div>
             </div>
             <Link href="/tickets">
-              <ButtonSecondary className="px-4 py-2 text-sm rounded-xl">View all</ButtonSecondary>
+              <ButtonSecondary className="px-3 py-2 text-xs rounded-lg">View all</ButtonSecondary>
             </Link>
           </div>
 
-          <div className="p-3">
+          <div className="divide-y divide-white/5">
             {loading ? (
-              <div className="space-y-3 p-3">
-                <Skeleton className="h-[72px] rounded-2xl" />
-                <Skeleton className="h-[72px] rounded-2xl" />
-                <Skeleton className="h-[72px] rounded-2xl" />
+              <div className="p-4 space-y-3">
+                <Skeleton className="h-[68px] rounded-2xl" />
+                <Skeleton className="h-[68px] rounded-2xl" />
+                <Skeleton className="h-[68px] rounded-2xl" />
               </div>
             ) : (
-              <div className="space-y-2">
-                {mockTickets.slice(0, 6).map((t) => {
-                  const hrs = hoursFromNow(t.promisedAt)
-                  const promisedLabel = hrs >= 0 ? `in ${hrs}h` : `${Math.abs(hrs)}h late`
-                  const promisedCls = hrs >= 0 ? 'text-white/55' : 'text-red-300'
-                  return (
-                    <div
-                      key={t.id}
-                      onClick={() => router.push(`/tickets/${t.id}`)}
-                      className="rounded-2xl bg-white/[0.035] border border-white/10 hover:bg-white/[0.055] transition-colors px-4 py-3 flex items-start justify-between gap-4 cursor-pointer"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <div className="font-semibold text-white/90 truncate">{t.ticketNumber}</div>
-                          <StatusBadge status={t.status} />
-                          <span className={`text-xs font-semibold ${promisedCls}`}>Promised {promisedLabel}</span>
-                        </div>
-                        <div className="text-sm text-white/70 mt-1 truncate">{t.customerName} • {t.device}</div>
-                        <div className="mt-2 flex items-center gap-2">
-                          {t.risk !== 'none' && <RiskBadge risk={t.risk} />}
-                          <span className="text-xs text-white/45">Price {fmtMoney(t.price)}</span>
-                          {t.assignedTo ? <span className="text-xs text-white/45">• Tech {t.assignedTo}</span> : null}
-                        </div>
+              mockTickets.slice(0, 7).map((t) => {
+                const hrs = hoursFromNow(t.promisedAt)
+                const promisedLabel = hrs >= 0 ? `in ${hrs}h` : `${Math.abs(hrs)}h late`
+                const promisedColor = hrs >= 0 ? theme.colors.muted : 'rgba(248,113,113,0.9)'
+                return (
+                  <button
+                    key={t.id}
+                    onClick={() => router.push(`/tickets/${t.id}`)}
+                    className="w-full text-left px-5 py-4 hover:bg-white/[0.04] transition flex items-center gap-4"
+                  >
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold" style={{ color: theme.colors.text }}>
+                          {t.ticketNumber}
+                        </span>
+                        <StatusBadge status={t.status} />
+                        <span className="text-xs font-semibold" style={{ color: promisedColor }}>
+                          {hrs >= 0 ? 'Due ' : 'Overdue '}
+                          {promisedLabel}
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn-ghost px-3 py-2 text-xs rounded-xl">Message</button>
+                      <div className="text-sm truncate" style={{ color: theme.colors.muted }}>
+                        {t.customerName} • {t.device}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs" style={{ color: theme.colors.muted }}>
+                        {t.risk !== 'none' && <RiskBadge risk={t.risk} />}
+                        <span>Price {fmtMoney(t.price)}</span>
+                        {t.assignedTo ? <span>• Tech {t.assignedTo}</span> : null}
                       </div>
                     </div>
-                  )
-                })}
-              </div>
+                    <div className="text-xs text-white/55 flex items-center gap-1">
+                      <span>Open</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </button>
+                )
+              })
             )}
           </div>
         </GlassCard>
 
-        {/* Quick intake */}
-        <GlassCard className="p-6 rounded-3xl">
-          <div className="text-sm font-semibold text-white/90">Quick intake</div>
-          <div className="text-xs text-white/50 mt-1 leading-relaxed">
-            Type a sentence, paste a message, or jot the essentials — we’ll wire generation later. For now, this helps front-desk move fast.
-          </div>
-
-          <div className="mt-4">
+        {/* Side rail */}
+        <div className="space-y-4">
+          <GlassCard className="p-5 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2">
+              <AlertOctagon className="w-4 h-4 text-amber-300" />
+              <div className="text-sm font-semibold" style={{ color: theme.colors.text }}>Signals</div>
+            </div>
             {loading ? (
-              <Skeleton className="h-[160px] rounded-2xl" />
+              <Skeleton className="h-14 rounded-xl" />
+            ) : (
+              <div className="space-y-2 text-sm" style={{ color: theme.colors.muted }}>
+                <div className="flex items-center justify-between rounded-xl bg-white/[0.04] border border-white/8 px-3 py-2">
+                  <span>At risk</span>
+                  <span className="text-amber-200 font-semibold">{stats.flagged}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl bg-white/[0.04] border border-white/8 px-3 py-2">
+                  <span>Overdue</span>
+                  <span className="text-red-200 font-semibold">{stats.pastPromised}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-xl bg-white/[0.04] border border-white/8 px-3 py-2">
+                  <span>Open revenue</span>
+                  <span className="text-white font-semibold">{fmtMoney(stats.estRevenue)}</span>
+                </div>
+              </div>
+            )}
+          </GlassCard>
+
+          <GlassCard className="p-5 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-purple-200" />
+              <div className="text-sm font-semibold" style={{ color: theme.colors.text }}>Quick intake</div>
+            </div>
+            {loading ? (
+              <Skeleton className="h-[140px] rounded-2xl" />
             ) : (
               <>
                 <textarea
-                  className="w-full rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-sm text-white/85 placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40 min-h-[160px]"
-                  placeholder="e.g., “iPhone 14 Pro — cracked screen, customer says it still turns on. Wants same-day if possible.”"
+                  className="w-full rounded-2xl bg-white/[0.05] border border-white/10 p-4 text-sm text-white/85 placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40 min-h-[120px]"
+                  placeholder='e.g., "Jordan 5125550142 iPhone 14 Pro cracked screen same-day."'
                 />
-                <div className="mt-3 flex items-center gap-2">
-                  <Link href="/tickets/new" className="btn-primary px-4 py-2.5 text-sm rounded-xl">
-                    Start intake
+                <div className="flex items-center gap-2">
+                  <Link href="/tickets/new">
+                    <ButtonPrimary className="px-4 py-2 text-sm rounded-xl">Start intake</ButtonPrimary>
                   </Link>
-                  <button className="btn-secondary px-4 py-2.5 text-sm rounded-xl">
-                    Pretend-generate fields
-                  </button>
-                </div>
-                <div className="mt-3 text-xs text-white/45">
-                  Tip: keep it short — customer name + device + problem + deadline.
+                  <ButtonSecondary className="px-3 py-2 text-xs rounded-lg">Save note</ButtonSecondary>
                 </div>
               </>
             )}
-          </div>
-        </GlassCard>
+          </GlassCard>
+
+          <GlassCard className="p-5 rounded-3xl space-y-3">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4 text-white/65" />
+              <div className="text-sm font-semibold" style={{ color: theme.colors.text }}>Tips</div>
+            </div>
+            <ul className="space-y-2 text-sm" style={{ color: theme.colors.muted }}>
+              <li>Finish overdue tickets before new work.</li>
+              <li>Always confirm promised time at intake.</li>
+              <li>Keep payment ready — speed builds trust.</li>
+            </ul>
+          </GlassCard>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ContextChip({
+  icon,
+  label,
+  value,
+  tone = 'neutral',
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string | number
+  tone?: 'neutral' | 'warn'
+}) {
+  const colors = tone === 'warn' ? { bg: 'rgba(251,191,36,0.12)', text: 'rgba(255,241,207,0.95)' } : { bg: 'rgba(255,255,255,0.04)', text: theme.colors.text }
+  return (
+    <div
+      className="rounded-xl px-3 py-2.5 flex items-center gap-2 border"
+      style={{ background: colors.bg, borderColor: 'rgba(255,255,255,0.08)' }}
+    >
+      <div className="text-white/70">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[11px] uppercase tracking-[0.08em] text-white/45 font-semibold">{label}</div>
+        <div className="text-sm font-semibold" style={{ color: colors.text }}>{value}</div>
       </div>
     </div>
   )

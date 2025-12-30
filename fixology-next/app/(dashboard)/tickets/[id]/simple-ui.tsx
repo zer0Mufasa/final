@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
+import { cn } from '@/lib/utils/cn'
 import { mockTickets } from '@/lib/mock/data'
 import { useRole } from '@/contexts/role-context'
 import { searchDevices } from '@/lib/devices-autocomplete'
@@ -20,6 +21,7 @@ import {
   MessageSquareText,
   ShieldCheck,
 } from 'lucide-react'
+import { DataRow } from '@/components/ui/data-row'
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -217,7 +219,7 @@ export default function TicketSimple({ id }: { id: string }) {
       </div>
 
       {/* Main layout */}
-      <div className="grid gap-4 lg:grid-cols-[1.55fr_0.95fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.65fr_1fr] items-start">
         {/* Work Canvas */}
         <div className="space-y-4">
           <Section
@@ -386,13 +388,10 @@ export default function TicketSimple({ id }: { id: string }) {
               </div>
             </div>
           </Section>
-        </div>
 
-        {/* Dock */}
-        <div className="space-y-4">
           <Section
             title="Notes"
-            subtitle="Keep the latest visible. Expand for history."
+            subtitle="Latest note stays visible; history on demand."
             right={
               <button className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/75 hover:border-purple-400/30 transition text-sm inline-flex items-center gap-2">
                 <Plus className="w-4 h-4" /> Add
@@ -418,7 +417,7 @@ export default function TicketSimple({ id }: { id: string }) {
 
           <Section
             title="Appointment"
-            subtitle="Only show this if needed."
+            subtitle="Optional — only if scheduled."
             right={
               <button className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/75 hover:border-purple-400/30 transition text-sm inline-flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> Set
@@ -442,6 +441,76 @@ export default function TicketSimple({ id }: { id: string }) {
               <p className="text-sm text-white/60 mt-2">Collapsed by default (UI-only).</p>
             </details>
           </section>
+        </div>
+
+        {/* Payment rail */}
+        <div className="space-y-4">
+          <Section title="Payment" subtitle="POS-first — amount due is front and center.">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="text-xs text-white/55 uppercase tracking-[0.08em]">Total Due</div>
+                  <div className="text-3xl font-bold text-white">{fmtMoney(totalDue)}</div>
+                </div>
+                <Pill tone={totalDue > 0 ? 'warn' : 'good'}>
+                  {totalDue > 0 ? 'UNPAID' : 'PAID'}
+                </Pill>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {(['cash', 'card', 'other', 'acima'] as PayMethod[]).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => setMethod(m)}
+                    className={cn(
+                      'rounded-xl border px-3 py-3 text-left text-sm transition',
+                      method === m
+                        ? 'border-purple-400/40 bg-purple-500/15 text-white'
+                        : 'border-white/10 bg-white/[0.03] text-white/75 hover:border-white/20'
+                    )}
+                  >
+                    <div className="font-semibold capitalize">{m === 'acima' ? 'Financing' : m}</div>
+                    <div className="text-xs text-white/45 mt-1">Tap to set method</div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                <DataRow label="Subtotal" value={fmtMoney(subtotal)} />
+                <DataRow label="Tax" value={fmtMoney(tax)} />
+                <DataRow label="Discount" value={fmtMoney(discount)} />
+                <DataRow label="Tips" value={fmtMoney(tips)} />
+                <div className="pt-2 border-t border-white/10">
+                  <DataRow label="Total Due" value={fmtMoney(totalDue)} strong />
+                </div>
+              </div>
+
+              <div className="flex gap-2 items-center">
+                <button
+                  onClick={() => setPayDrawerOpen(true)}
+                  className={cn(
+                    'flex-1 px-4 py-3 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2 transition',
+                    canTakePayment
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/20'
+                      : 'bg-white/5 border border-white/10 text-white/40 cursor-not-allowed'
+                  )}
+                  disabled={!canTakePayment}
+                  title={!canTakePayment ? 'Tech role is read-only for payments (UI rule).' : undefined}
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Take Payment
+                </button>
+                <button className="px-3 py-3 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:text-white transition text-sm">
+                  Print
+                </button>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-3">
+                <div className="text-xs text-white/50 mb-2 uppercase tracking-[0.08em]">Payment history (UI)</div>
+                <div className="text-sm text-white/65">No payments yet.</div>
+              </div>
+            </div>
+          </Section>
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
             <div className="flex items-center justify-between">
@@ -449,9 +518,6 @@ export default function TicketSimple({ id }: { id: string }) {
               <Pill tone={canTakePayment ? 'neutral' : 'warn'}>{canTakePayment ? 'Front Desk/Owner' : 'Tech view'}</Pill>
             </div>
             <div className="mt-3 flex items-center justify-end gap-2">
-              <button className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/75 hover:border-purple-400/30 transition text-sm">
-                Print
-              </button>
               <button className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/75 hover:border-purple-400/30 transition text-sm">
                 Save
               </button>
