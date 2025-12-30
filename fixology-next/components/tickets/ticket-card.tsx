@@ -66,25 +66,26 @@ export function TicketCard({ ticket }: { ticket: Ticket }) {
           <div className="text-sm text-white/80 mt-1 truncate">{ticket.customerName}</div>
           <div className="text-xs text-white/55 mt-0.5 truncate">{ticket.device}</div>
         </div>
-        <div className="text-right flex-shrink-0">
+        <div className="text-right flex-shrink-0 space-y-1">
           <div className="text-sm font-bold text-white/85">{fmtMoney(ticket.price)}</div>
           <div className={cn('text-xs font-semibold mt-0.5', promisedCls)}>{promisedLabel}</div>
-              <div className="flex items-center gap-2">
-                <span className="badge bg-red-500/15 text-red-200 border border-red-500/30 text-[11px]">$
-                  {ticket.price}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    // UI-only: would open checkout drawer
-                    console.log('Collect payment (UI)')
-                  }}
-                  className="p-2 rounded-lg bg-white/5 border border-white/10 hover:border-purple-400/40 hover:text-white text-white/70"
-                  title={`Due $${ticket.price}`}
-                >
-                  $
-                </button>
-              </div>
+          <div className="flex items-center gap-2 justify-end">
+            <span className="badge bg-red-500/15 text-red-200 border border-red-500/30 text-[11px]">
+              Due {fmtMoney(ticket.price)}
+            </span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                // UI-only: would open checkout drawer
+                console.log('Collect payment (UI)')
+              }}
+              className="p-2 rounded-lg bg-white/5 border border-white/10 hover:border-purple-400/40 hover:text-white text-white/70"
+              title={`Due ${fmtMoney(ticket.price)}`}
+            >
+              $
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-2">
