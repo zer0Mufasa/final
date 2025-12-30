@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
 import { Tabs } from '@/components/dashboard/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { PaymentSummaryStrip } from '@/components/payments/PaymentSummaryStrip'
+import { CheckoutDrawer } from '@/components/payments/CheckoutDrawer'
 import {
   Camera,
   ClipboardList,
@@ -38,6 +40,7 @@ function fmtMoney(n: number) {
 export function TicketDetailClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('overview')
+  const [payOpen, setPayOpen] = useState(false)
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 550)
@@ -94,6 +97,7 @@ export function TicketDetailClient({ id }: { id: string }) {
           { value: 'updates', label: 'Updates' },
           { value: 'photos', label: 'Photos' },
           { value: 'pricing', label: 'Pricing' },
+          { value: 'payments', label: 'Payments' },
           { value: 'timeline', label: 'Timeline' },
         ]}
         className="mb-4"
@@ -618,6 +622,22 @@ export function TicketDetailClient({ id }: { id: string }) {
             <button className="btn-secondary px-4 py-3 rounded-xl w-full mt-2">Mark approved</button>
           </GlassCard>
         </div>
+      ) : tab === 'payments' ? (
+        <div className="space-y-4">
+          <PaymentSummaryStrip
+            balance={fmtMoney(ticket.price)}
+            paid="$0.00"
+            deposit="$0.00"
+            state="UNPAID"
+            onCollect={() => setPayOpen(true)}
+            onSendInvoice={() => console.log('Send invoice')}
+            onRefund={() => console.log('Refund')}
+          />
+          <GlassCard className="rounded-3xl">
+            <div className="text-sm font-semibold text-white/90 mb-2">Payment history (UI)</div>
+            <div className="text-sm text-white/60">No payments yet. Collect to create receipt + timeline entry.</div>
+          </GlassCard>
+        </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
           <GlassCard className="rounded-3xl lg:col-span-2">
@@ -648,6 +668,18 @@ export function TicketDetailClient({ id }: { id: string }) {
           </GlassCard>
         </div>
       )}
+
+      <CheckoutDrawer
+        open={payOpen}
+        onClose={() => setPayOpen(false)}
+        ticket={ticket.ticketNumber}
+        customer={ticket.customerName}
+        lineItems={[
+          { name: 'Screen replacement', qty: 1, price: 219, note: 'Grade-A OLED' },
+          { name: 'Adhesive kit', qty: 1, price: 9 },
+          { name: 'Labor', qty: 1, price: 80, note: 'Diagnostic + install' },
+        ]}
+      />
     </div>
   )
 }

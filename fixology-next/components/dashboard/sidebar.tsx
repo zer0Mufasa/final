@@ -46,6 +46,7 @@ import {
   Clock4,
   LockKeyhole,
   MonitorDot,
+  Banknote,
 } from 'lucide-react'
 
 interface NavItem {
@@ -67,6 +68,7 @@ const coreNavItems: NavItem[] = [
 const businessNavItems: NavItem[] = [
   { label: 'Invoices', href: '/invoices', icon: <FileText className="w-5 h-5" /> },
   { label: 'Payments', href: '/payments', icon: <CreditCard className="w-5 h-5" /> },
+  { label: 'Payouts', href: '/payouts', icon: <Banknote className="w-5 h-5" /> },
   { label: 'Estimates', href: '/estimates', icon: <ClipboardList className="w-5 h-5" /> },
   { label: 'Warranty & Returns', href: '/warranty', icon: <Shield className="w-5 h-5" /> },
 ]
