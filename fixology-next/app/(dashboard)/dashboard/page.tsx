@@ -212,77 +212,8 @@ export default function DashboardPage() {
 
       <div className="relative z-10 grid grid-cols-[88px_1fr] lg:grid-cols-[300px_1fr]">
         {/* SIDEBAR */}
-        <aside className="h-screen sticky top-0 border-r border-slate-200 bg-white/70 backdrop-blur-xl">
-          <div className="h-full flex flex-col">
-            {/* Brand */}
-            <div className="px-4 py-4 lg:px-5 border-b border-slate-200/70">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl border border-slate-200 bg-white flex items-center justify-center">
-                  <span className="text-base font-bold text-[#6F5CF6]">F</span>
-                </div>
-                <div className="hidden lg:block">
-                  <div className="text-sm font-semibold leading-tight">Fixology</div>
-                  <div className="text-xs text-slate-500 leading-tight">Lavender Workspace</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Nav */}
-            <nav className="flex-1 overflow-auto px-2 py-3 lg:px-3 space-y-6">
-              <div>
-                <div className="hidden lg:block px-2 text-[11px] uppercase tracking-wide text-slate-500 mb-2">
-                  Core
-                </div>
-                <div className="space-y-1">
-                  <SideLink icon={<LayoutDashboard className="w-4 h-4" />} label="Dashboard" active />
-                  <SideLink icon={<Ticket className="w-4 h-4" />} label="Tickets" />
-                  <SideLink icon={<Users className="w-4 h-4" />} label="Customers" />
-                  <SideLink icon={<Smartphone className="w-4 h-4" />} label="Devices" />
-                  <SideLink icon={<Boxes className="w-4 h-4" />} label="Inventory" />
-                </div>
-              </div>
-
-              <div>
-                <div className="hidden lg:block px-2 text-[11px] uppercase tracking-wide text-slate-500 mb-2">
-                  Money
-                </div>
-                <div className="space-y-1">
-                  <SideLink icon={<FileText className="w-4 h-4" />} label="Invoices" />
-                  <SideLink icon={<CreditCard className="w-4 h-4" />} label="Payments" />
-                  <SideLink icon={<Wallet className="w-4 h-4" />} label="Payouts" />
-                </div>
-              </div>
-
-              <div>
-                <div className="hidden lg:block px-2 text-[11px] uppercase tracking-wide text-slate-500 mb-2">
-                  Intelligence
-                </div>
-                <div className="space-y-1">
-                  <SideLink icon={<BarChart3 className="w-4 h-4" />} label="Insights" />
-                </div>
-              </div>
-            </nav>
-
-            {/* Shop switcher */}
-            <div className="p-3 lg:p-4 border-t border-slate-200/70">
-              <div className="hidden lg:block text-[11px] uppercase tracking-wide text-slate-500 mb-2">
-                Current shop
-              </div>
-              <button className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-left hover:border-[#8B7CF6]/30 transition">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">Demo Shop</div>
-                    <div className="text-xs text-slate-500 truncate">Austin, TX • Pro plan</div>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-slate-500" />
-                </div>
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* MAIN */}
-        <main className="min-h-screen">
+        {/* MAIN (full-width, no sidebar) */}
+        <main className="min-h-screen col-span-2">
           {/* TOPBAR / COMMAND BAR */}
           <header className="sticky top-0 z-20 border-b border-slate-200/70 bg-white/70 backdrop-blur-xl">
             <div className="px-4 lg:px-8 py-3 flex items-center gap-3">
