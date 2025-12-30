@@ -143,6 +143,11 @@ export function TopBar({ user, shop }: TopBarProps) {
     router.refresh()
   }
 
+  // The dashboard page renders its own command bar; hide this global top bar there to avoid a stacked double header.
+  if (pathname === '/dashboard') {
+    return null
+  }
+
   return (
     <header className="sticky top-0 z-30">
       <div className="bg-white border-b border-[rgba(30,30,60,0.08)] shadow-[0_10px_30px_rgba(15,16,32,0.06)]">
