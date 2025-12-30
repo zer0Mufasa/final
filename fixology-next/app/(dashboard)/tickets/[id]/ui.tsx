@@ -11,7 +11,25 @@ import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
 import { Tabs } from '@/components/dashboard/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { Camera, ClipboardList, MessageSquare, Package, ShieldAlert, Wrench, FileText, Clock, DollarSign, ArrowRight, Plus, Printer } from 'lucide-react'
+import {
+  Camera,
+  ClipboardList,
+  MessageSquare,
+  Package,
+  ShieldAlert,
+  Wrench,
+  FileText,
+  Clock,
+  DollarSign,
+  ArrowRight,
+  Plus,
+  Printer,
+  AlertTriangle,
+  CheckCircle2,
+  Timer,
+  ShieldCheck,
+  Zap,
+} from 'lucide-react'
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -62,6 +80,7 @@ export function TicketDetailClient({ id }: { id: string }) {
         <span className="badge bg-white/5 text-white/55 border border-white/10">
           Est. {fmtMoney(ticket.price)}
         </span>
+        <span className="badge bg-purple-500/15 text-purple-200 border border-purple-400/30">Walk-in</span>
       </div>
 
       <Tabs
@@ -178,6 +197,190 @@ export function TicketDetailClient({ id }: { id: string }) {
                   <div className="text-sm font-semibold text-white/85">{a.title}</div>
                   <div className="text-xs text-white/55 mt-1 leading-relaxed">{a.desc}</div>
                   <button className="btn-secondary px-3 py-2 rounded-xl text-xs mt-3">Mark done</button>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          {/* Condition capture */}
+          <GlassCard className="rounded-3xl lg:col-span-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <Camera className="w-4 h-4 text-blue-300" aria-hidden="true" />
+              “Device arrived like this” protection
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {[
+                'Screen condition',
+                'Frame damage',
+                'Water indicators',
+                'Missing screws',
+                'Touch / Face ID',
+              ].map((item) => (
+                <div key={item} className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-300" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-white/85">{item}</div>
+                    <div className="text-xs text-white/55 mt-1">Documented 2:41 PM • Photo added</div>
+                    <div className="mt-2 inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/5 text-white/70 text-xs">
+                      <Camera className="w-3.5 h-3.5" />
+                      Add photo
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-white/45 mt-3">We recorded pre-repair condition before touching the device.</p>
+          </GlassCard>
+
+          {/* Evidence timeline */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <Camera className="w-4 h-4 text-purple-300" aria-hidden="true" />
+              Evidence timeline
+            </div>
+            <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-2">
+              {[
+                { label: 'Intake', time: '2:40 PM', thumb: '/devices/thumbs/iPhone_14_Pro_Max-130x130.webp' },
+                { label: 'Mid-repair', time: '3:10 PM', thumb: '/devices/thumbs/iPhone_14_Pro_Max-130x130.webp' },
+                { label: 'Post-repair', time: '4:05 PM', thumb: '/devices/thumbs/iPhone_14_Pro_Max-130x130.webp' },
+              ].map((p) => (
+                <div key={p.label} className="min-w-[140px] rounded-2xl bg-white/[0.03] border border-white/10 p-3 space-y-2">
+                  <img src={p.thumb} alt={p.label} className="w-full h-20 object-contain rounded-xl bg-white/5 border border-white/10" />
+                  <div className="text-sm font-semibold text-white/85">{p.label}</div>
+                  <div className="text-xs text-white/50">{p.time}</div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-white/45">For disputes, chargebacks, and warranty clarity.</p>
+          </GlassCard>
+
+          {/* Ghosted flow */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <Clock className="w-4 h-4 text-amber-300" aria-hidden="true" />
+              Ghosted customer flow
+            </div>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-white">Ready, not picked up</p>
+                  <p className="text-xs text-white/55">Notified via SMS; waiting 3 days</p>
+                </div>
+                <span className="badge bg-amber-500/15 text-amber-200 border border-amber-500/30">Reminder sent</span>
+              </div>
+              <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-white">7 days idle</p>
+                  <p className="text-xs text-white/55">Auto-note: storage fee policy reminder</p>
+                </div>
+                <span className="badge bg-purple-500/15 text-purple-200 border border-purple-500/30">Pending</span>
+              </div>
+              <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-white">30 days abandoned</p>
+                  <p className="text-xs text-white/55">Escalation: resale policy notice</p>
+                </div>
+                <span className="badge bg-red-500/15 text-red-200 border border-red-500/30">Escalate</span>
+              </div>
+            </div>
+            <p className="text-xs text-white/45 mt-2">Calm, neutral, legally safe tone to reduce disputes.</p>
+          </GlassCard>
+
+          {/* Rush handling */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <Zap className="w-4 h-4 text-red-300" aria-hidden="true" />
+              Rush / Emergency handling
+            </div>
+            <div className="mt-3 space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-white/80">Rush job</p>
+                <span className="badge bg-red-500/15 text-red-200 border border-red-500/30">Enabled</span>
+              </div>
+              <p className="text-xs text-white/55">Rush jobs may delay other repairs. Queue reordered; workload impact visible to techs.</p>
+              <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3">
+                <p className="text-xs text-white/50">Queue impact</p>
+                <p className="text-sm text-white/80">Moves ahead of 2 standard tickets</p>
+              </div>
+            </div>
+          </GlassCard>
+
+          {/* Internal safety net */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <ShieldCheck className="w-4 h-4 text-emerald-300" aria-hidden="true" />
+              Tech protection (internal)
+            </div>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              <p>Customer approved: Today, 2:41 PM (UI)</p>
+              <p>Approval channel: In-store + SMS link</p>
+              <p>Incident note: “Frame crack risk acknowledged.”</p>
+            </div>
+            <div className="mt-2 rounded-xl bg-white/[0.03] border border-white/10 px-4 py-3 text-xs text-white/60">
+              Private: incident log for techs only (not shown to customers).
+            </div>
+          </GlassCard>
+
+          {/* Attitude flags */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <ShieldAlert className="w-4 h-4 text-yellow-300" aria-hidden="true" />
+              Customer flags (internal)
+            </div>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              <p>Frequent complainer (subtle)</p>
+              <p>History of disputes</p>
+              <p>High risk approval</p>
+            </div>
+            <p className="text-xs text-white/45 mt-2">Subtle, internal-only. Avoid judgmental language.</p>
+          </GlassCard>
+
+          {/* Repair unsuccessful */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <AlertTriangle className="w-4 h-4 text-amber-300" aria-hidden="true" />
+              Repair unsuccessful (UI)
+            </div>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              <p><span className="font-semibold text-white">Attempted:</span> Display swap + touch line reseat</p>
+              <p><span className="font-semibold text-white">Outcome:</span> Device boots, display remains black</p>
+              <p><span className="font-semibold text-white">What still works:</span> Power, charge, speakers</p>
+              <p><span className="font-semibold text-white">Next options:</span> Board-level partner referral, data backup offer</p>
+            </div>
+            <p className="text-xs text-white/45 mt-2">Honest, calm, professional tone.</p>
+          </GlassCard>
+
+          {/* No-fix clarity */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <FileText className="w-4 h-4 text-blue-300" aria-hidden="true" />
+              No-fix / No-fee clarity
+            </div>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              <p>Diagnostics fee: $39 — waived if repair approved.</p>
+              <p>No-fix: No charge beyond diagnostics.</p>
+              <p>Partial refund: If parts used and repair fails, parts-only charge applies.</p>
+            </div>
+          </GlassCard>
+
+          {/* Stage guidance */}
+          <GlassCard className="rounded-3xl lg:col-span-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <ClipboardList className="w-4 h-4 text-purple-300" aria-hidden="true" />
+              What happens next?
+            </div>
+            <div className="mt-3 space-y-2 text-sm text-white/75">
+              {[
+                { stage: 'Diagnosed', do: 'We’re ordering the screen now.', expect: 'Customer expects ETA update.', delay: 'Supply delays could impact' },
+                { stage: 'In Repair', do: 'Device on bench with tech.', expect: 'Customer expects same-day unless updated.', delay: 'If new damage surfaces, we’ll pause and re-approve.' },
+              ].map((s) => (
+                <div key={s.stage} className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3">
+                  <p className="text-white font-semibold">{s.stage}</p>
+                  <p className="text-xs text-white/55">What we’re doing: {s.do}</p>
+                  <p className="text-xs text-white/55">Customer expects: {s.expect}</p>
+                  <p className="text-xs text-white/55">Could delay: {s.delay}</p>
                 </div>
               ))}
             </div>
