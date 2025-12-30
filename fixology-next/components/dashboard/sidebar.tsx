@@ -38,6 +38,14 @@ import {
   Plug,
   TrendingUp,
   HelpCircle,
+  Cpu,
+  CreditCard,
+  ClipboardList,
+  Brain,
+  Activity,
+  Clock4,
+  LockKeyhole,
+  MonitorDot,
 } from 'lucide-react'
 
 interface NavItem {
@@ -47,45 +55,39 @@ interface NavItem {
   badge?: number | string
 }
 
-const mainNavItems: NavItem[] = [
+const coreNavItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
   { label: 'Tickets', href: '/tickets', icon: <Ticket className="w-5 h-5" /> },
-  { label: 'To Do', href: '/daily-ops', icon: <Calendar className="w-5 h-5" /> },
+  { label: 'Customers', href: '/customers', icon: <Users className="w-5 h-5" /> },
+  { label: 'Devices', href: '/devices', icon: <Smartphone className="w-5 h-5" /> },
   { label: 'Inventory', href: '/inventory', icon: <Package className="w-5 h-5" /> },
   { label: 'Diagnostics', href: '/diagnostics', icon: <Stethoscope className="w-5 h-5" /> },
 ]
 
-const salesNavItems: NavItem[] = [
+const businessNavItems: NavItem[] = [
   { label: 'Invoices', href: '/invoices', icon: <FileText className="w-5 h-5" /> },
-  { label: 'Pricing & Quotes', href: '/pricing', icon: <DollarSign className="w-5 h-5" /> },
-  { label: 'Communications', href: '/communications', icon: <MessageSquare className="w-5 h-5" /> },
-]
-
-const managementNavItems: NavItem[] = [
-  { label: 'Staff & Roles', href: '/staff', icon: <UserCheck className="w-5 h-5" /> },
-  { label: 'Reports', href: '/reports', icon: <BarChart3 className="w-5 h-5" /> },
-  { label: 'Business Health', href: '/business-health', icon: <TrendingUp className="w-5 h-5" /> },
-]
-
-const riskNavItems: NavItem[] = [
-  { label: 'Risk Center', href: '/risk', icon: <AlertTriangle className="w-5 h-5" /> },
-  { label: 'Warranty & Liability', href: '/warranty', icon: <Shield className="w-5 h-5" /> },
+  { label: 'Payments', href: '/payments', icon: <CreditCard className="w-5 h-5" /> },
+  { label: 'Estimates', href: '/estimates', icon: <ClipboardList className="w-5 h-5" /> },
+  { label: 'Warranty & Returns', href: '/warranty', icon: <Shield className="w-5 h-5" /> },
 ]
 
 const intelligenceNavItems: NavItem[] = [
-  { label: 'Device Intelligence', href: '/device-intelligence', icon: <Smartphone className="w-5 h-5" /> },
+  { label: 'Insights', href: '/insights', icon: <BarChart3 className="w-5 h-5" /> },
+  { label: 'Risk Monitor', href: '/risk-monitor', icon: <AlertTriangle className="w-5 h-5" /> },
+  { label: 'AI Activity Log', href: '/ai-activity', icon: <Brain className="w-5 h-5" /> },
 ]
 
-const operationsNavItems: NavItem[] = [
-  { label: 'Audit & Logs', href: '/audit', icon: <FileCheck className="w-5 h-5" /> },
-  { label: 'Templates & Presets', href: '/templates', icon: <FileCode className="w-5 h-5" /> },
-  { label: 'Training Mode', href: '/training', icon: <GraduationCap className="w-5 h-5" /> },
+const teamNavItems: NavItem[] = [
+  { label: 'Staff', href: '/staff', icon: <UserCheck className="w-5 h-5" /> },
+  { label: 'Time Tracking', href: '/time-tracking', icon: <Clock4 className="w-5 h-5" /> },
+  { label: 'Permissions', href: '/permissions', icon: <LockKeyhole className="w-5 h-5" /> },
+]
+
+const systemNavItems: NavItem[] = [
+  { label: 'Reports', href: '/reports', icon: <MonitorDot className="w-5 h-5" /> },
   { label: 'Integrations', href: '/integrations', icon: <Plug className="w-5 h-5" /> },
-]
-
-const otherNavItems: NavItem[] = [
   { label: 'Settings', href: '/settings', icon: <Settings className="w-5 h-5" /> },
-  { label: 'Help & Support', href: '/support', icon: <HelpCircle className="w-5 h-5" /> },
+  { label: 'Support', href: '/support', icon: <HelpCircle className="w-5 h-5" /> },
 ]
 
 interface SidebarProps {
@@ -308,57 +310,29 @@ export function Sidebar({ user, shop }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto p-3 space-y-6">
-          {/* Main */}
+          {/* Core Operations */}
           <div>
             {effectiveOpen && (
               <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                Main
+                Core Operations
               </p>
             )}
             <div className="space-y-1">
-              {mainNavItems.map((item) => (
+              {coreNavItems.map((item) => (
                 <NavLink key={item.href} item={item} />
               ))}
             </div>
           </div>
 
-          {/* Sales */}
+          {/* Business & Money */}
           <div>
             {effectiveOpen && (
               <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                Sales
+                Business & Money
               </p>
             )}
             <div className="space-y-1">
-              {salesNavItems.map((item) => (
-                <NavLink key={item.href} item={item} />
-              ))}
-            </div>
-          </div>
-
-          {/* Management */}
-          <div>
-            {effectiveOpen && (
-              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                Management
-              </p>
-            )}
-            <div className="space-y-1">
-              {managementNavItems.map((item) => (
-                <NavLink key={item.href} item={item} />
-              ))}
-            </div>
-          </div>
-
-          {/* Risk & Compliance */}
-          <div>
-            {effectiveOpen && (
-              <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                Risk & Compliance
-              </p>
-            )}
-            <div className="space-y-1">
-              {riskNavItems.map((item) => (
+              {businessNavItems.map((item) => (
                 <NavLink key={item.href} item={item} />
               ))}
             </div>
@@ -378,29 +352,29 @@ export function Sidebar({ user, shop }: SidebarProps) {
             </div>
           </div>
 
-          {/* Operations */}
+          {/* Team & Control */}
           <div>
             {effectiveOpen && (
               <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                Operations
+                Team & Control
               </p>
             )}
             <div className="space-y-1">
-              {operationsNavItems.map((item) => (
+              {teamNavItems.map((item) => (
                 <NavLink key={item.href} item={item} />
               ))}
             </div>
           </div>
 
-          {/* Other */}
+          {/* System */}
           <div>
             {effectiveOpen && (
               <p className="px-4 mb-2 text-xs font-semibold uppercase tracking-wider text-white/40">
-                Other
+                System
               </p>
             )}
             <div className="space-y-1">
-              {otherNavItems.map((item) => (
+              {systemNavItems.map((item) => (
                 <NavLink key={item.href} item={item} />
               ))}
             </div>
