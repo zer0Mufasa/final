@@ -9,6 +9,15 @@ import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, FileText, Plus, Printer, Send } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import {
+  PriceBreakdown,
+  ApprovalCard,
+  WhyPriceAccordion,
+  UpsellList,
+  PriceChangeNotice,
+  WarrantyCard,
+  TechProtection,
+} from '@/components/dashboard/ui/price-blocks'
 
 type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'OVERDUE'
 type Invoice = {
@@ -270,6 +279,70 @@ export function InvoicesClient() {
               </div>
             </div>
           </GlassCard>
+        </div>
+      )}
+
+      {/* Pricing clarity & approvals (UI-only) */}
+      {!loading && (
+        <div className="space-y-4">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <PriceBreakdown
+              confidence="Common price"
+              total={fmtMoney(total)}
+              lines={[
+                { label: 'Labor', amount: fmtMoney(180), hint: 'Diagnostic time + repair complexity' },
+                { label: 'Parts', amount: fmtMoney(210), hint: 'Grade-A component sourced today' },
+                { label: 'Optional add-on', amount: fmtMoney(20), hint: 'Screen protector while device is open' },
+                { label: 'Taxes', amount: fmtMoney(tax), hint: 'Local rate applied' },
+                { label: 'Warranty', amount: 'Included', hint: '180-day parts & labor coverage' },
+              ]}
+            />
+            <div className="space-y-4">
+              <WhyPriceAccordion />
+              <UpsellList />
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <ApprovalCard
+              deviceImage="/devices/thumbs/iPhone_14_Pro_Max-130x130.webp"
+              problem="Cracked display, touch intermittent"
+              scope="Replace display assembly + reseal"
+              exclusions="Water damage recovery, data loss"
+              price={fmtMoney(total)}
+              eta="Same day (2–3 hours)"
+              warranty="180 days, parts & labor"
+            />
+            <div className="space-y-4">
+              <PriceChangeNotice />
+              <TechProtection />
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <GlassCard className="p-4 rounded-2xl border border-white/10">
+              <p className="text-sm text-white/70 font-semibold mb-2">Payment expectations</p>
+              <ul className="space-y-2 text-sm text-white/70">
+                <li>Payment due on pickup — UI only.</li>
+                <li>Deposit required for parts-only repairs (if enabled).</li>
+                <li>No fix, no fee (if enabled).</li>
+              </ul>
+            </GlassCard>
+            <WarrantyCard />
+            <GlassCard className="p-4 rounded-2xl border border-white/10">
+              <p className="text-sm text-white/70 font-semibold mb-2">Quote vs Final invoice</p>
+              <div className="grid grid-cols-2 gap-2 text-sm text-white/80">
+                <div className="rounded-xl border border-blue-400/30 bg-blue-500/10 p-3">
+                  <p className="text-xs text-white/60">Quote (estimate)</p>
+                  <p className="text-white font-semibold">Draft & expected</p>
+                </div>
+                <div className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
+                  <p className="text-xs text-white/60">Final invoice</p>
+                  <p className="text-white font-semibold">Approved & due on pickup</p>
+                </div>
+              </div>
+            </GlassCard>
+          </div>
         </div>
       )}
     </div>
