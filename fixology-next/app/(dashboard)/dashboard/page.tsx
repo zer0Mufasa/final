@@ -525,7 +525,3 @@ function SignalRow({
     </div>
   )
 }
-
-export const metadata = {
-  title: 'Dashboard | Fixology',
-}
