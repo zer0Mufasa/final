@@ -620,6 +620,13 @@ const fallbackSilhouette = (
   </div>
 )
 
+const toThumbPath = (p: string) => {
+  if (!p) return p
+  const withoutQuery = p.split('?')[0]
+  const base = withoutQuery.replace('/devices/', '/devices/thumbs/')
+  return base.replace(/\.[^.]+$/, '.webp')
+}
+
 // Hard overrides for model-specific filenames that don't follow our slug/underscore pattern.
 const modelImageOverrides: Partial<Record<DeviceCategoryKey, Record<string, string[]>>> = {
   iphone: {
@@ -666,16 +673,17 @@ type ModelButtonProps = {
 
 function ModelButton({ model, category, isSelected, onSelect, priority }: ModelButtonProps) {
   const [failed, setFailed] = useState(false)
-  const candidates = useMemo(() => {
+  const sources = useMemo(() => {
     const list = modelImageCandidates(category, model)
-    // Always include category image as final fallback
+    const thumbs = list.map(toThumbPath)
     const catImg = deviceCatalog[category].imageSrc
-    if (!list.includes(catImg)) list.push(catImg)
-    return list
+    const merged = [...thumbs, ...list]
+    if (!merged.includes(catImg)) merged.push(catImg)
+    return Array.from(new Set(merged.filter(Boolean)))
   }, [category, model])
 
   const isOther = model.toLowerCase().includes('other')
-  const src = isOther ? deviceCatalog[category].imageSrc : candidates[0] || deviceCatalog[category].imageSrc
+  const src = isOther ? deviceCatalog[category].imageSrc : sources[0] || deviceCatalog[category].imageSrc
 
   return (
     <button
@@ -689,7 +697,8 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
       )}
     >
       {!failed ? (
-        <div className={cn('w-24 h-24 sm:w-28 sm:h-28', !isSelected && 'bg-white')}>
+        <div className={cn('relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-white/40 border border-black/5 overflow-hidden', !isSelected && 'bg-white')}>
+          <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/20 to-white/10 animate-pulse" />
           <img
             data-candidate-idx={0}
             src={src}
@@ -698,16 +707,21 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
             height={120}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
-            className="object-contain w-full h-full"
+            fetchpriority={priority ? 'high' : 'auto'}
+            style={{ contentVisibility: 'auto', containIntrinsicSize: '100px 100px' }}
+            className="object-contain w-full h-full relative z-10 opacity-0 transition-opacity duration-150"
+            onLoad={(e) => {
+              e.currentTarget.classList.remove('opacity-0')
+            }}
             onError={(e) => {
               if (failed) return
               const el = e.currentTarget as HTMLImageElement
               const currentFull = el.currentSrc || el.src || ''
               const current = currentFull.replace(window.location.origin, '')
               const currentIdx = Number(el.dataset.candidateIdx ?? '-1')
-              const idx = candidates.findIndex((c) => c === current || current.endsWith(c))
+              const idx = sources.findIndex((c) => c === current || current.endsWith(c))
               const nextIdx = (idx >= 0 ? idx : currentIdx) + 1
-              const next = candidates[nextIdx]
+              const next = sources[nextIdx]
               if (next && next !== current) {
                 el.dataset.candidateIdx = String(nextIdx)
                 el.src = next
