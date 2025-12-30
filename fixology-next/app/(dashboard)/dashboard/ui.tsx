@@ -11,6 +11,7 @@ import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
 import { Clock, Ticket, TrendingUp, AlertTriangle, ArrowRight, AlertOctagon, MessageSquare, Info } from 'lucide-react'
 import { ButtonPrimary, ButtonSecondary } from '@/components/ui/buttons'
 import { theme } from '@/lib/theme/tokens'
+import { CommandBar } from '@/components/workspace/command-bar'
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -41,6 +42,8 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-5">
+      <CommandBar roleLabel="Owner" shopName="Demo Shop" />
+
       <PageHeader
         title="Today at Demo Shop"
         description="A calm command center — see the queue first, then act."

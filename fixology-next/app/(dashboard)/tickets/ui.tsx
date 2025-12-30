@@ -10,11 +10,13 @@ import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { EmptyState } from '@/components/dashboard/ui/empty-state'
 import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Tabs } from '@/components/dashboard/ui/tabs'
 import { cn } from '@/lib/utils/cn'
 import { ArrowRight, Calendar, Filter, MessageSquare, Plus, Search, SlidersHorizontal, Ticket as TicketIcon, CheckSquare, Square, Download, Send, UserCheck } from 'lucide-react'
 import { KanbanBoard } from '@/components/tickets/kanban-board'
+import { GlassRow } from '@/components/workspace/glass-row'
+import { CommandBar } from '@/components/workspace/command-bar'
+import { ButtonPrimary, ButtonSecondary } from '@/components/ui/buttons'
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
@@ -29,7 +31,7 @@ function hoursFromNow(iso: string) {
 export function TicketsClient() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [view, setView] = useState<'board' | 'table' | 'calendar'>('board')
+  const [view, setView] = useState<'board' | 'table' | 'calendar'>('table')
   const [selectedTickets, setSelectedTickets] = useState<Set<string>>(new Set())
 
   const [tickets, setTickets] = useState<Ticket[]>(mockTickets)
@@ -59,15 +61,17 @@ export function TicketsClient() {
   }, [tickets, status, tech, query])
 
   return (
-    <div>
+    <div className="space-y-4">
+      <CommandBar roleLabel="Owner" shopName="Demo Shop" />
       <PageHeader
         title="Tickets"
-        description="Board-first workflow: intake → diagnose → parts → repair → ready → pickup. Drag tickets as the work progresses."
+        description="Dense workboard — list first, with Kanban when you need it."
         action={
           <Link href="/tickets/new">
-            <Button rightIcon={<ArrowRight className="w-4 h-4" aria-hidden="true" />} leftIcon={<Plus className="w-4 h-4" aria-hidden="true" />}>
+            <ButtonPrimary className="gap-2">
+              <Plus className="w-4 h-4" />
               Create Ticket
-            </Button>
+            </ButtonPrimary>
           </Link>
         }
       />
@@ -174,136 +178,65 @@ export function TicketsClient() {
       ) : view === 'board' ? (
         <KanbanBoard tickets={filtered} setTickets={setTickets} />
       ) : view === 'table' ? (
-        <GlassCard className="p-0 overflow-hidden rounded-3xl">
-          {/* Bulk actions bar */}
-          {selectedTickets.size > 0 && (
-            <div className="p-4 border-b border-white/10 bg-purple-500/10 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-semibold text-white/90">
-                  {selectedTickets.size} selected
-                </span>
-                <div className="flex items-center gap-2">
-                  <button className="btn-secondary px-3 py-2 text-xs rounded-xl inline-flex items-center gap-2">
-                    <UserCheck className="w-3 h-3" />
-                    Assign tech
-                  </button>
-                  <button className="btn-secondary px-3 py-2 text-xs rounded-xl inline-flex items-center gap-2">
-                    <SlidersHorizontal className="w-3 h-3" />
-                    Move status
-                  </button>
-                  <button className="btn-secondary px-3 py-2 text-xs rounded-xl inline-flex items-center gap-2">
-                    <Send className="w-3 h-3" />
-                    Send update
-                  </button>
-                  <button className="btn-secondary px-3 py-2 text-xs rounded-xl inline-flex items-center gap-2">
-                    <Download className="w-3 h-3" />
-                    Export
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedTickets(new Set())}
-                className="text-xs text-white/50 hover:text-white/80"
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm text-white/60 px-1">
+            <span>Ticket list</span>
+            <span>{filtered.length} shown</span>
+          </div>
+          {filtered.map((t) => {
+            const hrs = hoursFromNow(t.promisedAt)
+            const promisedLabel = hrs >= 0 ? `in ${hrs}h` : `${Math.abs(hrs)}h late`
+            const promisedColor = hrs >= 0 ? 'text-white/55' : 'text-red-300'
+            const isSelected = selectedTickets.has(t.id)
+            return (
+              <GlassRow
+                key={t.id}
+                className={cn(
+                  'justify-between cursor-pointer',
+                  isSelected && 'border-purple-400/40 bg-purple-500/10'
+                )}
+                onClick={() => router.push(`/tickets/${t.id}`)}
               >
-                Clear
-              </button>
-            </div>
-          )}
-
-          <div className="p-4 border-b border-white/10 flex items-center justify-between">
-            <div className="text-sm font-semibold text-white/85">Ticket list</div>
-            <div className="text-xs text-white/45">{filtered.length} shown</div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[980px]">
-              <thead>
-                <tr className="text-left text-xs uppercase tracking-wider text-white/45 border-b border-white/10">
-                  <th className="px-4 py-3 w-12">
-                    <button
-                      onClick={() => {
-                        if (selectedTickets.size === filtered.length) {
-                          setSelectedTickets(new Set())
-                        } else {
-                          setSelectedTickets(new Set(filtered.map((t) => t.id)))
-                        }
-                      }}
-                      className="p-1 hover:bg-white/5 rounded transition-colors"
-                    >
-                      {selectedTickets.size === filtered.length ? (
-                        <CheckSquare className="w-4 h-4 text-purple-400" />
-                      ) : (
-                        <Square className="w-4 h-4 text-white/40" />
-                      )}
-                    </button>
-                  </th>
-                  <th className="px-4 py-3">Ticket</th>
-                  <th className="px-4 py-3">Customer</th>
-                  <th className="px-4 py-3">Device</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Tech</th>
-                  <th className="px-4 py-3">Promised</th>
-                  <th className="px-4 py-3">Risk</th>
-                  <th className="px-4 py-3">Price</th>
-                  <th className="px-4 py-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((t) => {
-                  const hrs = hoursFromNow(t.promisedAt)
-                  const promisedLabel = hrs >= 0 ? `in ${hrs}h` : `${Math.abs(hrs)}h late`
-                  const promisedCls = hrs >= 0 ? 'text-white/55' : 'text-red-300'
-                  const isSelected = selectedTickets.has(t.id)
-                  return (
-                    <tr
-                      key={t.id}
-                      onClick={() => router.push(`/tickets/${t.id}`)}
-                      className={cn(
-                        'border-b border-white/10 hover:bg-white/[0.03] transition-colors cursor-pointer',
-                        isSelected && 'bg-purple-500/10'
-                      )}
-                    >
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={() => {
-                            const newSet = new Set(selectedTickets)
-                            if (newSet.has(t.id)) {
-                              newSet.delete(t.id)
-                            } else {
-                              newSet.add(t.id)
-                            }
-                            setSelectedTickets(newSet)
-                          }}
-                          className="p-1 hover:bg-white/5 rounded transition-colors"
-                        >
-                          {isSelected ? (
-                            <CheckSquare className="w-4 h-4 text-purple-400" />
-                          ) : (
-                            <Square className="w-4 h-4 text-white/40" />
-                          )}
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-white/90">{t.ticketNumber}</td>
-                      <td className="px-4 py-3 text-sm text-white/80">
-                        <div className="font-semibold">{t.customerName}</div>
-                        <div className="text-xs text-white/45">{t.customerPhone}</div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-white/80">{t.device}</td>
-                      <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
-                      <td className="px-4 py-3 text-sm text-white/70">{t.assignedTo || '—'}</td>
-                      <td className={cn('px-4 py-3 text-sm font-semibold', promisedCls)}>{promisedLabel}</td>
-                      <td className="px-4 py-3">{t.risk !== 'none' ? <RiskBadge risk={t.risk} /> : <span className="text-white/30">—</span>}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-white/85">{fmtMoney(t.price)}</td>
-                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn-ghost px-3 py-2 text-xs rounded-xl">Message</button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </GlassCard>
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const ns = new Set(selectedTickets)
+                      ns.has(t.id) ? ns.delete(t.id) : ns.add(t.id)
+                      setSelectedTickets(ns)
+                    }}
+                    className="p-1 rounded hover:bg-white/10"
+                  >
+                    {isSelected ? <CheckSquare className="w-4 h-4 text-purple-300" /> : <Square className="w-4 h-4 text-white/35" />}
+                  </button>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-white truncate">{t.ticketNumber}</span>
+                      <StatusBadge status={t.status} />
+                      <span className={cn('text-xs font-semibold', promisedColor)}>{promisedLabel}</span>
+                      {t.risk !== 'none' && <RiskBadge risk={t.risk} />}
+                    </div>
+                    <div className="text-sm text-white/70 truncate">
+                      {t.customerName} • {t.device}
+                    </div>
+                    <div className="text-xs text-white/45 flex items-center gap-2">
+                      <span>{fmtMoney(t.price)}</span>
+                      <span>• {t.assignedTo || 'Unassigned'}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 opacity-0 hover:opacity-100 transition">
+                  <ButtonSecondary className="px-3 py-2 text-xs rounded-lg" onClick={(e) => { e.stopPropagation(); }}>
+                    Message
+                  </ButtonSecondary>
+                  <ButtonPrimary className="px-3 py-2 text-xs rounded-lg" onClick={(e) => { e.stopPropagation(); router.push(`/tickets/${t.id}`) }}>
+                    Open
+                  </ButtonPrimary>
+                </div>
+              </GlassRow>
+            )
+          })}
+        </div>
       ) : (
         <GlassCard className="p-0 overflow-hidden rounded-3xl">
           <div className="p-6 border-b border-white/10">

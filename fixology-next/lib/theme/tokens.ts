@@ -25,11 +25,20 @@ export const theme = {
     sm: '0 10px 30px rgba(0,0,0,0.25)',
     md: '0 20px 60px rgba(0,0,0,0.28)',
   },
-  spacing: [4, 8, 12, 16, 20, 24, 28, 32],
+  spacing: [4, 8, 12, 16, 20, 24, 28, 32, 36, 40],
   blur: {
     sm: '8px',
     md: '14px',
     lg: '20px',
+  },
+  borders: {
+    hairline: 'rgba(255,255,255,0.08)',
+    subtle: 'rgba(255,255,255,0.12)',
+  },
+  surfaces: {
+    panel: 'rgba(255,255,255,0.035)',
+    panelHover: 'rgba(255,255,255,0.055)',
+    row: 'rgba(255,255,255,0.02)',
   },
 } as const
 

@@ -658,6 +658,26 @@ export default function TicketSimple({ id }: { id: string }) {
           </div>
         </div>
       ) : null}
+
+      {/* Sticky footer actions */}
+      <div className="fixed bottom-4 left-0 right-0">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="rounded-2xl border border-white/10 bg-black/65 backdrop-blur-xl px-4 py-3 flex items-center justify-between gap-3 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+            <div className="text-xs text-white/55">POS workspace — UI-only</div>
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/75 hover:border-purple-400/30 transition text-sm">
+                Save
+              </button>
+              <button className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/75 hover:border-purple-400/30 transition text-sm">
+                Print
+              </button>
+              <button className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/75 hover:border-purple-400/30 transition text-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
