@@ -115,6 +115,11 @@ export default function TicketSimple({ id }: { id: string }) {
   const [method, setMethod] = useState<PayMethod>('cash')
   const [amount, setAmount] = useState<string>('')
   const [deviceQuery, setDeviceQuery] = useState('')
+  const [selectedDevices, setSelectedDevices] = useState<
+    { id: string; name: string; imei: string; passcode: string }
+  >(() => [
+    { id: 'primary', name: ticket.device, imei: '', passcode: '' },
+  ])
 
   const canTakePayment = role !== 'TECH' // front desk + owner
   const lineItems = [
@@ -221,7 +226,13 @@ export default function TicketSimple({ id }: { id: string }) {
                 {searchDevices(deviceQuery, 10).map((d) => (
                   <button
                     key={d}
-                    onClick={() => setDeviceQuery(d)}
+                    onClick={() => {
+                      setDeviceQuery(d)
+                      setSelectedDevices((list) => [
+                        ...list,
+                        { id: `${Date.now()}-${Math.random()}`, name: d, imei: '', passcode: '' },
+                      ])
+                    }}
                     className="w-full text-left px-3 py-2 text-sm text-white/80 hover:bg-white/5 border-b border-white/5 last:border-b-0"
                   >
                     {d}
@@ -230,19 +241,56 @@ export default function TicketSimple({ id }: { id: string }) {
               </div>
             )}
 
-            <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.02] p-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-semibold text-white truncate">{ticket.device}</p>
-                  <p className="text-xs text-white/50 mt-0.5">Serial: — • Passcode: —</p>
+            <div className="mt-3 space-y-2">
+              {selectedDevices.map((d, idx) => (
+                <div key={d.id} className="rounded-2xl border border-white/10 bg-white/[0.02] p-3 space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-white truncate">{d.name}</p>
+                      <p className="text-xs text-white/50 mt-0.5">Primary device #{idx + 1}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Pill tone="brand">Waiting for Diagnosis</Pill>
+                      {idx > 0 && (
+                        <button
+                          onClick={() => setSelectedDevices((list) => list.filter((x) => x.id !== d.id))}
+                          className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-red-200 hover:border-red-400/40"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <label className="text-xs text-white/60 space-y-1">
+                      <span className="block">IMEI / Serial</span>
+                      <input
+                        value={d.imei}
+                        onChange={(e) =>
+                          setSelectedDevices((list) =>
+                            list.map((x) => (x.id === d.id ? { ...x, imei: e.target.value } : x))
+                          )
+                        }
+                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-sm text-white/80 placeholder:text-white/40 focus:outline-none focus:border-purple-400/35"
+                        placeholder="Enter IMEI/serial"
+                      />
+                    </label>
+                    <label className="text-xs text-white/60 space-y-1">
+                      <span className="block">Passcode</span>
+                      <input
+                        value={d.passcode}
+                        onChange={(e) =>
+                          setSelectedDevices((list) =>
+                            list.map((x) => (x.id === d.id ? { ...x, passcode: e.target.value } : x))
+                          )
+                        }
+                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-sm text-white/80 placeholder:text-white/40 focus:outline-none focus:border-purple-400/35"
+                        placeholder="If provided"
+                      />
+                    </label>
+                  </div>
                 </div>
-                <Pill tone="brand">Waiting for Diagnosis</Pill>
-              </div>
-
-              <button className="mt-2 text-xs text-white/50 hover:text-white/70 inline-flex items-center gap-1">
-                <ChevronDown className="w-3.5 h-3.5" />
-                +2 more devices
-              </button>
+              ))}
             </div>
           </Section>
 
