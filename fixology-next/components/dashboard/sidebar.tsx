@@ -45,6 +45,7 @@ import {
   LockKeyhole,
   MonitorDot,
   Banknote,
+  ChevronRight,
 } from 'lucide-react'
 
 interface NavItem {
