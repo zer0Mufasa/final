@@ -14,9 +14,9 @@ export function ButtonPrimary({ className, children, ...rest }: ButtonProps) {
         className
       )}
       style={{
-        background: theme.colors.lavender,
+        background: 'linear-gradient(135deg, #7c3aed 0%, #c026d3 100%)',
         color: '#ffffff',
-        boxShadow: theme.shadows.sm,
+        boxShadow: '0 8px 20px rgba(139, 92, 246, 0.28)',
       }}
     >
       {children}
@@ -34,9 +34,9 @@ export function ButtonSecondary({ className, children, ...rest }: ButtonProps) {
         className
       )}
       style={{
-        background: '#ffffff',
+        background: 'rgba(255,255,255,0.04)',
         borderColor: theme.colors.border,
-        color: theme.colors.text,
+        color: theme.colors.secondary,
       }}
     >
       {children}
@@ -54,7 +54,7 @@ export function ButtonGhost({ className, children, ...rest }: ButtonProps) {
       )}
       style={{
         background: 'transparent',
-        color: theme.colors.text,
+        color: theme.colors.secondary,
       }}
     >
       {children}

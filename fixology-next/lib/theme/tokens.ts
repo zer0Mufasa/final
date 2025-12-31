@@ -1,42 +1,43 @@
 export const theme = {
   colors: {
-    // Base light palette (higher contrast)
-    bgRoot: '#f9fafb',
-    bgCanvas: '#ffffff',
-    bgAlt: '#f5f5f7',
+    // Dark Lavender (premium, calm)
+    bgRoot: '#08080c', // page
+    bgCanvas: '#0a0a0f', // elevated (sidebar/modals)
+    bgAlt: '#0d0d14', // inputs/alt surfaces
     // Back-compat keys
-    bgBase: '#f8f9fa',
-    bgDeep: '#ffffff',
-    bgOverlay: 'radial-gradient(circle at 18% 18%, rgba(139,124,246,0.08), transparent 42%), radial-gradient(circle at 82% 8%, rgba(139,124,246,0.05), transparent 40%), linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%)',
+    bgBase: '#08080c',
+    bgDeep: '#0a0a0f',
+    bgOverlay:
+      'radial-gradient(ellipse 80% 50% at 18% 10%, rgba(139,92,246,0.15), transparent 55%), radial-gradient(ellipse 70% 40% at 80% 85%, rgba(167,139,250,0.12), transparent 55%), linear-gradient(180deg, #08080c 0%, #0a0a10 100%)',
 
     // Surfaces
-    surface: '#ffffff',
-    surfaceAlt: '#f8f9fa',
-    row: '#ffffff',
+    surface: 'rgba(255,255,255,0.02)',
+    surfaceAlt: 'rgba(255,255,255,0.04)',
+    row: 'rgba(255,255,255,0.02)',
 
     // Borders
-    border: '#e5e7eb',
-    borderFocus: 'rgba(139,124,246,0.35)',
+    border: 'rgba(255,255,255,0.06)',
+    borderFocus: 'rgba(139,92,246,0.50)',
 
-    // Text (dark for light mode)
-    text: '#111827',
-    secondary: '#374151',
-    muted: '#6b7280',
-    hint: '#9ca3af',
+    // Text (white hierarchy)
+    text: 'rgba(255,255,255,0.95)',
+    secondary: 'rgba(255,255,255,0.70)',
+    muted: 'rgba(255,255,255,0.50)',
+    hint: 'rgba(255,255,255,0.30)',
 
     // Accent (soft lavender)
     lavender: '#8b5cf6',
-    lavenderHover: '#7c3aed',
-    lavenderTint: 'rgba(139,124,246,0.12)',
-    lavenderGlass: 'rgba(139,124,246,0.08)',
+    lavenderHover: '#a78bfa',
+    lavenderTint: 'rgba(139,92,246,0.20)',
+    lavenderGlass: 'rgba(255,255,255,0.02)',
     // Back-compat accent
     lavenderDeep: '#7c3aed',
 
-    // Status (pastel)
-    successTint: '#CFEDE0',
-    warningTint: '#FFF0C2',
-    dangerTint: '#FFD6D9',
-    infoTint: '#E6E3FF',
+    // Status (dark-safe)
+    successTint: 'rgba(16,185,129,0.12)',
+    warningTint: 'rgba(245,158,11,0.12)',
+    dangerTint: 'rgba(239,68,68,0.12)',
+    infoTint: 'rgba(59,130,246,0.12)',
   },
   radii: {
     input: '8px',
@@ -45,15 +46,15 @@ export const theme = {
     drawer: '18px',
   },
   type: {
-    h1: 'text-3xl sm:text-4xl font-semibold text-[#111827]',
-    h2: 'text-2xl font-semibold text-[#111827]',
-    body: 'text-sm text-[#374151]',
-    meta: 'text-xs uppercase tracking-[0.08em] text-[#6b7280]',
+    h1: 'text-3xl sm:text-4xl font-semibold text-white/95',
+    h2: 'text-2xl font-semibold text-white/90',
+    body: 'text-sm text-white/70',
+    meta: 'text-xs uppercase tracking-[0.08em] text-white/50',
   },
   spacingScale: [8, 12, 16, 20, 24, 32],
   shadows: {
-    sm: '0 8px 18px rgba(17,24,39,0.06)',
-    md: '0 16px 34px rgba(17,24,39,0.10)',
+    sm: '0 12px 28px rgba(0,0,0,0.45)',
+    md: '0 24px 60px rgba(0,0,0,0.55)',
   },
   spacing: [4, 8, 12, 16, 20, 24, 28, 32, 36, 40],
   blur: {
@@ -62,14 +63,14 @@ export const theme = {
     lg: '12px',
   },
   borders: {
-    hairline: 'rgba(30,30,60,0.08)',
-    subtle: 'rgba(30,30,60,0.12)',
+    hairline: 'rgba(255,255,255,0.06)',
+    subtle: 'rgba(255,255,255,0.10)',
   },
   surfaces: {
-    panel: '#FFFFFF',
-    panelAlt: '#F7F6FB',
-    row: '#FFFFFF',
-    payment: 'rgba(139,124,246,0.08)',
+    panel: 'rgba(255,255,255,0.02)',
+    panelAlt: 'rgba(255,255,255,0.03)',
+    row: 'rgba(255,255,255,0.02)',
+    payment: 'rgba(139,92,246,0.10)',
   },
 } as const
 

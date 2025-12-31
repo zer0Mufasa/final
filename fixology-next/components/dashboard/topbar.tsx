@@ -150,20 +150,20 @@ export function TopBar({ user, shop }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-30">
-      <div className="bg-white border-b border-[rgba(30,30,60,0.08)] shadow-[0_10px_30px_rgba(15,16,32,0.06)]">
+      <div className="bg-[#08080c]/85 border-b border-white/10 backdrop-blur-xl shadow-[0_12px_28px_rgba(0,0,0,0.45)]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="flex items-center justify-between gap-3 py-3">
             {/* Left: breadcrumbs + subtle context */}
             <div className="min-w-0 flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 text-sm text-[#6b7280]">
+              <div className="hidden sm:flex items-center gap-2 text-sm text-white/50">
                 {crumbs.map((c) => (
-                  <Link key={c.href} href={c.href} className="hover:text-[#111827] transition-colors">
+                  <Link key={c.href} href={c.href} className="hover:text-white transition-colors">
                     {c.label}
                   </Link>
                 ))}
               </div>
               {shop?.name ? (
-                <div className="hidden md:flex items-center gap-2 text-xs text-[#9ca3af]">
+                <div className="hidden md:flex items-center gap-2 text-xs text-white/40">
                   <span className="w-1 h-1 rounded-full bg-[#8b5cf6]" aria-hidden="true" />
                   <span className="truncate max-w-[220px]">{shop.name}</span>
                 </div>
@@ -176,16 +176,16 @@ export function TopBar({ user, shop }: TopBarProps) {
                 onClick={() => setCommandPaletteOpen(true)}
                 className={cn(
                   'w-full relative flex items-center gap-3 px-4 py-2.5 rounded-[10px]',
-                  'bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)]',
-                  'hover:border-[rgba(139,124,246,0.35)] transition-all',
-                  'text-left text-sm text-[#5E5B7A]'
+                  'bg-white/[0.04] border border-white/10',
+                  'hover:border-white/20 hover:bg-white/[0.06] transition-all',
+                  'text-left text-sm text-white/70'
                 )}
               >
-                <Search className="w-4 h-4 text-[#8C8AA3] flex-shrink-0" aria-hidden="true" />
+                <Search className="w-4 h-4 text-white/40 flex-shrink-0" aria-hidden="true" />
                 <span className="flex-1">Search ticket #, phone, IMEI, device…</span>
-                <kbd className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-[rgba(30,30,60,0.08)] text-xs text-[#8C8AA3] font-mono">
-                  <kbd className="px-1 py-0.5 rounded bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)]">⌘</kbd>
-                  <kbd className="px-1 py-0.5 rounded bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)]">K</kbd>
+                <kbd className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.04] border border-white/10 text-xs text-white/40 font-mono">
+                  <kbd className="px-1 py-0.5 rounded bg-white/[0.04] border border-white/10">⌘</kbd>
+                  <kbd className="px-1 py-0.5 rounded bg-white/[0.04] border border-white/10">K</kbd>
                 </kbd>
               </button>
             </div>
@@ -193,14 +193,14 @@ export function TopBar({ user, shop }: TopBarProps) {
             {/* Right: actions */}
             <div className="flex items-center gap-2">
               {/* Mode toggle */}
-              <div className="hidden lg:flex items-center gap-1 rounded-[12px] bg-[#F2F1F8] border border-[rgba(30,30,60,0.08)] p-1">
+              <div className="hidden lg:flex items-center gap-1 rounded-[12px] bg-white/[0.04] border border-white/10 p-1">
                 <button
                   onClick={openFrontDeskSwitch}
                   className={cn(
                     'px-3 py-1.5 rounded-[10px] text-xs font-semibold transition-all',
                     actor.role === 'FRONT_DESK'
-                      ? 'bg-white text-[#1F1E2E]'
-                      : 'text-[#5E5B7A] hover:text-[#1F1E2E]'
+                      ? 'bg-[#8B5CF6]/20 text-white border border-[#8B5CF6]/30'
+                      : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
                   )}
                   title="Front Desk Mode"
                 >
@@ -212,8 +212,8 @@ export function TopBar({ user, shop }: TopBarProps) {
                   className={cn(
                     'px-3 py-1.5 rounded-[10px] text-xs font-semibold transition-all',
                     actor.role === 'TECHNICIAN'
-                      ? 'bg-white text-[#1F1E2E]'
-                      : 'text-[#5E5B7A] hover:text-[#1F1E2E]'
+                      ? 'bg-[#8B5CF6]/20 text-white border border-[#8B5CF6]/30'
+                      : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
                   )}
                   title="Technician Mode"
                 >
@@ -225,8 +225,8 @@ export function TopBar({ user, shop }: TopBarProps) {
                   className={cn(
                     'px-3 py-1.5 rounded-[10px] text-xs font-semibold transition-all',
                     actor.role === 'OWNER'
-                      ? 'bg-white text-[#1F1E2E]'
-                      : 'text-[#5E5B7A] hover:text-[#1F1E2E]'
+                      ? 'bg-[#8B5CF6]/20 text-white border border-[#8B5CF6]/30'
+                      : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
                   )}
                   title="Owner Mode"
                 >

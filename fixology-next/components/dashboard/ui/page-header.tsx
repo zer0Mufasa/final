@@ -19,15 +19,15 @@ export function PageHeader({
     <div className={cn('flex items-start justify-between gap-4 mb-6', className)}>
       <div className="min-w-0">
         {kicker ? (
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-[#f1f5f9] border border-[#e5e7eb] text-xs font-semibold text-[#6b7280] mb-2">
+          <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-semibold text-white/60 mb-2">
             {kicker}
           </div>
         ) : null}
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#111827]">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white/95">
           {title}
         </h1>
         {description ? (
-          <p className="mt-2 text-sm sm:text-base text-[#6b7280] leading-relaxed max-w-2xl">
+          <p className="mt-2 text-sm sm:text-base text-white/60 leading-relaxed max-w-2xl">
             {description}
           </p>
         ) : null}
