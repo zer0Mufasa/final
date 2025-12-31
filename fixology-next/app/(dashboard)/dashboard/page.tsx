@@ -1,517 +1,385 @@
 'use client'
 
-import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import {
-  Bell,
-  ChevronDown,
-  Command,
-  Flame,
-  LayoutDashboard,
-  Ticket,
-  Users,
-  Smartphone,
-  Boxes,
-  FileText,
-  CreditCard,
-  Wallet,
-  BarChart3,
-  Plus,
-  Search,
-  ArrowRight,
-  Sparkles,
-  AlertTriangle,
-  Clock,
-  CheckCircle2,
-  MessageCircle,
-} from 'lucide-react'
-import { Chip } from '@/components/workspace/chip'
-import { SoftButton } from '@/components/workspace/soft-button'
-
-type Role = 'FRONT_DESK' | 'TECH' | 'OWNER'
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ')
-}
+import Link from 'next/link'
+import { mockTickets } from '@/lib/mock/data'
+import type { Ticket } from '@/lib/mock/types'
+import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
+import { ButtonPrimary, ButtonSecondary } from '@/components/ui/buttons'
+import { cn } from '@/lib/utils/cn'
+import { ArrowUpRight, ArrowDownRight, Calendar, ChevronRight, Filter, Plus } from 'lucide-react'
 
 function money(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n)
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n)
 }
 
-const MOCK_QUEUE = [
-  {
-    id: 'FIX-1041',
-    customer: 'Jordan Lee',
-    device: 'iPhone 14 Pro',
-    issue: 'Screen',
-    stage: 'Intake',
-    due: '6h',
-    tech: 'Ava',
-    price: 219,
-    risk: 'none' as const,
-  },
-  {
-    id: 'FIX-1042',
-    customer: 'Maya Patel',
-    device: 'Samsung S23 Ultra',
-    issue: 'Battery',
-    stage: 'Diagnosed',
-    due: '10h',
-    tech: 'Noah',
-    price: 149,
-    risk: 'low' as const,
-  },
-  {
-    id: 'FIX-1043',
-    customer: 'Chris Nguyen',
-    device: 'Google Pixel 8',
-    issue: 'Charging Port',
-    stage: 'Waiting Parts',
-    due: '26h',
-    tech: 'Miles',
-    price: 179,
-    risk: 'watch' as const,
-  },
-  {
-    id: 'FIX-1044',
-    customer: 'Taylor Brooks',
-    device: 'iPad Air',
-    issue: 'LCD',
-    stage: 'In Repair',
-    due: 'Late 4h',
-    tech: 'Sofia',
-    price: 329,
-    risk: 'high' as const,
-  },
-  {
-    id: 'FIX-1045',
-    customer: 'Aiden Kim',
-    device: 'iPhone 13',
-    issue: 'Screen',
-    stage: 'Ready',
-    due: 'Late 18h',
-    tech: 'Ava',
-    price: 199,
-    risk: 'none' as const,
-  },
+function hoursFromNow(iso: string) {
+  const d = new Date(iso).getTime()
+  const diff = d - Date.now()
+  return Math.round(diff / (60 * 60 * 1000))
+}
+
+type Activity = {
+  id: number
+  emoji: string
+  text: string
+  at: Date
+  amount?: number
+}
+
+function timeAgo(date: Date) {
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+const MOCK_ACTIVITY: Activity[] = [
+  { id: 1, emoji: '💳', text: 'Payment received for FIX-1045', amount: 199, at: new Date(Date.now() - 18 * 60 * 1000) },
+  { id: 2, emoji: '🔄', text: 'FIX-1044 moved to In Repair', at: new Date(Date.now() - 46 * 60 * 1000) },
+  { id: 3, emoji: '💬', text: 'Customer message received (Taylor Brooks)', at: new Date(Date.now() - 72 * 60 * 1000) },
+  { id: 4, emoji: '📦', text: 'Parts shipped for FIX-1043', at: new Date(Date.now() - 2 * 60 * 60 * 1000) },
 ]
 
-function RiskPill({ risk }: { risk: 'none' | 'low' | 'watch' | 'high' }) {
-  const map = {
-    none: 'bg-emerald-500/10 text-emerald-200 border-emerald-500/25',
-    low: 'bg-sky-500/10 text-sky-200 border-sky-500/25',
-    watch: 'bg-amber-500/10 text-amber-200 border-amber-500/25',
-    high: 'bg-rose-500/10 text-rose-200 border-rose-500/25',
-  } as const
-  const label = { none: 'On track', low: 'Low risk', watch: 'Watch', high: 'High risk' }[risk]
+export default function DashboardPage() {
+  const [selectedId, setSelectedId] = useState<string>(mockTickets[0]?.id || '')
+  const [quickIntake, setQuickIntake] = useState('')
+  const [viewMode, setViewMode] = useState<'queue' | 'kanban'>('queue')
+
+  const selected = useMemo(() => mockTickets.find((t) => t.id === selectedId) || mockTickets[0], [selectedId])
+
+  const stats = useMemo(() => {
+    const active = mockTickets.filter((t) => t.status !== 'READY' && t.status !== 'PICKED_UP')
+    const ready = mockTickets.filter((t) => t.status === 'READY')
+    const atRisk = mockTickets.filter((t) => t.risk === 'medium' || t.risk === 'high')
+    const openValue = mockTickets.filter((t) => t.status !== 'PICKED_UP').reduce((s, t) => s + t.price, 0)
+    const collected = ready.reduce((s, t) => s + t.price, 0)
+    const overdue = active.filter((t) => hoursFromNow(t.promisedAt) < 0).length
+    return {
+      active: active.length,
+      ready: ready.length,
+      atRisk: atRisk.length,
+      overdue,
+      openValue,
+      collected,
+    }
+  }, [])
+
   return (
-    <span className={cn('inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-medium', map[risk])}>
-      {risk === 'high' ? <AlertTriangle className="w-3 h-3" /> : risk === 'watch' ? <Clock className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
-      {label}
-    </span>
+    <div className="min-h-[calc(100vh-1px)] space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold text-white/95 tracking-tight">Good evening, Mufasa</h1>
+          <p className="text-sm text-white/50 mt-1">
+            {stats.active} active repairs • {stats.ready} ready for pickup • {money(stats.openValue)} open value
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white/70 hover:bg-white/[0.06] transition-all inline-flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            Today
+          </button>
+          <Link href="/tickets/new" className="btn-primary px-4 py-2.5 rounded-xl inline-flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            New Ticket
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard emoji="🔧" label="Active Repairs" value={String(stats.active)} change="+2 today" changeType="up" />
+        <StatCard
+          emoji="⚠️"
+          label="Needs Attention"
+          value={String(stats.atRisk)}
+          sublabel={`${stats.overdue} overdue`}
+          variant="warning"
+        />
+        <StatCard emoji="✅" label="Ready for Pickup" value={String(stats.ready)} sublabel="Notify customers" />
+        <StatCard
+          emoji="💰"
+          label="Today's Revenue"
+          value={money(stats.collected)}
+          sublabel={`of ${money(stats.openValue)} total`}
+          change="+18%"
+          changeType="up"
+        />
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-12 gap-6">
+        {/* Queue */}
+        <section className="col-span-12 xl:col-span-7 space-y-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-4">
+              <h2 className="text-sm font-medium text-white/80">Today's Queue</h2>
+              <div className="flex items-center p-1 rounded-lg bg-white/[0.04] border border-white/[0.06]">
+                <button
+                  onClick={() => setViewMode('queue')}
+                  className={cn(
+                    'px-3 py-1 rounded-md text-xs font-medium transition-all',
+                    viewMode === 'queue' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'
+                  )}
+                >
+                  Queue
+                </button>
+                <button
+                  onClick={() => setViewMode('kanban')}
+                  className={cn(
+                    'px-3 py-1 rounded-md text-xs font-medium transition-all',
+                    viewMode === 'kanban' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'
+                  )}
+                >
+                  Kanban
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button className="p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.06] transition-all">
+                <Filter className="w-4 h-4 text-white/50" />
+              </button>
+              <span className="text-xs text-white/40">{mockTickets.length} tickets</span>
+            </div>
+          </div>
+
+          {/* Queue rows */}
+          <div className="space-y-2">
+            {mockTickets.map((t) => (
+              <TicketRow key={t.id} ticket={t} selected={t.id === selectedId} onClick={() => setSelectedId(t.id)} />
+            ))}
+          </div>
+        </section>
+
+        {/* Side panel */}
+        <aside className="col-span-12 xl:col-span-5 space-y-4">
+          <QuickIntakeCard value={quickIntake} onChange={setQuickIntake} />
+          {selected ? <TicketDetailCard ticket={selected} /> : null}
+          <ActivityFeed items={MOCK_ACTIVITY} />
+        </aside>
+      </div>
+    </div>
   )
 }
 
-function StagePill({ stage }: { stage: string }) {
-  return (
-    <span className="inline-flex items-center px-2 py-1 rounded-full border border-white/15 bg-white/5 text-white/80 text-xs font-medium">
-      {stage}
-    </span>
-  )
-}
-
-function StatPill({
-  icon,
+function StatCard({
+  emoji,
   label,
   value,
-  sub,
-  tone = 'default',
+  sublabel,
+  change,
+  changeType,
+  variant = 'default',
 }: {
-  icon: React.ReactNode
+  emoji: string
   label: string
   value: string
-  sub?: string
-  tone?: 'default' | 'warn'
+  sublabel?: string
+  change?: string
+  changeType?: 'up' | 'down'
+  variant?: 'default' | 'warning'
 }) {
   return (
     <div
       className={cn(
-        'rounded-2xl border bg-white/5 backdrop-blur-xl px-4 py-3',
-        tone === 'warn' ? 'border-amber-400/30 bg-amber-500/10' : 'border-white/10'
+        'p-4 rounded-2xl border transition-all hover:border-white/[0.10] group',
+        variant === 'warning' ? 'bg-amber-500/[0.06] border-amber-500/20' : 'bg-white/[0.02] border-white/[0.06]'
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-wide text-white/50">{label}</div>
-          <div className="text-lg font-semibold text-white/90">{value}</div>
-          {sub ? <div className="text-xs text-white/50 mt-0.5">{sub}</div> : null}
-        </div>
-        <div className={cn('h-9 w-9 rounded-xl border flex items-center justify-center', tone === 'warn' ? 'border-amber-300/40 bg-amber-500/10' : 'border-white/10 bg-white/5')}>
-          {icon}
-        </div>
+      <div className="flex items-start justify-between mb-3">
+        <span className="text-2xl opacity-80 group-hover:opacity-100 transition-opacity">{emoji}</span>
+        {change ? (
+          <span
+            className={cn(
+              'flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md',
+              changeType === 'down' ? 'bg-rose-500/15 text-rose-400' : 'bg-emerald-500/15 text-emerald-400'
+            )}
+          >
+            {changeType === 'down' ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+            {change}
+          </span>
+        ) : null}
       </div>
+      <div className={cn('text-2xl font-semibold mb-0.5', variant === 'warning' ? 'text-amber-400' : 'text-white/95')}>
+        {value}
+      </div>
+      <div className="text-xs text-white/50">{label}</div>
+      {sublabel ? <div className="text-xs text-white/30 mt-1">{sublabel}</div> : null}
     </div>
   )
 }
 
-function SectionTitle({ title, hint, right }: { title: string; hint?: string; right?: React.ReactNode }) {
-  return (
-    <div className="flex items-end justify-between gap-3">
-      <div>
-        <div className="text-sm font-semibold text-white/90">{title}</div>
-        {hint ? <div className="text-xs text-white/60 mt-0.5">{hint}</div> : null}
-      </div>
-      {right}
-    </div>
-  )
-}
-
-/**
- * Lavender Light Workspace Dashboard (UI-only)
- * - Queue-first center column
- * - Inspector rail on right
- * - Clean sidebar + command bar
- */
-export default function DashboardPage() {
-  const [role, setRole] = useState<Role>('OWNER')
-  const [query, setQuery] = useState('')
-  const [intakeText, setIntakeText] = useState('')
-  const [selectedId, setSelectedId] = useState(MOCK_QUEUE[0]?.id || '')
-
-  const queue = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return MOCK_QUEUE
-    return MOCK_QUEUE.filter((t) => {
-      const hay = `${t.id} ${t.customer} ${t.device} ${t.issue} ${t.stage}`.toLowerCase()
-      return hay.includes(q)
-    })
-  }, [query])
-
-  const activeCount = MOCK_QUEUE.filter((t) => t.stage !== 'Ready').length
-  const atRiskCount = MOCK_QUEUE.filter((t) => t.risk === 'watch' || t.risk === 'high').length
-  const openRevenue = MOCK_QUEUE.reduce((a, t) => a + t.price, 0)
-  const selected = queue.find((t) => t.id === selectedId) || queue[0] || MOCK_QUEUE[0]
-
-  const grouped = useMemo(() => {
-    const overdue = queue.filter((t) => t.due.toLowerCase().includes('late'))
-    const soon = queue.filter((t) => !t.due.toLowerCase().includes('late') && parseInt(t.due) <= 8)
-    const normal = queue.filter((t) => !overdue.includes(t) && !soon.includes(t))
-    return { overdue, soon, normal }
-  }, [queue])
-
-  return (
-    <div className="min-h-screen bg-[#07070a] text-white">
-      {/* ambient lavender glow */}
-      <div
-        className="pointer-events-none fixed inset-0 opacity-100"
-        style={{
-          background:
-            'radial-gradient(ellipse 100% 80% at 0% 0%, rgba(139, 92, 246, 0.12), transparent 50%), radial-gradient(ellipse 80% 60% at 100% 100%, rgba(168, 85, 247, 0.08), transparent 50%)',
-        }}
-      />
-
-      <div className="relative z-10 grid grid-cols-[88px_1fr] lg:grid-cols-[300px_1fr]">
-        {/* SIDEBAR */}
-        {/* MAIN (full-width, no sidebar) */}
-        <main className="min-h-screen col-span-2">
-          {/* TOPBAR / COMMAND BAR */}
-          <header className="sticky top-0 z-20 border-b border-white/10 bg-[#07070a]/85 backdrop-blur-xl">
-            <div className="px-4 lg:px-8 py-3 flex items-center gap-3">
-              {/* Breadcrumb */}
-              <div className="hidden md:flex items-center gap-2 text-sm text-white/50">
-                <span className="font-medium text-white/80">Demo Shop</span>
-              </div>
-
-              {/* Search */}
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="w-4 h-4 text-white/40 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search ticket #, phone, IMEI, device…"
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 text-sm text-white placeholder:text-white/40 pl-9 pr-20 py-2.5 outline-none focus:border-[#8B5CF6]/50 focus:ring-2 focus:ring-[#8B5CF6]/25"
-                  />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs text-white/40">
-                    <span className="hidden sm:inline-flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 px-2 py-1">
-                      <Command className="w-3 h-3" /> K
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Role pills */}
-              <div className="hidden lg:flex items-center gap-1 rounded-2xl border border-white/10 bg-white/5 px-1 py-1">
-                <RolePill label="Front Desk" active={role === 'FRONT_DESK'} onClick={() => setRole('FRONT_DESK')} />
-                <RolePill label="Tech" active={role === 'TECH'} onClick={() => setRole('TECH')} />
-                <RolePill label="Owner" active={role === 'OWNER'} onClick={() => setRole('OWNER')} />
-              </div>
-
-              {/* Actions */}
-              <button className="hidden sm:inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 hover:from-violet-500 hover:to-fuchsia-500 transition">
-                <Plus className="w-4 h-4" /> New
-              </button>
-
-              <button className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 w-10 h-10 hover:border-white/20 hover:bg-white/10 transition">
-                <Bell className="w-4 h-4 text-white/70" />
-              </button>
-
-              <button className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 hover:border-white/20 hover:bg-white/10 transition">
-                <div className="h-8 w-8 rounded-xl bg-[#8B5CF6]/20 border border-[#8B5CF6]/30 flex items-center justify-center text-xs font-bold text-white">
-                  DU
-                </div>
-                <div className="hidden md:block text-left">
-                  <div className="text-sm font-semibold leading-tight text-white/90">Demo User</div>
-                  <div className="text-xs text-white/50 leading-tight">{role === 'OWNER' ? 'Owner' : role === 'TECH' ? 'Tech' : 'Front Desk'}</div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-white/50" />
-              </button>
-            </div>
-          </header>
-
-          {/* CONTENT */}
-          <div className="px-4 lg:px-8 py-6">
-            {/* Title Row */}
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div>
-                <h1 className="text-3xl font-semibold tracking-tight text-white/95">Today at Demo Shop</h1>
-                <p className="text-sm text-white/60 mt-1">
-                  Calm command center. See the queue first, then act.
-                </p>
-              </div>
-              <button className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 hover:from-violet-500 hover:to-fuchsia-500 transition">
-                Create Ticket <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Stats (pills, not loud cards) */}
-            <div className="grid gap-3 mt-5 md:grid-cols-3">
-              <StatPill icon={<Ticket className="w-4 h-4 text-white/70" />} label="Active" value={`${activeCount}`} sub="In progress today" />
-              <StatPill icon={<Flame className="w-4 h-4 text-amber-300" />} label="At risk" value={`${atRiskCount}`} sub="Needs attention" tone="warn" />
-              <StatPill icon={<CreditCard className="w-4 h-4 text-white/70" />} label="Open revenue" value={money(openRevenue)} sub="Work value in queue" />
-            </div>
-
-            {/* Main grid: Timeline / Workbench / Money+Comms */}
-            <div className="grid gap-4 mt-5 xl:grid-cols-[1.2fr_1.4fr_1fr]">
-              {/* TIMELINE */}
-              <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl overflow-hidden">
-                <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-semibold text-white/90">Timeline</div>
-                    <div className="text-xs text-white/50">Overdue → Due soon → Normal</div>
-                  </div>
-                  <div className="hidden sm:flex items-center gap-2 text-xs text-white/50">
-                    <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">Today</Chip>
-                    <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">Overdue</Chip>
-                    <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">Upcoming</Chip>
-                  </div>
-                </div>
-                <div className="divide-y divide-white/10">
-                  {renderGroup('Overdue', grouped.overdue, setSelectedId)}
-                  {renderGroup('Due soon', grouped.soon, setSelectedId)}
-                  {renderGroup('Normal', grouped.normal, setSelectedId)}
-                </div>
-              </section>
-
-              {/* WORKBENCH */}
-              <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5 space-y-4">
-                <SectionTitle title="Workbench" hint="Current ticket focus." />
-                {selected ? (
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-4">
-                      <div className="h-14 w-14 rounded-2xl border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-sm font-semibold text-[#C4B5FD]">
-                        {selected.device.split(' ')[0]}
-                      </div>
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <div className="text-lg font-semibold text-white/90">{selected.customer}</div>
-                          <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">{selected.device}</Chip>
-                          <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">{selected.stage}</Chip>
-                        </div>
-                        <div className="text-sm text-white/60">Issue: {selected.issue}</div>
-                        <div className="text-sm text-white/50">Tech {selected.tech} • {selected.due}</div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <SoftButton tone="outline" className="border-white/15 text-white">Continue Intake</SoftButton>
-                      <SoftButton tone="outline" className="border-white/15 text-white">Mark Ready</SoftButton>
-                      <SoftButton tone="primary" className="bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white border-none">Take Payment</SoftButton>
-                    </div>
-
-                    <div className="space-y-2">
-                      <div className="text-sm font-semibold text-white/85">Next steps</div>
-                      <ul className="space-y-1 text-sm text-white/60">
-                        <li>• Confirm parts arrival</li>
-                        <li>• Capture final diagnostics note</li>
-                        <li>• Prepare payment summary</li>
-                      </ul>
-                    </div>
-
-                    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
-                      <div className="text-sm font-semibold text-white/85 mb-1">Latest note</div>
-                      <div className="text-sm text-white/60">“Customer approved estimate, wants ready by tonight.”</div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-white/50">Select a ticket in the timeline.</div>
-                )}
-              </section>
-
-              {/* MONEY + COMMS */}
-              <aside className="space-y-4">
-                <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5">
-                  <SectionTitle title="Payment snapshot" />
-                  <div className="space-y-1 mt-2 text-sm text-white/70">
-                    <div className="flex items-center justify-between">
-                      <span>Open revenue</span>
-                      <span className="font-semibold text-white/90">{money(openRevenue)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Deposit paid</span>
-                      <span className="font-semibold text-white/70">{money(openRevenue * 0.15)}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>Remaining</span>
-                      <span className="font-semibold text-white/90">{money(openRevenue * 0.85)}</span>
-                    </div>
-                  </div>
-                  <SoftButton className="w-full mt-3 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white border-none" tone="primary">
-                    Open Checkout
-                  </SoftButton>
-                </section>
-
-                <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5">
-                  <SectionTitle title="Customer comms" />
-                  <div className="mt-2 space-y-2">
-                    <textarea
-                      className="w-full min-h-[90px] rounded-2xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-violet-500/40 focus:bg-white/[0.06] focus:ring-2 focus:ring-violet-500/20"
-                      placeholder="Type a quick update to the customer…"
-                    />
-                    <div className="flex items-center gap-2">
-                      <SoftButton tone="outline" className="flex-1 border-white/15 text-white">
-                        <MessageCircle className="w-4 h-4" /> Send update
-                      </SoftButton>
-                      <SoftButton tone="primary" className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white border-none">
-                        Request approval
-                      </SoftButton>
-                    </div>
-                  </div>
-                </section>
-
-                <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5">
-                  <SectionTitle title="Signals" />
-                  <div className="mt-3 space-y-2 text-sm text-white/70">
-                    <SignalRow label="Overdue" value={`${grouped.overdue.length}`} tone="danger" />
-                    <SignalRow label="At risk" value={`${atRiskCount}`} tone="warn" />
-                    <SignalRow label="Open revenue" value={money(openRevenue)} tone="default" />
-                  </div>
-                </section>
-              </aside>
-            </div>
-
-            {/* Footer spacing */}
-            <div className="h-10" />
-          </div>
-        </main>
-      </div>
-    </div>
-  )
-}
-
-/* -------------------- Small UI primitives -------------------- */
-
-function SideLink({
-  icon,
-  label,
-  active,
+function TicketRow({
+  ticket,
+  selected,
+  onClick,
 }: {
-  icon: React.ReactNode
-  label: string
-  active?: boolean
+  ticket: Ticket
+  selected: boolean
+  onClick: () => void
 }) {
-  return (
-    <button
-      className={cn(
-        'w-full flex items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition border',
-        active
-          ? 'bg-[#8B5CF6]/15 border-[#8B5CF6]/25 text-white'
-          : 'bg-transparent border-transparent text-white/60 hover:bg-white/5 hover:border-white/10'
-      )}
-    >
-      <div className={cn('h-9 w-9 rounded-2xl flex items-center justify-center border', active ? 'bg-white/10 border-[#8B5CF6]/30' : 'bg-white/5 border-white/10')}>
-        <div className={cn(active ? 'text-[#C4B5FD]' : 'text-white/60')}>{icon}</div>
-      </div>
-      <div className="hidden lg:block text-sm font-semibold text-white/80">{label}</div>
-    </button>
-  )
-}
+  const hrs = hoursFromNow(ticket.promisedAt)
+  const overdue = hrs < 0 && ticket.status !== 'READY' && ticket.status !== 'PICKED_UP'
+  const dueLabel = overdue ? `${Math.abs(hrs)}h overdue` : `Due in ${hrs}h`
 
-function RolePill({ label, active, onClick }: { label: string; active?: boolean; onClick: () => void }) {
+  const progress =
+    ticket.status === 'INTAKE'
+      ? 15
+      : ticket.status === 'DIAGNOSED'
+      ? 35
+      : ticket.status === 'WAITING_PARTS'
+      ? 55
+      : ticket.status === 'IN_REPAIR'
+      ? 75
+      : 100
+
+  const issue = ticket.device.includes('•') ? ticket.device.split('•')[1]?.trim() : 'Repair'
+  const deviceName = ticket.device.includes('•') ? ticket.device.split('•')[0]?.trim() : ticket.device
+
   return (
     <button
       onClick={onClick}
       className={cn(
-        'px-3 py-2 rounded-2xl text-sm font-semibold transition',
-        active ? 'bg-[#8B5CF6]/20 text-white border border-[#8B5CF6]/30' : 'text-white/60 hover:bg-white/5'
+        'w-full p-4 rounded-xl border text-left transition-all group',
+        selected
+          ? 'bg-violet-500/[0.08] border-violet-500/30'
+          : overdue
+          ? 'bg-rose-500/[0.04] border-rose-500/20 hover:border-rose-500/40'
+          : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] hover:bg-white/[0.04]'
       )}
-      type="button"
     >
-      {label}
+      <div className="flex items-start gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span className="text-xs font-mono text-white/40">{ticket.ticketNumber}</span>
+            <StatusBadge status={ticket.status} />
+            {ticket.risk !== 'none' ? <RiskBadge risk={ticket.risk} /> : null}
+          </div>
+          <div className="text-sm font-medium text-white/90 mb-0.5">{ticket.customerName}</div>
+          <div className="text-xs text-white/50">
+            {deviceName} • {issue}
+          </div>
+        </div>
+
+        <div className="text-right shrink-0">
+          <div className="text-base font-semibold text-white/90">{money(ticket.price)}</div>
+          <div className={cn('text-xs mt-0.5', overdue ? 'text-rose-400 font-medium' : 'text-white/40')}>{dueLabel}</div>
+          <div className="text-xs text-white/30 mt-0.5">Tech: {ticket.assignedTo || '—'}</div>
+        </div>
+
+        <ChevronRight className={cn('w-4 h-4 text-white/20 group-hover:text-white/40 transition-all shrink-0 mt-1', selected && 'text-violet-400')} />
+      </div>
+
+      <div className="mt-3 h-1 bg-white/[0.06] rounded-full overflow-hidden">
+        <div
+          className={cn('h-full rounded-full transition-all', overdue ? 'bg-rose-500' : 'bg-gradient-to-r from-violet-500 to-fuchsia-500')}
+          style={{ width: `${progress}%` }}
+        />
+      </div>
     </button>
   )
 }
 
-function SignalRow({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: string
-  tone: 'default' | 'warn' | 'danger'
-}) {
-  const toneCls =
-    tone === 'danger'
-      ? 'bg-rose-500/10 border-rose-500/30 text-rose-200'
-      : tone === 'warn'
-      ? 'bg-amber-500/10 border-amber-500/30 text-amber-200'
-      : 'bg-white/5 border-white/10 text-white/80'
-
+function QuickIntakeCard({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className={cn('flex items-center justify-between rounded-2xl border px-3 py-2.5', toneCls)}>
-      <div className="text-sm font-semibold">{label}</div>
-      <div className="text-sm font-semibold">{value}</div>
-    </div>
-  )
-}
-
-function renderGroup(label: string, items: typeof MOCK_QUEUE, onSelect: (id: string) => void) {
-  if (!items.length) return null
-  return (
-    <div className="p-3 space-y-2">
-      <div className="text-[11px] uppercase tracking-wide text-white/50 px-1">{label}</div>
-      {items.map((t) => (
-        <button
-          key={t.id}
-          onClick={() => onSelect(t.id)}
-          className="w-full text-left px-3 py-2 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/10 transition flex items-start justify-between gap-3"
-        >
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-white/85">{t.id}</span>
-              <StagePill stage={t.stage} />
-            </div>
-            <div className="text-sm text-white/70 truncate">
-              {t.customer} • {t.device}
-            </div>
-            <div className="text-xs text-white/50">{t.due}</div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-white/50" />
-          </div>
+    <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-500/[0.08] to-fuchsia-500/[0.04] border border-violet-500/20">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-lg">✨</span>
+        <h3 className="text-sm font-medium text-white/90">Quick Intake</h3>
+        <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-violet-500/20 text-violet-300 font-medium">AI</span>
+      </div>
+      <p className="text-xs text-white/50 mb-3">Describe the repair in plain English</p>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="e.g., iPhone 14 Pro cracked screen, customer wants same-day..."
+        className="w-full h-16 px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder-white/30 resize-none outline-none focus:border-violet-500/40 focus:bg-white/[0.06] transition-all"
+      />
+      <div className="flex gap-2 mt-3">
+        <button className="flex-1 h-9 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-sm font-medium text-white hover:from-violet-500 hover:to-fuchsia-500 transition-all shadow-lg shadow-violet-500/20">
+          Start Intake →
         </button>
-      ))}
+        <button className="px-4 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white/60 hover:bg-white/[0.06] transition-all">
+          Manual
+        </button>
+      </div>
     </div>
   )
 }
+
+function TicketDetailCard({ ticket }: { ticket: Ticket }) {
+  return (
+    <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-sm font-medium text-white/80">Ticket Detail</h3>
+        <span className="text-xs text-white/40 font-mono">{ticket.ticketNumber}</span>
+      </div>
+
+      <div className="flex items-start gap-3 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/20 flex items-center justify-center text-white/80 font-semibold text-sm">
+          {ticket.customerName
+            .split(' ')
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-white/90">{ticket.customerName}</div>
+          <div className="text-xs text-white/50">{ticket.device}</div>
+          <div className="text-xs text-white/30 mt-1">{ticket.customerPhone}</div>
+        </div>
+        <Link href={`/tickets/${ticket.id}`} className="btn-secondary px-3 py-2 rounded-xl text-xs inline-flex items-center gap-1.5">
+          Open <ChevronRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs text-white/50">Total</span>
+          <span className="text-sm font-semibold text-white/90">{money(ticket.price)}</span>
+        </div>
+        <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
+          <span className="text-xs text-white/50">Assigned</span>
+          <span className="text-sm text-white/70">{ticket.assignedTo || '—'}</span>
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <ButtonSecondary className="flex-1 px-4 py-2 rounded-xl text-sm">Edit</ButtonSecondary>
+        <ButtonPrimary className="flex-1 px-4 py-2 rounded-xl text-sm">Take Payment</ButtonPrimary>
+      </div>
+    </div>
+  )
+}
+
+function ActivityFeed({ items }: { items: Activity[] }) {
+  return (
+    <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium text-white/80">Activity Feed</h3>
+        <button className="text-xs text-violet-400 hover:text-violet-300 transition-colors">View all</button>
+      </div>
+
+      <div className="space-y-3">
+        {items.slice(0, 5).map((a) => (
+          <div key={a.id} className="flex items-start gap-3">
+            <span className="text-base opacity-70">{a.emoji}</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs text-white/70 leading-relaxed">{a.text}</div>
+              <div className="text-[10px] text-white/30 mt-0.5">{timeAgo(a.at)}</div>
+            </div>
+            {typeof a.amount === 'number' ? <span className="text-xs font-medium text-emerald-400">+{money(a.amount)}</span> : null}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+

@@ -1,15 +1,14 @@
 'use client'
 
 import { cn } from '@/lib/utils/cn'
-import { theme } from '@/lib/theme/tokens'
 
 const toneMap = {
-  neutral: { bg: 'rgba(255,255,255,0.06)', border: theme.colors.border, text: theme.colors.muted },
-  success: { bg: theme.colors.successTint, border: 'rgba(34,197,94,0.25)', text: 'rgba(167,243,208,0.95)' },
-  warning: { bg: theme.colors.warningTint, border: 'rgba(251,191,36,0.3)', text: 'rgba(254,240,138,0.95)' },
-  danger: { bg: theme.colors.dangerTint, border: 'rgba(248,113,113,0.28)', text: 'rgba(254,202,202,0.98)' },
-  info: { bg: theme.colors.infoTint, border: 'rgba(96,165,250,0.28)', text: 'rgba(191,219,254,0.98)' },
-}
+  neutral: 'bg-white/[0.04] text-white/70 border-white/[0.08]',
+  success: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/25',
+  warning: 'bg-amber-500/15 text-amber-200 border-amber-500/25',
+  danger: 'bg-rose-500/15 text-rose-200 border-rose-500/25',
+  info: 'bg-blue-500/15 text-blue-200 border-blue-500/25',
+} as const
 
 export function Pill({
   children,
@@ -20,14 +19,13 @@ export function Pill({
   tone?: keyof typeof toneMap
   className?: string
 }) {
-  const t = toneMap[tone]
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 rounded-full border',
+        'inline-flex items-center gap-2 text-xs font-medium px-2.5 py-1 border rounded-md',
+        toneMap[tone],
         className
       )}
-      style={{ background: t.bg, borderColor: t.border, color: t.text }}
     >
       {children}
     </span>

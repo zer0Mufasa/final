@@ -3,7 +3,7 @@
 // components/dashboard/sidebar.tsx
 // Dashboard sidebar navigation with hover-based toggle
 
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
@@ -21,8 +21,6 @@ import {
   Stethoscope,
   LifeBuoy,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   Building2,
   Calendar,
   UserCheck,
@@ -110,90 +108,10 @@ interface SidebarProps {
 export function Sidebar({ user, shop }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [isManuallyCollapsed, setIsManuallyCollapsed] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
-  const sidebarRef = useRef<HTMLElement>(null)
-  const hoverZoneRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Respect manual collapse state
-  const effectiveOpen = isOpen && !isManuallyCollapsed
-
-  // Handle hover on left edge of page (only if not manually collapsed)
-  useEffect(() => {
-    if (isManuallyCollapsed) return
-
-    const handleMouseMove = (e: MouseEvent) => {
-      // Check if mouse is in the left edge zone (0-30px from left)
-      if (e.clientX <= 30) {
-        setIsOpen(true)
-        // Clear any pending timeout
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-          timeoutRef.current = null
-        }
-      } else if (e.clientX > 30 && e.clientX < (isOpen ? 256 : 72)) {
-        // Mouse is in sidebar area, keep it open
-        setIsOpen(true)
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-          timeoutRef.current = null
-        }
-      }
-    }
-
-    // Handle mouse leaving sidebar area
-    const handleMouseLeave = (e: MouseEvent) => {
-      // Only close if mouse is not in the hover zone
-      if (e.clientX > 30) {
-        // Delay collapse to allow moving to hover zone
-        timeoutRef.current = setTimeout(() => {
-          setIsOpen(false)
-        }, 200)
-      }
-    }
-
-    // Handle mouse entering sidebar
-    const handleMouseEnter = () => {
-      setIsOpen(true)
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-    }
-
-    document.addEventListener('mousemove', handleMouseMove)
-    const sidebar = sidebarRef.current
-
-    if (sidebar) {
-      sidebar.addEventListener('mouseleave', handleMouseLeave as any)
-      sidebar.addEventListener('mouseenter', handleMouseEnter)
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      if (sidebar) {
-        sidebar.removeEventListener('mouseleave', handleMouseLeave as any)
-        sidebar.removeEventListener('mouseenter', handleMouseEnter)
-      }
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
-    }
-  }, [isOpen, isManuallyCollapsed])
-
-  // Update main content padding when sidebar state changes
-  useEffect(() => {
-    const main = document.querySelector('.dash-main') as HTMLElement
-    if (main) {
-      if (effectiveOpen) {
-        main.style.paddingLeft = '288px' // 256px sidebar (w-64) + 32px gap
-      } else {
-        main.style.paddingLeft = '88px' // 72px sidebar (collapsed) + 16px gap
-      }
-    }
-  }, [effectiveOpen])
+  // Dark Lavender spec: fixed sidebar (w-64), no hover collapse.
+  const effectiveOpen = true
 
   const handleSignOut = async () => {
     try {
@@ -259,60 +177,26 @@ export function Sidebar({ user, shop }: SidebarProps) {
 
   return (
     <>
-      {/* Hover zone on left edge */}
-      <div
-        ref={hoverZoneRef}
-        className="fixed left-0 top-0 w-[30px] h-screen z-50 pointer-events-none"
-      />
-
       <aside
-        ref={sidebarRef}
         className={cn(
           'fixed left-0 top-0 h-screen',
           'bg-[#0a0a0e]/90 backdrop-blur-xl',
           'border-r border-white/10 shadow-[0_12px_28px_rgba(0,0,0,0.45)]',
           'flex flex-col transition-all duration-300 ease-out z-40',
-          effectiveOpen ? 'w-64' : 'w-[72px]'
+          'w-64'
         )}
       >
         {/* Logo + Toggle */}
-        <div className={cn(
-          'flex items-center justify-between h-16 border-b border-white/10 w-full',
-          effectiveOpen ? 'px-4' : 'px-0'
-        )}>
+        <div className={cn('flex items-center justify-between h-16 border-b border-white/10 w-full px-4')}>
           <div className={cn(
             'flex items-center',
-            effectiveOpen ? 'gap-3' : 'justify-center flex-1'
+            'gap-3'
           )}>
-            {effectiveOpen ? (
-              <FixologyLogo size="lg" animate={true} className="tracking-tight text-white" />
-            ) : (
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#D946EF] border border-[#8B5CF6]/40 flex items-center justify-center shadow-lg shadow-[#8B5CF6]/35">
-                <ReticleIcon size="lg" color="purple" variant="idle" className="opacity-95 scale-[1.08] text-white" />
-              </div>
-            )}
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
+              <ReticleIcon size="md" color="purple" variant="idle" className="opacity-95 scale-[1.08] text-white" />
+            </div>
+            <FixologyLogo size="lg" animate={true} className="tracking-tight text-white" />
           </div>
-          {effectiveOpen && (
-            <button
-              onClick={() => setIsManuallyCollapsed(true)}
-              className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-white/50 hover:text-white"
-              aria-label="Collapse sidebar"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          )}
-          {!effectiveOpen && (
-            <button
-              onClick={() => {
-                setIsManuallyCollapsed(false)
-                setIsOpen(true)
-              }}
-              className="p-1.5 hover:bg-white/5 rounded-lg transition-colors text-white/50 hover:text-white w-full flex items-center justify-center"
-              aria-label="Expand sidebar"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          )}
         </div>
 
         {/* Navigation */}
