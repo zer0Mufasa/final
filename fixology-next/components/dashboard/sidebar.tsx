@@ -3,7 +3,7 @@
 // components/dashboard/sidebar.tsx
 // Dashboard sidebar navigation with hover-based toggle
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils/cn'
@@ -110,9 +110,77 @@ export function Sidebar({ user, shop }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [signingOut, setSigningOut] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const sidebarRef = useRef<HTMLElement | null>(null)
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Dark Lavender spec: fixed sidebar (w-64), no hover collapse.
-  const effectiveOpen = true
+  // Dark Lavender spec + UX: hover-to-expand sidebar.
+  const effectiveOpen = isOpen
+
+  const clearCloseTimeout = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+  }
+
+  const scheduleClose = () => {
+    clearCloseTimeout()
+    closeTimeoutRef.current = setTimeout(() => setIsOpen(false), 220)
+  }
+
+  // Auto-expand when mouse is near left edge; auto-collapse when mouse leaves sidebar area.
+  useEffect(() => {
+    const setMainPadding = (open: boolean) => {
+      const main = document.querySelector('.dash-main') as HTMLElement | null
+      if (!main) return
+      main.style.paddingLeft = open ? '256px' : '72px'
+    }
+
+    setMainPadding(isOpen)
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // Expand if cursor is in the left edge activation zone.
+      if (e.clientX <= 24) {
+        if (!isOpen) setIsOpen(true)
+        clearCloseTimeout()
+        return
+      }
+
+      // If expanded, keep open while pointer is within sidebar width.
+      if (isOpen && e.clientX <= 256) {
+        clearCloseTimeout()
+        return
+      }
+
+      // If expanded and pointer is away from sidebar, schedule close.
+      if (isOpen && e.clientX > 256) {
+        scheduleClose()
+      }
+    }
+
+    const sidebar = sidebarRef.current
+
+    const onEnter = () => {
+      if (!isOpen) setIsOpen(true)
+      clearCloseTimeout()
+    }
+    const onLeave = () => {
+      scheduleClose()
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    sidebar?.addEventListener('mouseenter', onEnter)
+    sidebar?.addEventListener('mouseleave', onLeave)
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      sidebar?.removeEventListener('mouseenter', onEnter)
+      sidebar?.removeEventListener('mouseleave', onLeave)
+      clearCloseTimeout()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen])
 
   const handleSignOut = async () => {
     try {
@@ -179,24 +247,22 @@ export function Sidebar({ user, shop }: SidebarProps) {
   return (
     <>
       <aside
+        ref={sidebarRef}
         className={cn(
           'fixed left-0 top-0 h-screen',
           'bg-[#0a0a0e]/90 backdrop-blur-xl',
           'border-r border-white/10 shadow-[0_12px_28px_rgba(0,0,0,0.45)]',
           'flex flex-col transition-all duration-300 ease-out z-40',
-          'w-64'
+          effectiveOpen ? 'w-64' : 'w-[72px]'
         )}
       >
         {/* Logo + Toggle */}
-        <div className={cn('flex items-center justify-between h-16 border-b border-white/10 w-full px-4')}>
-          <div className={cn(
-            'flex items-center',
-            'gap-3'
-          )}>
+        <div className={cn('flex items-center justify-between h-16 border-b border-white/10 w-full', effectiveOpen ? 'px-4' : 'px-0')}>
+          <div className={cn('flex items-center', effectiveOpen ? 'gap-3' : 'justify-center w-full')}>
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
               <ReticleIcon size="md" color="purple" variant="idle" className="opacity-95 scale-[1.08] text-white" />
             </div>
-            <FixologyLogo size="lg" animate={true} className="tracking-tight text-white" />
+            {effectiveOpen ? <FixologyLogo size="lg" animate={true} className="tracking-tight text-white" /> : null}
           </div>
         </div>
 

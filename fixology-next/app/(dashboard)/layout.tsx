@@ -26,7 +26,7 @@ body{background:#07070a;min-height:100vh;overflow-x:hidden;color:rgba(255,255,25
 .vertical-rail{display:none}
 .glow-spot{position:absolute;width:540px;height:540px;background:radial-gradient(circle,rgba(139,92,246,0.12) 0%,transparent 70%);filter:blur(90px);pointer-events:none;z-index:0}
 .dash-shell{min-height:100vh;position:relative}
-.dash-main{min-height:100vh;padding-left:256px}
+.dash-main{min-height:100vh;padding-left:72px;transition:padding-left 0.3s ease-out}
 @media (max-width: 1024px){.dash-main{padding-left:0}}
 `
 
