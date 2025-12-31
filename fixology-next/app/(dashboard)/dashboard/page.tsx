@@ -7,6 +7,7 @@ import type { Ticket } from '@/lib/mock/types'
 import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
 import { ButtonPrimary, ButtonSecondary } from '@/components/ui/buttons'
 import { cn } from '@/lib/utils/cn'
+import { useActor } from '@/contexts/actor-context'
 import { ArrowUpRight, ArrowDownRight, Calendar, ChevronRight, Filter, Plus } from 'lucide-react'
 
 function money(n: number) {
@@ -45,6 +46,7 @@ const MOCK_ACTIVITY: Activity[] = [
 ]
 
 export default function DashboardPage() {
+  const { actor } = useActor()
   const [selectedId, setSelectedId] = useState<string>(mockTickets[0]?.id || '')
   const [quickIntake, setQuickIntake] = useState('')
   const [viewMode, setViewMode] = useState<'queue' | 'kanban'>('queue')
@@ -73,7 +75,9 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold text-white/95 tracking-tight">Good evening, Mufasa</h1>
+          <h1 className="text-2xl font-semibold text-white/95 tracking-tight">
+            Good evening, {actor?.name || 'Demo User'}
+          </h1>
           <p className="text-sm text-white/50 mt-1">
             {stats.active} active repairs • {stats.ready} ready for pickup • {money(stats.openValue)} open value
           </p>
