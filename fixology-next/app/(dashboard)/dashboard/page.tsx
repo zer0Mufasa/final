@@ -49,7 +49,6 @@ export default function DashboardPage() {
   const { actor } = useActor()
   const [selectedId, setSelectedId] = useState<string>(mockTickets[0]?.id || '')
   const [quickIntake, setQuickIntake] = useState('')
-  const [viewMode, setViewMode] = useState<'queue' | 'kanban'>('queue')
 
   const selected = useMemo(() => mockTickets.find((t) => t.id === selectedId) || mockTickets[0], [selectedId])
 
@@ -122,26 +121,6 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-4">
               <h2 className="text-sm font-medium text-white/80">Today's Queue</h2>
-              <div className="flex items-center p-1 rounded-lg bg-white/[0.04] border border-white/[0.06]">
-                <button
-                  onClick={() => setViewMode('queue')}
-                  className={cn(
-                    'px-3 py-1 rounded-md text-xs font-medium transition-all',
-                    viewMode === 'queue' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'
-                  )}
-                >
-                  Queue
-                </button>
-                <button
-                  onClick={() => setViewMode('kanban')}
-                  className={cn(
-                    'px-3 py-1 rounded-md text-xs font-medium transition-all',
-                    viewMode === 'kanban' ? 'bg-white/[0.08] text-white' : 'text-white/40 hover:text-white/60'
-                  )}
-                >
-                  Kanban
-                </button>
-              </div>
             </div>
 
             <div className="flex items-center gap-2">
