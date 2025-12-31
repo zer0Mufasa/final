@@ -225,7 +225,14 @@ function TicketRow({
 }) {
   const hrs = hoursFromNow(ticket.promisedAt)
   const overdue = hrs < 0 && ticket.status !== 'READY' && ticket.status !== 'PICKED_UP'
-  const dueLabel = overdue ? `${Math.abs(hrs)}h overdue` : `Due in ${hrs}h`
+  const dueLabel =
+    ticket.status === 'READY'
+      ? 'Pickup ready'
+      : ticket.status === 'PICKED_UP'
+      ? 'Closed'
+      : overdue
+      ? `${Math.abs(hrs)}h overdue`
+      : `Due in ${Math.max(0, hrs)}h`
 
   const progress =
     ticket.status === 'INTAKE'
