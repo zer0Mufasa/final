@@ -10,6 +10,7 @@ import { TopBar } from '@/components/dashboard/topbar'
 import { RoleProvider } from '@/contexts/role-context'
 import { ActorProvider } from '@/contexts/actor-context'
 import { OnboardingOverlay } from '@/components/dashboard/onboarding-overlay'
+import { FixoLayout } from '@/components/fixo/fixo-layout'
 
 const dashboardStyles = `
 html{scroll-behavior:smooth}
@@ -56,24 +57,26 @@ export default async function DashboardLayout({
     return (
       <RoleProvider initialRole={demoUser.role as any}>
         <ActorProvider initialOwnerName={demoUser.name}>
-          <div className="dash-shell">
-            <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
-            <div className="bg-structure">
-              <div className="bg-grid" />
-              <div className="vertical-rail left" />
-              <div className="vertical-rail right" />
+          <FixoLayout>
+            <div className="dash-shell">
+              <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
+              <div className="bg-structure">
+                <div className="bg-grid" />
+                <div className="vertical-rail left" />
+                <div className="vertical-rail right" />
+              </div>
+
+              <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
+              <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
+
+              <Sidebar user={demoUser} shop={demoShop} />
+              <main className="dash-main">
+                <TopBar user={demoUser} shop={demoShop} />
+                <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">{children}</div>
+              </main>
+              <OnboardingOverlay />
             </div>
-
-            <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
-            <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
-
-            <Sidebar user={demoUser} shop={demoShop} />
-            <main className="dash-main">
-              <TopBar user={demoUser} shop={demoShop} />
-              <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">{children}</div>
-            </main>
-            <OnboardingOverlay />
-          </div>
+          </FixoLayout>
         </ActorProvider>
       </RoleProvider>
     )
@@ -172,34 +175,19 @@ export default async function DashboardLayout({
   return (
     <RoleProvider initialRole={shopUser.role as any}>
       <ActorProvider initialOwnerName={shopUser.name}>
-        <div className="dash-shell">
-          <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
-          <div className="bg-structure">
-            <div className="bg-grid" />
-            <div className="vertical-rail left" />
-            <div className="vertical-rail right" />
-          </div>
+        <FixoLayout>
+          <div className="dash-shell">
+            <style dangerouslySetInnerHTML={{ __html: dashboardStyles }} />
+            <div className="bg-structure">
+              <div className="bg-grid" />
+              <div className="vertical-rail left" />
+              <div className="vertical-rail right" />
+            </div>
 
-          <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
-          <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
+            <div className="glow-spot" style={{ top: '8%', left: '12%' }} />
+            <div className="glow-spot" style={{ bottom: '10%', right: '12%', opacity: 0.75 }} />
 
-          {/* Sidebar for non-dashboard pages - dashboard page renders its own LeftRail */}
-          <Sidebar
-            user={{
-              name: shopUser.name,
-              email: shopUser.email,
-              role: shopUser.role,
-            }}
-            shop={{
-              name: shopUser.shop.name,
-              plan: shopUser.shop.plan,
-              city: shopUser.shop.city || undefined,
-              state: shopUser.shop.state || undefined,
-            }}
-          />
-
-          <main className="dash-main">
-            <TopBar
+            <Sidebar
               user={{
                 name: shopUser.name,
                 email: shopUser.email,
@@ -212,9 +200,25 @@ export default async function DashboardLayout({
                 state: shopUser.shop.state || undefined,
               }}
             />
-            <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">{children}</div>
-          </main>
-        </div>
+
+            <main className="dash-main">
+              <TopBar
+                user={{
+                  name: shopUser.name,
+                  email: shopUser.email,
+                  role: shopUser.role,
+                }}
+                shop={{
+                  name: shopUser.shop.name,
+                  plan: shopUser.shop.plan,
+                  city: shopUser.shop.city || undefined,
+                  state: shopUser.shop.state || undefined,
+                }}
+              />
+              <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-6">{children}</div>
+            </main>
+          </div>
+        </FixoLayout>
       </ActorProvider>
     </RoleProvider>
   )

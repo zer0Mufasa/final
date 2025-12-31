@@ -19,6 +19,7 @@ import {
   X,
   Zap,
 } from 'lucide-react'
+import { useFixo } from '@/components/fixo/fixo-chat-widget'
 
 // ============================================
 // FIXOLOGY SUPPORT CENTER v2.0
@@ -30,6 +31,7 @@ function cn(...classes: (string | boolean | undefined | null)[]) {
 }
 
 export function SupportClient() {
+  const { openChat } = useFixo()
   const [query, setQuery] = useState('')
   const [activeTab, setActiveTab] = useState<'help' | 'tickets' | 'contact'>('help')
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
@@ -283,7 +285,7 @@ export function SupportClient() {
         <div className="space-y-8">
           {/* Support Options */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <SupportCard emoji="✨" title="Fixo AI Assistant" desc="Get instant answers powered by AI" cta="Start chat" variant="featured" badge="New" />
+            <SupportCard emoji="✨" title="Fixo AI Assistant" desc="Get instant answers powered by AI" cta="Start chat" variant="featured" badge="New" onClick={openChat} />
             <SupportCard emoji="📚" title="Documentation" desc="In-depth guides and tutorials" cta="Browse docs" variant="default" />
             <SupportCard emoji="🎥" title="Video Tutorials" desc="Step-by-step video walkthroughs" cta="Watch videos" variant="default" badge="12 videos" />
           </div>
@@ -538,7 +540,7 @@ export function SupportClient() {
               </div>
 
               <div className="space-y-3">
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
+                <button onClick={openChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
                   <span className="text-lg">✨</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-white/90">Ask Fixo AI</div>
@@ -547,7 +549,7 @@ export function SupportClient() {
                   <ChevronRight className="w-4 h-4 text-white/30" />
                 </button>
 
-                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
+                <button onClick={openChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
                   <span className="text-lg">💬</span>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-white/90">Live Chat</div>
@@ -611,6 +613,7 @@ function SupportCard({
   cta,
   variant,
   badge,
+  onClick,
 }: {
   emoji: string
   title: string
@@ -618,9 +621,11 @@ function SupportCard({
   cta: string
   variant: 'featured' | 'default'
   badge?: string
+  onClick?: () => void
 }) {
   return (
     <div
+      onClick={onClick}
       className={cn(
         'relative p-5 rounded-2xl border transition-all cursor-pointer group',
         variant === 'featured'
