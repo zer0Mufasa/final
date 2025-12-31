@@ -2,50 +2,109 @@
 
 import { useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
-import { cn } from '@/lib/utils/cn'
 import {
   ArrowRight,
   BookOpen,
-  Boxes,
-  Cloud,
-  LifeBuoy,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  FileText,
+  MessageCircle,
   MessageSquare,
-  Paperclip,
-  Rocket,
   Search,
   Send,
   Ticket,
-  Users,
-  Wrench,
+  Upload,
+  X,
+  Zap,
 } from 'lucide-react'
+
+// ============================================
+// FIXOLOGY SUPPORT CENTER v2.0
+// Premium dark lavender theme
+// ============================================
+
+function cn(...classes: (string | boolean | undefined | null)[]) {
+  return classes.filter(Boolean).join(' ')
+}
 
 export function SupportClient() {
   const [query, setQuery] = useState('')
+  const [activeTab, setActiveTab] = useState<'help' | 'tickets' | 'contact'>('help')
+  const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
 
-  // Ticket form (UI-only)
+  // Ticket form
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [category, setCategory] = useState<'Bug' | 'Billing' | 'Account' | 'Other'>('Bug')
+  const [category, setCategory] = useState<'bug' | 'billing' | 'feature' | 'account' | 'other'>('bug')
+  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium')
   const [title, setTitle] = useState('')
   const [message, setMessage] = useState('')
+  const [files, setFiles] = useState<File[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const fileRef = useRef<HTMLInputElement | null>(null)
+
+  // ==========================================
+  // DATA
+  // ==========================================
 
   const topics = useMemo(
     () => [
-      { id: 'getting-started', icon: <Rocket className="w-5 h-5" />, title: 'Getting Started', desc: 'Learn how to get started with Fixology' },
-      { id: 'integrations', icon: <Cloud className="w-5 h-5" />, title: 'Integrations', desc: 'Learn more about partners and integrations' },
-      { id: 'tickets', icon: <Wrench className="w-5 h-5" />, title: 'Tickets', desc: 'How to streamline workflow with integrated tools' },
-      { id: 'inventory', icon: <Boxes className="w-5 h-5" />, title: 'Inventory Management', desc: 'Learn to stay organized and manage inventory' },
-      { id: 'team', icon: <Users className="w-5 h-5" />, title: 'Team Management', desc: 'Information about collaborating and chatting with your team' },
-      { id: 'guides', icon: <BookOpen className="w-5 h-5" />, title: 'Other Guides', desc: 'More guides about Fixology' },
+      { id: 'getting-started', emoji: '🚀', title: 'Getting Started', desc: 'Setup guides and first steps', articles: 12 },
+      { id: 'tickets', emoji: '🎫', title: 'Tickets & Repairs', desc: 'Managing repair workflows', articles: 24 },
+      { id: 'inventory', emoji: '📦', title: 'Inventory', desc: 'Stock management and ordering', articles: 18 },
+      { id: 'payments', emoji: '💳', title: 'Payments & Billing', desc: 'Invoices, payouts, and pricing', articles: 15 },
+      { id: 'integrations', emoji: '🔗', title: 'Integrations', desc: 'Connect with other tools', articles: 9 },
+      { id: 'team', emoji: '👥', title: 'Team Management', desc: 'Permissions and collaboration', articles: 11 },
     ],
     []
   )
 
-  const popular = useMemo(
-    () => ['How To Setup Your Profile Picture', 'How to Time Clock Whitelist IP Feature', 'How to Import Customers'],
+  const faqs = useMemo(
+    () => [
+      {
+        id: 'import',
+        q: 'How do I import existing customers?',
+        a: 'Go to Customers → Import and upload a CSV file. We support imports from RepairShopr, RepairDesk, and custom formats. Our AI will automatically map your columns.',
+      },
+      {
+        id: 'pricing',
+        q: 'Can I customize repair pricing?',
+        a: 'Yes! Navigate to Settings → Pricing to set up device-specific pricing, labor rates, and automatic markup rules. You can also create pricing tiers for different customer types.',
+      },
+      {
+        id: 'notifications',
+        q: 'How do automated customer notifications work?',
+        a: 'Fixology sends SMS/email updates at key stages: intake confirmation, diagnosis ready, repair complete, and pickup reminder. Customize templates in Settings → Notifications.',
+      },
+      {
+        id: 'backup',
+        q: 'Is my data backed up?',
+        a: 'Yes, we perform automatic backups every hour. Your data is encrypted and stored redundantly across multiple data centers. You can also export your data anytime from Settings → Data.',
+      },
+      {
+        id: 'offline',
+        q: 'Does Fixology work offline?',
+        a: 'Core features like viewing tickets and customer info work offline. Changes sync automatically when you reconnect. Full offline mode coming in Q2 2025.',
+      },
+    ],
     []
   )
+
+  const recentTickets = useMemo(
+    () => [
+      { id: 'TKT-2847', title: 'Inventory sync issue', status: 'open', created: '2 hours ago' },
+      { id: 'TKT-2831', title: 'Question about API limits', status: 'resolved', created: '3 days ago' },
+      { id: 'TKT-2819', title: 'Feature request: bulk SMS', status: 'in-progress', created: '1 week ago' },
+    ],
+    []
+  )
+
+  // ==========================================
+  // FILTERING
+  // ==========================================
 
   const filteredTopics = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -53,330 +112,643 @@ export function SupportClient() {
     return topics.filter((t) => `${t.title} ${t.desc}`.toLowerCase().includes(q))
   }, [query, topics])
 
-  const minChars = 10
+  const filteredFaqs = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) return faqs
+    return faqs.filter((f) => `${f.q} ${f.a}`.toLowerCase().includes(q))
+  }, [query, faqs])
+
+  // ==========================================
+  // FORM HANDLING
+  // ==========================================
+
+  const minChars = 20
   const trimmedLen = message.trim().length
   const canSubmit = Boolean(name.trim() && email.trim() && title.trim() && trimmedLen >= minChars)
 
-  return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <section className="pt-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl font-semibold text-white/95 tracking-tight">How can we help you?</h1>
-          <p className="text-sm text-white/50 mt-2">Choose how you&apos;d like to get support</p>
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFiles((prev) => [...prev, ...Array.from(e.target.files)])
+    }
+  }
 
-          <div className="mt-6 max-w-xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" aria-hidden="true" />
+  const removeFile = (index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSubmit = async () => {
+    if (!canSubmit) return
+    setIsSubmitting(true)
+    // Simulate API call
+    await new Promise((r) => setTimeout(r, 1500))
+    setIsSubmitting(false)
+    setSubmitted(true)
+  }
+
+  const resetForm = () => {
+    setName('')
+    setEmail('')
+    setCategory('bug')
+    setPriority('medium')
+    setTitle('')
+    setMessage('')
+    setFiles([])
+    setSubmitted(false)
+  }
+
+  // ==========================================
+  // SUCCESS STATE
+  // ==========================================
+
+  if (submitted) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-16">
+        <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-6">
+          <Check className="w-10 h-10 text-emerald-400" />
+        </div>
+        <h1 className="text-2xl font-semibold text-white/95">Ticket Submitted!</h1>
+        <p className="text-sm text-white/60 mt-3 max-w-md mx-auto">
+          Thank you for contacting us. We&apos;ve received your support ticket and will get back to you within 2-4 hours during business hours.
+        </p>
+        <div className="mt-4 text-xs text-white/40">
+          Ticket ID:{' '}
+          <span className="font-mono text-white/60">TKT-{Math.random().toString(36).substring(2, 8).toUpperCase()}</span>
+        </div>
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <button onClick={resetForm} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">
+            Submit Another
+          </button>
+          <Link href="/dashboard" className="btn-primary px-4 py-2 rounded-xl text-sm font-medium">
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // ==========================================
+  // MAIN RENDER
+  // ==========================================
+
+  return (
+    <div className="space-y-8 max-w-6xl mx-auto">
+      {/* ==========================================
+          HERO SECTION
+          ========================================== */}
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-500/[0.12] to-fuchsia-500/[0.06] border border-violet-500/20 p-8 md:p-12">
+        {/* Background decoration */}
+        <div className="absolute inset-0 opacity-30 pointer-events-none">
+          <div className="absolute top-10 left-10 w-32 h-32 bg-violet-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 right-10 w-40 h-40 bg-fuchsia-500/20 rounded-full blur-3xl" />
+        </div>
+
+        <div className="relative z-10 text-center max-w-2xl mx-auto">
+          {/* Online indicator */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.1] text-xs text-white/70 mb-4">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            Support team online
+          </div>
+
+          <h1 className="text-3xl md:text-4xl font-semibold text-white/95 tracking-tight">How can we help you?</h1>
+          <p className="text-sm md:text-base text-white/50 mt-3 max-w-lg mx-auto">
+            Search our knowledge base, browse help topics, or get in touch with our support team.
+          </p>
+
+          {/* Search */}
+          <div className="mt-8 max-w-xl mx-auto">
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 group-focus-within:text-violet-400 transition-colors" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search Articles..."
-                className="w-full h-11 pl-11 pr-4 rounded-full bg-white/[0.04] border border-white/[0.08] text-sm text-white placeholder:text-white/30 outline-none focus:border-violet-500/40 focus:bg-white/[0.06] transition-all"
+                placeholder="Search for answers..."
+                className="w-full h-12 pl-12 pr-4 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-sm text-white placeholder:text-white/30 outline-none focus:border-violet-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Topics + Popular */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 card p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-white/90">Topics</h2>
-            <div className="h-px flex-1 mx-4 bg-white/[0.06]" />
-            <div className="text-xs text-white/40">{filteredTopics.length} topics</div>
-          </div>
-
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredTopics.map((t) => (
-              <button
-                key={t.id}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.10] transition-all text-left p-4"
-                onClick={() => console.log('Open topic (UI):', t.id)}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/70">
-                    {t.icon}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold text-white/90">{t.title}</div>
-                    <div className="text-xs text-white/50 mt-1">{t.desc}</div>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="lg:col-span-4 space-y-4">
-          <div className="card p-6">
-            <div className="text-sm font-semibold text-white/90 mb-3">Popular</div>
-            <div className="space-y-2">
-              {popular.map((p) => (
+              {query && (
                 <button
-                  key={p}
-                  className="w-full text-left text-sm text-white/70 hover:text-white transition-colors"
-                  onClick={() => console.log('Open article (UI):', p)}
+                  onClick={() => setQuery('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-white/[0.1] transition-colors"
                 >
-                  {p}
+                  <X className="w-4 h-4 text-white/40" />
+                </button>
+              )}
+            </div>
+
+            {/* Popular searches */}
+            <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
+              <span className="text-xs text-white/40">Popular:</span>
+              {['Import customers', 'Set up notifications', 'API docs'].map((term) => (
+                <button
+                  key={term}
+                  onClick={() => setQuery(term)}
+                  className="text-xs px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-white/60 hover:text-white/80 hover:bg-white/[0.1] transition-all"
+                >
+                  {term}
                 </button>
               ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="card p-6 border-violet-500/20 bg-gradient-to-br from-violet-500/[0.10] to-fuchsia-500/[0.04]">
-            <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
-              <Ticket className="w-4 h-4 text-violet-200" aria-hidden="true" />
-              Support Tickets
+      {/* ==========================================
+          TAB NAVIGATION
+          ========================================== */}
+      <div className="flex items-center gap-2 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.06] w-fit">
+        {[
+          { id: 'help', label: 'Help Center', icon: BookOpen },
+          { id: 'tickets', label: 'My Tickets', icon: Ticket },
+          { id: 'contact', label: 'Contact Us', icon: MessageSquare },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as typeof activeTab)}
+            className={cn(
+              'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all',
+              activeTab === tab.id
+                ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
+                : 'text-white/50 hover:text-white/70 hover:bg-white/[0.04]'
+            )}
+          >
+            <tab.icon className="w-4 h-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ==========================================
+          HELP CENTER TAB
+          ========================================== */}
+      {activeTab === 'help' && (
+        <div className="space-y-8">
+          {/* Support Options */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <SupportCard emoji="✨" title="Fixo AI Assistant" desc="Get instant answers powered by AI" cta="Start chat" variant="featured" badge="New" />
+            <SupportCard emoji="📚" title="Documentation" desc="In-depth guides and tutorials" cta="Browse docs" variant="default" />
+            <SupportCard emoji="🎥" title="Video Tutorials" desc="Step-by-step video walkthroughs" cta="Watch videos" variant="default" badge="12 videos" />
+          </div>
+
+          {/* Topics Grid */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-semibold text-white/90">Browse Topics</h2>
+                <p className="text-xs text-white/40 mt-1">Find answers organized by category</p>
+              </div>
+              <span className="text-xs text-white/40 bg-white/[0.04] px-2.5 py-1 rounded-lg">{filteredTopics.length} topics</span>
             </div>
-            <div className="text-sm text-white/65 mt-2">
-              Submit and manage your current support tickets and their status.
+
+            {filteredTopics.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {filteredTopics.map((topic) => (
+                  <TopicCard key={topic.id} topic={topic} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState emoji="🔍" title="No topics found" desc={`No results for "${query}". Try a different search term.`} />
+            )}
+          </div>
+
+          {/* FAQ Section */}
+          <div className="card p-6">
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-semibold text-white/90">Frequently Asked Questions</h2>
+                <p className="text-xs text-white/40 mt-1">Quick answers to common questions</p>
+              </div>
             </div>
-            <a
-              href="#contact-support"
-              className="btn-primary mt-4 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl"
+
+            {filteredFaqs.length > 0 ? (
+              <div className="space-y-2">
+                {filteredFaqs.map((faq) => (
+                  <FaqItem key={faq.id} faq={faq} expanded={expandedFaq === faq.id} onToggle={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState emoji="❓" title="No FAQs match your search" desc="Try searching for something else or contact support." />
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          MY TICKETS TAB
+          ========================================== */}
+      {activeTab === 'tickets' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-white/90">Your Support Tickets</h2>
+              <p className="text-xs text-white/40 mt-1">Track and manage your open tickets</p>
+            </div>
+            <button
+              onClick={() => setActiveTab('contact')}
+              className="btn-primary px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2"
             >
-              Contact Center
-            </a>
+              <PlusIcon className="w-4 h-4" />
+              New Ticket
+            </button>
           </div>
-        </div>
-      </section>
 
-      {/* Support options (requested copy) */}
-      <section className="space-y-3">
-        <div className="text-sm font-medium text-white/80">Choose how you&apos;d like to get support</div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <SupportOptionCard
-            icon={<MessageSquare className="w-5 h-5" aria-hidden="true" />}
-            title="Fixo Support Chat"
-            desc="Get instant help from our Fixo assistant"
-            tone="brand"
-            cta="Open chat (UI)"
-          />
-          <SupportOptionCard
-            icon={<BookOpen className="w-5 h-5" aria-hidden="true" />}
-            title="Support Center"
-            desc="Browse help articles from our knowledge base"
-            tone="neutral"
-            cta="Browse articles (UI)"
-          />
-          <SupportOptionCard
-            icon={<LifeBuoy className="w-5 h-5" aria-hidden="true" />}
-            title="File a Support Ticket"
-            desc="Create a ticket for complex issues"
-            tone="neutral"
-            cta="Create a ticket"
-            href="#contact-support"
-          />
-        </div>
-      </section>
-
-      {/* Contact Support form */}
-      <section id="contact-support" className="card p-6">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div>
-            <div className="text-lg font-semibold text-white/90">Contact Support</div>
-            <div className="text-sm text-white/55 mt-1">
-              Fill out the form below and we&apos;ll get back to you as soon as possible.
+          <div className="card overflow-hidden">
+            {/* Ticket Stats */}
+            <div className="grid grid-cols-3 border-b border-white/[0.06]">
+              <TicketStat label="Open" value="1" color="text-amber-400" />
+              <TicketStat label="In Progress" value="1" color="text-blue-400" />
+              <TicketStat label="Resolved" value="1" color="text-emerald-400" />
             </div>
-          </div>
-          <Link href="/support" className="text-xs text-white/50 hover:text-white/70 transition-colors">
-            Back to top
-          </Link>
-        </div>
 
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left: fields */}
-          <div className="lg:col-span-7 space-y-6">
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-white/40">Personal Information</div>
-              <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Name">
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="John Doe"
-                    className="input"
-                  />
-                </Field>
-                <Field label="Email">
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="john.doe@company.com"
-                    className="input"
-                  />
-                </Field>
+            {/* Ticket List */}
+            {recentTickets.length > 0 ? (
+              <div className="divide-y divide-white/[0.06]">
+                {recentTickets.map((ticket) => (
+                  <TicketRow key={ticket.id} ticket={ticket} />
+                ))}
               </div>
+            ) : (
+              <div className="p-8">
+                <EmptyState emoji="🎫" title="No tickets yet" desc="You haven&apos;t submitted any support tickets." />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================
+          CONTACT TAB
+          ========================================== */}
+      {activeTab === 'contact' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Form */}
+          <div className="lg:col-span-8 card p-6">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-white/90">Submit a Support Ticket</h2>
+              <p className="text-xs text-white/40 mt-1">We typically respond within 2-4 hours during business hours.</p>
             </div>
 
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wider text-white/40">Ticket Details</div>
-              <div className="mt-3 grid gap-4">
-                <Field label="Category">
-                  <select className="input" value={category} onChange={(e) => setCategory(e.target.value as any)}>
-                    <option>Bug</option>
-                    <option>Billing</option>
-                    <option>Account</option>
-                    <option>Other</option>
-                  </select>
-                </Field>
+            <div className="space-y-6">
+              {/* Contact Info */}
+              <div>
+                <div className="text-xs font-medium uppercase tracking-wider text-white/30 mb-3">Contact Information</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Your Name" required>
+                    <input value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" className="input" />
+                  </Field>
+                  <Field label="Email Address" required>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="john@company.com" className="input" />
+                  </Field>
+                </div>
+              </div>
 
-                <Field label="Title">
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Brief description of your issue"
-                    className="input"
-                  />
-                </Field>
-
-                <Field label="Message">
-                  <textarea
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Your message here... (minimum 10 characters)"
-                    className="w-full rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3 text-sm text-white/85 placeholder:text-white/30 outline-none focus:border-violet-500/50 focus:bg-white/[0.06] transition-all min-h-[160px] resize-none"
-                  />
-                  <div className="mt-2 flex items-center justify-between text-xs">
-                    <span className={cn(trimmedLen >= minChars ? 'text-white/40' : 'text-amber-300')}>
-                      {trimmedLen} / {minChars} characters (minimum)
-                    </span>
-                    <span className="text-white/30">UI-only</span>
+              {/* Ticket Details */}
+              <div>
+                <div className="text-xs font-medium uppercase tracking-wider text-white/30 mb-3">Ticket Details</div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Category" required>
+                      <select value={category} onChange={(e) => setCategory(e.target.value as typeof category)} className="input">
+                        <option value="bug">🐛 Bug Report</option>
+                        <option value="billing">💳 Billing Question</option>
+                        <option value="feature">💡 Feature Request</option>
+                        <option value="account">👤 Account Issue</option>
+                        <option value="other">📝 Other</option>
+                      </select>
+                    </Field>
+                    <Field label="Priority">
+                      <div className="flex gap-2">
+                        {(['low', 'medium', 'high'] as const).map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setPriority(p)}
+                            className={cn(
+                              'flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all capitalize',
+                              priority === p
+                                ? p === 'high'
+                                  ? 'bg-rose-500/20 border-rose-500/30 text-rose-400'
+                                  : p === 'medium'
+                                  ? 'bg-amber-500/20 border-amber-500/30 text-amber-400'
+                                  : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+                                : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:bg-white/[0.06]'
+                            )}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+                    </Field>
                   </div>
-                </Field>
-              </div>
-            </div>
-          </div>
 
-          {/* Right: attachments + submit */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="rounded-3xl bg-white/[0.02] border border-white/[0.06] p-5">
-              <div className="flex items-center gap-2">
-                <Paperclip className="w-4 h-4 text-white/60" aria-hidden="true" />
-                <div className="text-sm font-semibold text-white/85">Attachments (optional)</div>
-              </div>
-              <div className="text-xs text-white/50 mt-2">Choose files or drag and drop</div>
+                  <Field label="Subject" required>
+                    <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Brief description of your issue" className="input" />
+                  </Field>
 
-              <div className="mt-4 rounded-2xl border border-dashed border-white/[0.14] bg-white/[0.02] p-5 text-center">
-                <div className="text-sm text-white/70">Choose files or drag and drop</div>
-                <div className="text-xs text-white/40 mt-1">
-                  Images (PNG, JPG, WEBP), Videos (MP4, MOV), Audio (MP3, WAV), PDFs, CSVs
+                  <Field label="Message" required>
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Please describe your issue in detail. Include any relevant information like steps to reproduce, error messages, etc."
+                      className="input min-h-[160px] resize-none"
+                    />
+                    <div className="mt-2 flex items-center justify-between text-xs">
+                      <span className={cn(trimmedLen >= minChars ? 'text-white/40' : 'text-amber-400')}>
+                        {trimmedLen} / {minChars} characters minimum
+                      </span>
+                      {trimmedLen >= minChars && (
+                        <span className="text-emerald-400 flex items-center gap-1">
+                          <Check className="w-3 h-3" />
+                          Good
+                        </span>
+                      )}
+                    </div>
+                  </Field>
+                </div>
+              </div>
+
+              {/* Attachments */}
+              <div>
+                <div className="text-xs font-medium uppercase tracking-wider text-white/30 mb-3">Attachments (Optional)</div>
+
+                <div
+                  className="rounded-2xl border-2 border-dashed border-white/[0.1] bg-white/[0.02] p-6 text-center hover:border-violet-500/30 hover:bg-white/[0.03] transition-all cursor-pointer"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    className="hidden"
+                    multiple
+                    accept="image/*,video/*,audio/*,.pdf,.csv,.txt"
+                    onChange={handleFileChange}
+                  />
+                  <Upload className="w-8 h-8 text-white/30 mx-auto mb-3" />
+                  <div className="text-sm text-white/70">Drop files here or click to upload</div>
+                  <div className="text-xs text-white/40 mt-1">Images, videos, PDFs, or text files up to 10MB each</div>
                 </div>
 
-                <input
-                  ref={fileRef}
-                  type="file"
-                  className="hidden"
-                  multiple
-                  accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,audio/mpeg,audio/wav,application/pdf,text/csv"
-                />
-                <button type="button" className="btn-secondary mt-4 px-4 py-2.5 rounded-xl" onClick={() => fileRef.current?.click()}>
-                  Choose files (UI)
+                {files.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {files.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <FileText className="w-4 h-4 text-white/50 shrink-0" />
+                          <span className="text-sm text-white/70 truncate">{file.name}</span>
+                          <span className="text-xs text-white/40 shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
+                        </div>
+                        <button onClick={() => removeFile(index)} className="p-1 rounded-md hover:bg-white/[0.1] transition-colors">
+                          <X className="w-4 h-4 text-white/40" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Submit */}
+              <button
+                onClick={handleSubmit}
+                disabled={!canSubmit || isSubmitting}
+                className={cn(
+                  'btn-primary w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2',
+                  (!canSubmit || isSubmitting) && 'opacity-60 cursor-not-allowed'
+                )}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Submit Ticket
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-4 space-y-4">
+            {/* Quick Help */}
+            <div className="card p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-4 h-4 text-violet-400" />
+                <span className="text-sm font-semibold text-white/90">Need faster help?</span>
+              </div>
+
+              <div className="space-y-3">
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
+                  <span className="text-lg">✨</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-white/90">Ask Fixo AI</div>
+                    <div className="text-xs text-white/50">Get instant answers</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/30" />
+                </button>
+
+                <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
+                  <span className="text-lg">💬</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-white/90">Live Chat</div>
+                    <div className="text-xs text-emerald-400 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      Online now
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-white/30" />
                 </button>
               </div>
             </div>
 
-            <button
-              className={cn(
-                'btn-primary w-full px-4 py-3 rounded-xl inline-flex items-center justify-center gap-2',
-                !canSubmit && 'opacity-60 cursor-not-allowed'
-              )}
-              disabled={!canSubmit}
-              onClick={() => console.log('Submit Support Ticket (UI)')}
-            >
-              <Send className="w-4 h-4" aria-hidden="true" />
-              Submit Support Ticket
-            </button>
+            {/* Response Times */}
+            <div className="card p-5">
+              <div className="text-sm font-semibold text-white/90 mb-3">Average Response Times</div>
+              <div className="space-y-2">
+                <ResponseTime label="Live Chat" time="< 5 min" />
+                <ResponseTime label="Email / Ticket" time="2-4 hours" />
+                <ResponseTime label="Feature Requests" time="1-2 days" />
+              </div>
+            </div>
 
-            <div className="text-[11px] text-white/40">UI-only right now. Later this will create a support ticket and track status.</div>
+            {/* Contact Info */}
+            <div className="card p-5">
+              <div className="text-sm font-semibold text-white/90 mb-3">Other Ways to Reach Us</div>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-3 text-white/60">
+                  <MessageCircle className="w-4 h-4 text-white/40" />
+                  <span>support@fixology.io</span>
+                </div>
+                <div className="flex items-center gap-3 text-white/60">
+                  <Clock className="w-4 h-4 text-white/40" />
+                  <span>Mon-Fri, 9am-6pm CST</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </section>
-
-      <div className="text-xs text-white/40 flex items-center gap-2">
-        <Ticket className="w-3.5 h-3.5 text-white/40" aria-hidden="true" />
-        Create a ticket
-      </div>
+      )}
     </div>
   )
 }
 
-function SupportOptionCard({
-  icon,
+// ============================================
+// SUB-COMPONENTS
+// ============================================
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+    </svg>
+  )
+}
+
+function SupportCard({
+  emoji,
   title,
   desc,
   cta,
-  href,
-  tone,
+  variant,
+  badge,
 }: {
-  icon: React.ReactNode
+  emoji: string
   title: string
   desc: string
   cta: string
-  href?: string
-  tone: 'brand' | 'neutral'
+  variant: 'featured' | 'default'
+  badge?: string
 }) {
-  const inner = (
-    <>
-      <div className="flex items-center gap-3">
-        <div
-          className={cn(
-            'w-11 h-11 rounded-2xl border flex items-center justify-center',
-            tone === 'brand' ? 'bg-white/[0.04] border-violet-500/25 text-violet-200' : 'bg-white/[0.04] border-white/[0.06] text-white/70'
-          )}
-        >
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-white/90">{title}</div>
-          <div className="text-xs text-white/55 mt-0.5">{desc}</div>
-        </div>
-      </div>
-      <div className="mt-4">
-        <div className={cn('w-full h-10 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2', tone === 'brand' ? 'btn-primary' : 'btn-secondary')}>
-          {cta} <ArrowRight className="w-4 h-4" aria-hidden="true" />
-        </div>
-      </div>
-    </>
-  )
-
-  if (href) {
-    return (
-      <a
-        href={href}
-        className={cn(
-          'rounded-3xl border p-5 transition-all block',
-          tone === 'brand'
-            ? 'border-violet-500/25 bg-gradient-to-br from-violet-500/[0.12] to-fuchsia-500/[0.06]'
-            : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.10]'
-        )}
-      >
-        {inner}
-      </a>
-    )
-  }
-
   return (
     <div
       className={cn(
-        'rounded-3xl border p-5 transition-all',
-        tone === 'brand'
-          ? 'border-violet-500/25 bg-gradient-to-br from-violet-500/[0.12] to-fuchsia-500/[0.06]'
-          : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.10]'
+        'relative p-5 rounded-2xl border transition-all cursor-pointer group',
+        variant === 'featured'
+          ? 'bg-gradient-to-br from-violet-500/[0.12] to-fuchsia-500/[0.06] border-violet-500/25 hover:border-violet-500/40'
+          : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1]'
       )}
     >
-      {inner}
+      {badge && (
+        <span className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-medium">
+          {badge}
+        </span>
+      )}
+
+      <span className="text-3xl">{emoji}</span>
+      <h3 className="text-sm font-semibold text-white/90 mt-3">{title}</h3>
+      <p className="text-xs text-white/50 mt-1">{desc}</p>
+
+      <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-violet-400 group-hover:text-violet-300 transition-colors">
+        {cta}
+        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+      </div>
     </div>
   )
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function TopicCard({ topic }: { topic: { id: string; emoji: string; title: string; desc: string; articles: number } }) {
+  return (
+    <button className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all text-left group">
+      <div className="flex items-start gap-3">
+        <span className="text-2xl">{topic.emoji}</span>
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium text-white/90 group-hover:text-white transition-colors">{topic.title}</div>
+          <div className="text-xs text-white/50 mt-0.5">{topic.desc}</div>
+          <div className="text-xs text-white/30 mt-2">{topic.articles} articles</div>
+        </div>
+        <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all shrink-0" />
+      </div>
+    </button>
+  )
+}
+
+function FaqItem({
+  faq,
+  expanded,
+  onToggle,
+}: {
+  faq: { id: string; q: string; a: string }
+  expanded: boolean
+  onToggle: () => void
+}) {
+  return (
+    <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-white/[0.02] transition-colors"
+      >
+        <span className="text-sm font-medium text-white/90">{faq.q}</span>
+        <ChevronDown className={cn('w-4 h-4 text-white/40 shrink-0 transition-transform', expanded && 'rotate-180')} />
+      </button>
+      {expanded && (
+        <div className="px-4 pb-4">
+          <div className="text-sm text-white/60 leading-relaxed">{faq.a}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TicketStat({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="p-4 text-center">
+      <div className={cn('text-2xl font-semibold', color)}>{value}</div>
+      <div className="text-xs text-white/50 mt-1">{label}</div>
+    </div>
+  )
+}
+
+function TicketRow({ ticket }: { ticket: { id: string; title: string; status: string; created: string } }) {
+  const statusConfig: Record<string, { label: string; class: string }> = {
+    open: { label: 'Open', class: 'bg-amber-500/15 text-amber-400 border-amber-500/25' },
+    'in-progress': { label: 'In Progress', class: 'bg-blue-500/15 text-blue-400 border-blue-500/25' },
+    resolved: { label: 'Resolved', class: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' },
+  }
+
+  const status = statusConfig[ticket.status] || statusConfig.open
+
+  return (
+    <button className="w-full flex items-center justify-between gap-4 p-4 hover:bg-white/[0.02] transition-colors text-left">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono text-white/40">{ticket.id}</span>
+          <span className={cn('text-[11px] px-2 py-0.5 rounded-md border font-medium', status.class)}>{status.label}</span>
+        </div>
+        <div className="text-sm text-white/90 mt-1 truncate">{ticket.title}</div>
+        <div className="text-xs text-white/40 mt-1">{ticket.created}</div>
+      </div>
+      <ChevronRight className="w-4 h-4 text-white/30 shrink-0" />
+    </button>
+  )
+}
+
+function ResponseTime({ label, time }: { label: string; time: string }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
+      <span className="text-xs text-white/60">{label}</span>
+      <span className="text-xs font-medium text-white/80">{time}</span>
+    </div>
+  )
+}
+
+function EmptyState({ emoji, title, desc }: { emoji: string; title: string; desc: string }) {
+  return (
+    <div className="text-center py-12">
+      <span className="text-4xl">{emoji}</span>
+      <h3 className="text-sm font-medium text-white/80 mt-4">{title}</h3>
+      <p className="text-xs text-white/50 mt-1 max-w-sm mx-auto">{desc}</p>
+    </div>
+  )
+}
+
+function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-xs text-white/55">{label}</div>
-      <div className="mt-1">{children}</div>
+      <div className="text-xs text-white/60 mb-1.5">
+        {label}
+        {required && <span className="text-rose-400 ml-0.5">*</span>}
+      </div>
+      {children}
     </label>
   )
 }
