@@ -52,7 +52,7 @@ export function SupportClient() {
       {/* Hero */}
       <section className="pt-6">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl font-semibold text-white/95 tracking-tight">How can we help?</h1>
+          <h1 className="text-4xl font-semibold text-white/95 tracking-tight">How can we help you?</h1>
           <p className="text-sm text-white/50 mt-2">Choose how you&apos;d like to get support</p>
 
           <div className="mt-6 max-w-xl mx-auto">
