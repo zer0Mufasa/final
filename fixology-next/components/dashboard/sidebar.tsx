@@ -53,43 +53,44 @@ interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
+  emoji?: string
   badge?: number | string
 }
 
 const coreNavItems: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-  { label: 'Tickets', href: '/tickets', icon: <Ticket className="w-5 h-5" /> },
-  { label: 'Customers', href: '/customers', icon: <Users className="w-5 h-5" /> },
-  { label: 'Devices', href: '/devices', icon: <Smartphone className="w-5 h-5" /> },
-  { label: 'Inventory', href: '/inventory', icon: <Package className="w-5 h-5" /> },
-  { label: 'Diagnostics', href: '/diagnostics', icon: <Stethoscope className="w-5 h-5" /> },
+  { emoji: '📊', label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
+  { emoji: '🎫', label: 'Tickets', href: '/tickets', icon: <Ticket className="w-5 h-5" /> },
+  { emoji: '👥', label: 'Customers', href: '/customers', icon: <Users className="w-5 h-5" /> },
+  { emoji: '📱', label: 'Devices', href: '/devices', icon: <Smartphone className="w-5 h-5" /> },
+  { emoji: '📦', label: 'Inventory', href: '/inventory', icon: <Package className="w-5 h-5" /> },
+  { emoji: '🩺', label: 'Diagnostics', href: '/diagnostics', icon: <Stethoscope className="w-5 h-5" /> },
 ]
 
 const businessNavItems: NavItem[] = [
-  { label: 'Invoices', href: '/invoices', icon: <FileText className="w-5 h-5" /> },
-  { label: 'Payments', href: '/payments', icon: <CreditCard className="w-5 h-5" /> },
-  { label: 'Payouts', href: '/payouts', icon: <Banknote className="w-5 h-5" /> },
-  { label: 'Estimates', href: '/estimates', icon: <ClipboardList className="w-5 h-5" /> },
-  { label: 'Warranty & Returns', href: '/warranty', icon: <Shield className="w-5 h-5" /> },
+  { emoji: '🧾', label: 'Invoices', href: '/invoices', icon: <FileText className="w-5 h-5" /> },
+  { emoji: '💳', label: 'Payments', href: '/payments', icon: <CreditCard className="w-5 h-5" /> },
+  { emoji: '💸', label: 'Payouts', href: '/payouts', icon: <Banknote className="w-5 h-5" /> },
+  { emoji: '🧮', label: 'Estimates', href: '/estimates', icon: <ClipboardList className="w-5 h-5" /> },
+  { emoji: '🔄', label: 'Warranty & Returns', href: '/warranty', icon: <Shield className="w-5 h-5" /> },
 ]
 
 const intelligenceNavItems: NavItem[] = [
-  { label: 'Insights', href: '/insights', icon: <BarChart3 className="w-5 h-5" /> },
-  { label: 'Risk Monitor', href: '/risk-monitor', icon: <AlertTriangle className="w-5 h-5" /> },
-  { label: 'AI Activity Log', href: '/ai-activity', icon: <Brain className="w-5 h-5" /> },
+  { emoji: '📈', label: 'Insights', href: '/insights', icon: <BarChart3 className="w-5 h-5" /> },
+  { emoji: '⚠️', label: 'Risk Monitor', href: '/risk-monitor', icon: <AlertTriangle className="w-5 h-5" /> },
+  { emoji: '✨', label: 'AI Activity Log', href: '/ai-activity', icon: <Brain className="w-5 h-5" /> },
 ]
 
 const teamNavItems: NavItem[] = [
-  { label: 'Staff', href: '/staff', icon: <UserCheck className="w-5 h-5" /> },
-  { label: 'Time Tracking', href: '/time-tracking', icon: <Clock4 className="w-5 h-5" /> },
-  { label: 'Permissions', href: '/permissions', icon: <LockKeyhole className="w-5 h-5" /> },
+  { emoji: '👨‍🔧', label: 'Staff', href: '/staff', icon: <UserCheck className="w-5 h-5" /> },
+  { emoji: '⏱️', label: 'Time Tracking', href: '/time-tracking', icon: <Clock4 className="w-5 h-5" /> },
+  { emoji: '🔐', label: 'Permissions', href: '/permissions', icon: <LockKeyhole className="w-5 h-5" /> },
 ]
 
 const systemNavItems: NavItem[] = [
-  { label: 'Reports', href: '/reports', icon: <MonitorDot className="w-5 h-5" /> },
-  { label: 'Integrations', href: '/integrations', icon: <Plug className="w-5 h-5" /> },
-  { label: 'Settings', href: '/settings', icon: <Settings className="w-5 h-5" /> },
-  { label: 'Support', href: '/support', icon: <HelpCircle className="w-5 h-5" /> },
+  { emoji: '📑', label: 'Reports', href: '/reports', icon: <MonitorDot className="w-5 h-5" /> },
+  { emoji: '🔗', label: 'Integrations', href: '/integrations', icon: <Plug className="w-5 h-5" /> },
+  { emoji: '⚙️', label: 'Settings', href: '/settings', icon: <Settings className="w-5 h-5" /> },
+  { emoji: '💬', label: 'Support', href: '/support', icon: <HelpCircle className="w-5 h-5" /> },
 ]
 
 interface SidebarProps {
@@ -232,11 +233,15 @@ export function Sidebar({ user, shop }: SidebarProps) {
         {isActive && (
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-[#8B5CF6] shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
         )}
-        <span className={cn(
-          'flex-shrink-0 transition-transform group-hover:scale-105',
-          isActive ? 'text-[#A78BFA]' : 'text-white/50'
-        )}>
-          {item.icon}
+        <span
+          className={cn(
+            'flex-shrink-0 transition-transform group-hover:scale-105',
+            effectiveOpen ? 'text-base w-5 text-center' : 'text-lg',
+            isActive ? 'opacity-100' : 'opacity-90'
+          )}
+          aria-hidden="true"
+        >
+          {item.emoji || '•'}
         </span>
         {effectiveOpen && (
           <>
