@@ -150,7 +150,7 @@ export function TopBar({ user, shop }: TopBarProps) {
 
   return (
     <header className="sticky top-0 z-30">
-      <div className="bg-[#08080c]/85 border-b border-white/10 backdrop-blur-xl shadow-[0_12px_28px_rgba(0,0,0,0.45)]">
+      <div className="bg-[#07070a]/85 border-b border-white/10 backdrop-blur-xl shadow-[0_12px_28px_rgba(0,0,0,0.45)]">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-6">
           <div className="flex items-center justify-between gap-3 py-3">
             {/* Left: breadcrumbs + subtle context */}

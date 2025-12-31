@@ -200,13 +200,13 @@ export default function DashboardPage() {
   }, [queue])
 
   return (
-    <div className="min-h-screen bg-[#08080c] text-white">
+    <div className="min-h-screen bg-[#07070a] text-white">
       {/* ambient lavender glow */}
       <div
         className="pointer-events-none fixed inset-0 opacity-100"
         style={{
           background:
-            'radial-gradient(ellipse 80% 50% at 20% -10%, rgba(139,92,246,0.18), transparent 55%), radial-gradient(ellipse 60% 40% at 82% 90%, rgba(167,139,250,0.12), transparent 55%)',
+            'radial-gradient(ellipse 100% 80% at 0% 0%, rgba(139, 92, 246, 0.12), transparent 50%), radial-gradient(ellipse 80% 60% at 100% 100%, rgba(168, 85, 247, 0.08), transparent 50%)',
         }}
       />
 
@@ -215,7 +215,7 @@ export default function DashboardPage() {
         {/* MAIN (full-width, no sidebar) */}
         <main className="min-h-screen col-span-2">
           {/* TOPBAR / COMMAND BAR */}
-          <header className="sticky top-0 z-20 border-b border-white/10 bg-[#08080c]/85 backdrop-blur-xl">
+          <header className="sticky top-0 z-20 border-b border-white/10 bg-[#07070a]/85 backdrop-blur-xl">
             <div className="px-4 lg:px-8 py-3 flex items-center gap-3">
               {/* Breadcrumb */}
               <div className="hidden md:flex items-center gap-2 text-sm text-white/50">
@@ -294,16 +294,16 @@ export default function DashboardPage() {
             {/* Main grid: Timeline / Workbench / Money+Comms */}
             <div className="grid gap-4 mt-5 xl:grid-cols-[1.2fr_1.4fr_1fr]">
               {/* TIMELINE */}
-              <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl overflow-hidden">
+              <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl overflow-hidden">
                 <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
                   <div>
                     <div className="text-sm font-semibold text-white/90">Timeline</div>
                     <div className="text-xs text-white/50">Overdue → Due soon → Normal</div>
                   </div>
                   <div className="hidden sm:flex items-center gap-2 text-xs text-white/50">
-                    <Chip muted className="border-white/10 bg-white/5 text-white/70">Today</Chip>
-                    <Chip muted className="border-white/10 bg-white/5 text-white/70">Overdue</Chip>
-                    <Chip muted className="border-white/10 bg-white/5 text-white/70">Upcoming</Chip>
+                    <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">Today</Chip>
+                    <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">Overdue</Chip>
+                    <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">Upcoming</Chip>
                   </div>
                 </div>
                 <div className="divide-y divide-white/10">
@@ -314,19 +314,19 @@ export default function DashboardPage() {
               </section>
 
               {/* WORKBENCH */}
-              <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 space-y-4">
+              <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5 space-y-4">
                 <SectionTitle title="Workbench" hint="Current ticket focus." />
                 {selected ? (
                   <div className="space-y-4">
                     <div className="flex items-start gap-4">
-                      <div className="h-14 w-14 rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center text-sm font-semibold text-[#C4B5FD]">
+                      <div className="h-14 w-14 rounded-2xl border border-white/[0.08] bg-white/[0.02] flex items-center justify-center text-sm font-semibold text-[#C4B5FD]">
                         {selected.device.split(' ')[0]}
                       </div>
                       <div className="min-w-0 space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <div className="text-lg font-semibold text-white/90">{selected.customer}</div>
-                          <Chip muted className="border-white/10 bg-white/5 text-white/70">{selected.device}</Chip>
-                          <Chip muted className="border-white/10 bg-white/5 text-white/70">{selected.stage}</Chip>
+                          <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">{selected.device}</Chip>
+                          <Chip muted className="border-white/[0.08] bg-white/[0.04] text-white/70">{selected.stage}</Chip>
                         </div>
                         <div className="text-sm text-white/60">Issue: {selected.issue}</div>
                         <div className="text-sm text-white/50">Tech {selected.tech} • {selected.due}</div>
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                       </ul>
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
                       <div className="text-sm font-semibold text-white/85 mb-1">Latest note</div>
                       <div className="text-sm text-white/60">“Customer approved estimate, wants ready by tonight.”</div>
                     </div>
@@ -360,7 +360,7 @@ export default function DashboardPage() {
 
               {/* MONEY + COMMS */}
               <aside className="space-y-4">
-                <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+                <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5">
                   <SectionTitle title="Payment snapshot" />
                   <div className="space-y-1 mt-2 text-sm text-white/70">
                     <div className="flex items-center justify-between">
@@ -381,11 +381,11 @@ export default function DashboardPage() {
                   </SoftButton>
                 </section>
 
-                <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+                <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5">
                   <SectionTitle title="Customer comms" />
                   <div className="mt-2 space-y-2">
                     <textarea
-                      className="w-full min-h-[90px] rounded-2xl border border-white/10 bg-white/5 px-3 py-3 text-sm text-white placeholder:text-white/40 outline-none focus:border-[#8B5CF6]/45 focus:ring-2 focus:ring-[#8B5CF6]/20"
+                      className="w-full min-h-[90px] rounded-2xl border border-white/[0.06] bg-white/[0.04] px-3 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-violet-500/40 focus:bg-white/[0.06] focus:ring-2 focus:ring-violet-500/20"
                       placeholder="Type a quick update to the customer…"
                     />
                     <div className="flex items-center gap-2">
@@ -399,7 +399,7 @@ export default function DashboardPage() {
                   </div>
                 </section>
 
-                <section className="rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
+                <section className="rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl p-5">
                   <SectionTitle title="Signals" />
                   <div className="mt-3 space-y-2 text-sm text-white/70">
                     <SignalRow label="Overdue" value={`${grouped.overdue.length}`} tone="danger" />

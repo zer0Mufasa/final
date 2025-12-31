@@ -1,14 +1,14 @@
 export const theme = {
   colors: {
     // Dark Lavender (premium, calm)
-    bgRoot: '#08080c', // page
-    bgCanvas: '#0a0a0f', // elevated (sidebar/modals)
-    bgAlt: '#0d0d14', // inputs/alt surfaces
+    bgRoot: '#07070a', // page
+    bgCanvas: '#0a0a0e', // elevated (sidebar/modals)
+    bgAlt: '#0d0d12', // inputs/alt surfaces
     // Back-compat keys
-    bgBase: '#08080c',
-    bgDeep: '#0a0a0f',
+    bgBase: '#07070a',
+    bgDeep: '#0a0a0e',
     bgOverlay:
-      'radial-gradient(ellipse 80% 50% at 18% 10%, rgba(139,92,246,0.15), transparent 55%), radial-gradient(ellipse 70% 40% at 80% 85%, rgba(167,139,250,0.12), transparent 55%), linear-gradient(180deg, #08080c 0%, #0a0a10 100%)',
+      'radial-gradient(ellipse 100% 80% at 0% 0%, rgba(139,92,246,0.12), transparent 50%), radial-gradient(ellipse 80% 60% at 100% 100%, rgba(168,85,247,0.08), transparent 50%), linear-gradient(180deg, #07070a 0%, #0a0a0e 100%)',
 
     // Surfaces
     surface: 'rgba(255,255,255,0.02)',

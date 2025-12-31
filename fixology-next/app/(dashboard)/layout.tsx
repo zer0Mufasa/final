@@ -17,11 +17,11 @@ html{scroll-behavior:smooth}
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
-body{background:#08080c;min-height:100vh;overflow-x:hidden;color:rgba(255,255,255,0.9)}
+body{background:#07070a;min-height:100vh;overflow-x:hidden;color:rgba(255,255,255,0.9)}
 .bg-structure{position:fixed;top:0;left:0;right:0;bottom:0;background:
-  radial-gradient(ellipse 80% 50% at 18% 10%, rgba(139,92,246,0.15), transparent 55%),
-  radial-gradient(ellipse 70% 40% at 80% 85%, rgba(167,139,250,0.12), transparent 55%),
-  linear-gradient(180deg, #08080c 0%, #0a0a10 100%);z-index:-1}
+  radial-gradient(ellipse 100% 80% at 0% 0%, rgba(139, 92, 246, 0.12), transparent 50%),
+  radial-gradient(ellipse 80% 60% at 100% 100%, rgba(168, 85, 247, 0.08), transparent 50%),
+  linear-gradient(180deg, #07070a 0%, #0a0a0e 100%);z-index:-1}
 .bg-grid{position:absolute;top:0;left:0;right:0;bottom:0;background:none;z-index:-1}
 .vertical-rail{display:none}
 .glow-spot{position:absolute;width:540px;height:540px;background:radial-gradient(circle,rgba(139,92,246,0.12) 0%,transparent 70%);filter:blur(90px);pointer-events:none;z-index:0}

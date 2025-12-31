@@ -269,7 +269,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
         ref={sidebarRef}
         className={cn(
           'fixed left-0 top-0 h-screen',
-          'bg-[#0a0a0f]/90 backdrop-blur-xl',
+          'bg-[#0a0a0e]/90 backdrop-blur-xl',
           'border-r border-white/10 shadow-[0_12px_28px_rgba(0,0,0,0.45)]',
           'flex flex-col transition-all duration-300 ease-out z-40',
           effectiveOpen ? 'w-64' : 'w-[72px]'

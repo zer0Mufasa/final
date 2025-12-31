@@ -5,16 +5,17 @@
 @layer base {
   :root {
     /* Backgrounds */
-    --bg-primary: 10 10 15;        /* #0a0a0f */
-    --bg-secondary: 18 18 26;      /* #12121a */
-    --bg-tertiary: 22 22 31;       /* #16161f */
-    --bg-card: 22 22 31;           /* #16161f */
-    --bg-card-hover: 26 26 36;     /* #1a1a24 */
+    --bg-primary: 7 7 10;          /* #07070a (page) */
+    --bg-secondary: 10 10 14;      /* #0a0a0e (sidebar/elevated) */
+    --bg-tertiary: 13 13 18;       /* #0d0d12 (surface/input) */
+    --bg-card: 13 13 18;           /* #0d0d12 (fallback) */
+    --bg-card-hover: 13 13 18;     /* #0d0d12 (fallback) */
     
     /* Text */
-    --text-primary: 250 250 250;   /* #fafafa */
-    --text-secondary: 161 161 170; /* #a1a1aa */
-    --text-muted: 113 113 122;     /* #71717a */
+    --text-primary: 255 255 255 / 0.95;   /* headings */
+    --text-secondary: 255 255 255 / 0.70; /* body */
+    --text-tertiary: 255 255 255 / 0.50;  /* labels */
+    --text-muted: 255 255 255 / 0.30;     /* hints */
     
     /* Brand - Purple/Lavender */
     --accent-primary: 139 92 246;  /* #8b5cf6 */
@@ -29,7 +30,8 @@
     
     /* Borders */
     --border-subtle: 255 255 255 / 0.06;
-    --border-hover: 255 255 255 / 0.1;
+    --border-hover: 255 255 255 / 0.10;
+    --border-strong: 255 255 255 / 0.15;
     
     /* Radius */
     --radius-sm: 8px;
@@ -103,13 +105,14 @@
 @layer components {
   /* Glass Card */
   .glass-card {
-    @apply bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))] rounded-[var(--radius-xl)] p-6;
-    @apply transition-all duration-300 ease-out;
+    @apply rounded-[var(--radius-xl)] p-6;
+    @apply bg-white/[0.02] border border-white/[0.06];
+    @apply transition-all duration-200 ease-out;
   }
   
   .glass-card:hover {
-    @apply border-[rgb(var(--border-hover))] transform -translate-y-1;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    @apply bg-white/[0.04] border-white/[0.10];
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
   }
   
   /* Gradient Icons */
@@ -133,8 +136,8 @@
     @apply text-sm font-semibold text-white;
     @apply transition-all duration-300 ease-out;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    background: linear-gradient(90deg, #7c3aed 0%, #c026d3 100%);
+    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25);
   }
   
   .btn-primary:hover:not(:disabled) {
@@ -150,32 +153,32 @@
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl;
     @apply text-sm font-semibold;
-    @apply bg-white/5 border border-[rgb(var(--border-subtle))] text-[rgb(var(--text-secondary))];
+    @apply bg-white/[0.04] border border-white/[0.08] text-white/70;
     @apply transition-all duration-300 ease-out;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-secondary:hover:not(:disabled) {
-    @apply bg-white/10 border-[rgb(var(--border-hover))] text-[rgb(var(--text-primary))];
+    @apply bg-white/[0.06] border-white/[0.10] text-white/90;
   }
 
   /* Ghost Button */
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg;
-    @apply text-sm font-medium text-[rgb(var(--text-secondary))];
+    @apply text-sm font-medium text-white/70;
     @apply transition-all duration-200 ease-out;
-    @apply hover:bg-white/5 hover:text-[rgb(var(--text-primary))];
+    @apply hover:bg-white/[0.04] hover:text-white/90;
   }
   
   /* Sidebar Item */
   .sidebar-item {
     @apply flex items-center gap-3 px-4 py-3 rounded-xl;
-    @apply text-[rgb(var(--text-secondary))] text-sm font-medium;
+    @apply text-white/70 text-sm font-medium;
     @apply transition-all duration-200 ease-out cursor-pointer;
   }
   
   .sidebar-item:hover {
-    @apply bg-white/5 text-[rgb(var(--text-primary))];
+    @apply bg-white/[0.04] text-white/90;
   }
   
   .sidebar-item.active {
@@ -186,11 +189,11 @@
   /* Input */
   .input {
     @apply w-full px-4 py-3 rounded-xl;
-    @apply bg-[rgb(var(--bg-tertiary))] border border-[rgb(var(--border-subtle))];
-    @apply text-[rgb(var(--text-primary))] placeholder:text-[rgb(var(--text-muted))];
+    @apply bg-white/[0.04] border border-white/[0.06];
+    @apply text-white placeholder:text-white/30;
     @apply transition-all duration-200 ease-out;
-    @apply focus:outline-none focus:border-[rgb(var(--accent-primary))];
-    @apply focus:ring-2 focus:ring-[rgb(var(--accent-primary))]/20;
+    @apply focus:outline-none focus:border-violet-500/40 focus:bg-white/[0.06];
+    @apply focus:ring-2 focus:ring-violet-500/20;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
