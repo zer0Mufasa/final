@@ -17,16 +17,14 @@ html{scroll-behavior:smooth}
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
-body{background:#F7F6FB;min-height:100vh;overflow-x:hidden;color:#1F1E2E}
+body{background:#08080c;min-height:100vh;overflow-x:hidden;color:rgba(255,255,255,0.9)}
 .bg-structure{position:fixed;top:0;left:0;right:0;bottom:0;background:
-  radial-gradient(circle at 18% 18%, rgba(139,124,246,0.10), transparent 40%),
-  radial-gradient(circle at 82% 8%, rgba(139,124,246,0.06), transparent 38%),
-  linear-gradient(180deg, #F7F6FB 0%, #FFFFFF 100%);z-index:-1}
+  radial-gradient(ellipse 80% 50% at 18% 10%, rgba(139,92,246,0.15), transparent 55%),
+  radial-gradient(ellipse 70% 40% at 80% 85%, rgba(167,139,250,0.12), transparent 55%),
+  linear-gradient(180deg, #08080c 0%, #0a0a10 100%);z-index:-1}
 .bg-grid{position:absolute;top:0;left:0;right:0;bottom:0;background:none;z-index:-1}
-.vertical-rail{position:fixed;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,rgba(139,124,246,0.12),transparent);z-index:1;pointer-events:none}
-.vertical-rail.left{left:clamp(16px, 4vw, 72px)}
-.vertical-rail.right{right:clamp(16px, 4vw, 72px)}
-.glow-spot{position:absolute;width:540px;height:540px;background:radial-gradient(circle,rgba(185,166,255,0.12) 0%,transparent 70%);filter:blur(90px);pointer-events:none;z-index:0}
+.vertical-rail{display:none}
+.glow-spot{position:absolute;width:540px;height:540px;background:radial-gradient(circle,rgba(139,92,246,0.12) 0%,transparent 70%);filter:blur(90px);pointer-events:none;z-index:0}
 .dash-shell{min-height:100vh;position:relative}
 .dash-main{min-height:100vh;padding-left:0;transition:padding-left 0.3s ease-out}
 @media (max-width: 1024px){.dash-main{padding-left:0}

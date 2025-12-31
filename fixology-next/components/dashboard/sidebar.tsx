@@ -221,20 +221,20 @@ export function Sidebar({ user, shop }: SidebarProps) {
         href={item.href}
         className={cn(
           'relative flex items-center gap-3 px-4 py-3 rounded-[10px]',
-          'text-[#374151] text-sm font-medium',
+          'text-white/60 text-sm font-medium',
           'transition-all duration-200 ease-out cursor-pointer',
-          'hover:bg-[rgba(139,124,246,0.08)] hover:text-[#111827]',
-          isActive && 'bg-[rgba(139,124,246,0.12)] text-[#111827]',
+          'hover:bg-white/[0.04] hover:text-white',
+          isActive && 'bg-white/[0.06] text-white',
           !effectiveOpen && 'justify-center px-3'
         )}
       >
         {/* Active indicator glow pill */}
         {isActive && (
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-[#8B7CF6] shadow-[0_0_10px_rgba(139,124,246,0.4)]" />
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-[#8B5CF6] shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
         )}
         <span className={cn(
           'flex-shrink-0 transition-transform group-hover:scale-105',
-          isActive ? 'text-[#8B7CF6]' : 'text-[#6b7280]'
+          isActive ? 'text-[#A78BFA]' : 'text-white/50'
         )}>
           {item.icon}
         </span>
@@ -242,7 +242,7 @@ export function Sidebar({ user, shop }: SidebarProps) {
           <>
             <span className="flex-1">{item.label}</span>
             {item.badge && (
-              <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 text-[10px] font-semibold">
+              <span className="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-200 text-[10px] font-semibold">
                 {item.badge}
               </span>
             )}
@@ -264,15 +264,15 @@ export function Sidebar({ user, shop }: SidebarProps) {
         ref={sidebarRef}
         className={cn(
           'fixed left-0 top-0 h-screen',
-          'bg-[#ffffff] backdrop-blur-xl',
-          'border-r border-[rgba(30,30,60,0.08)] shadow-[0_12px_28px_rgba(15,16,32,0.08)]',
+          'bg-[#0a0a0f]/90 backdrop-blur-xl',
+          'border-r border-white/10 shadow-[0_12px_28px_rgba(0,0,0,0.45)]',
           'flex flex-col transition-all duration-300 ease-out z-40',
           effectiveOpen ? 'w-64' : 'w-[72px]'
         )}
       >
         {/* Logo + Toggle */}
         <div className={cn(
-          'flex items-center justify-between h-16 border-b border-[rgba(30,30,60,0.08)] w-full',
+          'flex items-center justify-between h-16 border-b border-white/10 w-full',
           effectiveOpen ? 'px-4' : 'px-0'
         )}>
           <div className={cn(
@@ -280,10 +280,10 @@ export function Sidebar({ user, shop }: SidebarProps) {
             effectiveOpen ? 'gap-3' : 'justify-center flex-1'
           )}>
             {effectiveOpen ? (
-              <FixologyLogo size="lg" animate={true} className="tracking-tight text-[#111827]" />
+              <FixologyLogo size="lg" animate={true} className="tracking-tight text-white" />
             ) : (
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#e0e7ff] to-[#f3e8ff] border border-[rgba(139,124,246,0.35)] flex items-center justify-center">
-                <ReticleIcon size="lg" color="purple" variant="idle" className="opacity-95 scale-[1.08]" />
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#D946EF] border border-[#8B5CF6]/40 flex items-center justify-center shadow-lg shadow-[#8B5CF6]/35">
+                <ReticleIcon size="lg" color="purple" variant="idle" className="opacity-95 scale-[1.08] text-white" />
               </div>
             )}
           </div>
