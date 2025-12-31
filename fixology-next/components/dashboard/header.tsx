@@ -168,12 +168,6 @@ export function Header({ shopName, location, user, title, description, actions }
             </>
           ) : (
             <>
-              {/* Keyboard shortcut hint */}
-              <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-                <kbd className="text-xs text-white/50 font-mono">⌘</kbd>
-                <kbd className="text-xs text-white/50 font-mono">K</kbd>
-              </div>
-
               {/* Notifications */}
               <button className="relative p-3 rounded-xl text-white/60 hover:text-white hover:bg-white/5 transition-all group">
                 <Bell className="w-5 h-5" />

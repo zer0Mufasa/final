@@ -204,10 +204,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             className="flex-1 bg-transparent text-white placeholder:text-white/40 text-lg font-medium outline-none"
             autoFocus
           />
-          <kbd className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white/50 font-mono">
-            <kbd className="px-1 py-0.5 rounded bg-white/10">⌘</kbd>
-            <kbd className="px-1 py-0.5 rounded bg-white/10">K</kbd>
-          </kbd>
+          <div className="hidden sm:flex items-center px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white/50">
+            Cmd/Ctrl+K
+          </div>
         </div>
 
         {/* Commands list */}

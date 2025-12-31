@@ -178,10 +178,6 @@ export function TopBar({ user, shop }: TopBarProps) {
               >
                 <Search className="w-4 h-4 text-white/40 flex-shrink-0" aria-hidden="true" />
                 <span className="flex-1">Search ticket #, phone, IMEI, device…</span>
-                <kbd className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.04] border border-white/10 text-xs text-white/40 font-mono">
-                  <kbd className="px-1 py-0.5 rounded bg-white/[0.04] border border-white/10">⌘</kbd>
-                  <kbd className="px-1 py-0.5 rounded bg-white/[0.04] border border-white/10">K</kbd>
-                </kbd>
               </button>
             </div>
 

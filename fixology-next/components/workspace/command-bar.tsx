@@ -38,7 +38,7 @@ export function CommandBar({
           className={cn(
             'w-full rounded-xl bg-white/[0.05] border border-white/10 pl-10 pr-3 py-2 text-sm text-white/85 placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40'
           )}
-          placeholder='Search or jump (⌘K)…'
+          placeholder='Search or jump…'
         />
       </div>
 
@@ -48,11 +48,6 @@ export function CommandBar({
       </div>
 
       {actions}
-
-      <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-xs text-white/60">
-        <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-[11px]">⌘</kbd>
-        <kbd className="px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-[11px]">K</kbd>
-      </div>
 
       <button className="hidden md:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-xs text-white/75">
         Quick actions
