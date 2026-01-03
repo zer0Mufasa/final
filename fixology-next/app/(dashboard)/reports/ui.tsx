@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/dashboard/ui/page-header'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { StatCard } from '@/components/dashboard/ui/stat-card'
-import { ArrowRight, BarChart3, Clock, Package, Ticket, Users } from 'lucide-react'
+import { ArrowRight, BarChart3, Clock, Package, Ticket, Users, Calendar as CalendarIcon, Activity as ActivityIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Area,
@@ -25,6 +25,10 @@ import {
 export function ReportsClient() {
   const [loading, setLoading] = useState(true)
   const [animationReady, setAnimationReady] = useState(false)
+  const [activity, setActivity] = useState<
+    Array<{ id: string; userId: string; userName?: string; type: string; timestamp: string }>
+  >([])
+  const [loadingActivity, setLoadingActivity] = useState(true)
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -32,6 +36,29 @@ export function ReportsClient() {
       setTimeout(() => setAnimationReady(true), 100)
     }, 650)
     return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      try {
+        setLoadingActivity(true)
+        const res = await fetch('/api/activity', { cache: 'no-store' })
+        if (!res.ok) throw new Error('Failed to load activity')
+        const data = await res.json()
+        if (!cancelled && Array.isArray(data.events)) {
+          setActivity(data.events)
+        }
+      } catch (e) {
+        if (!cancelled) setActivity([])
+      } finally {
+        if (!cancelled) setLoadingActivity(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const ticketVolume = useMemo(
@@ -81,6 +108,19 @@ export function ReportsClient() {
 
   const cn = (...classes: (string | boolean | undefined | null)[]) => classes.filter(Boolean).join(' ')
 
+  const activityByDate = useMemo(() => {
+    const map: Record<string, { date: string; items: typeof activity }> = {}
+    for (const ev of activity) {
+      const d = new Date(ev.timestamp)
+      const key = d.toISOString().slice(0, 10)
+      if (!map[key]) map[key] = { date: key, items: [] as any }
+      map[key].items.push(ev)
+    }
+    return Object.values(map)
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .slice(0, 14)
+  }, [activity])
+
   return (
     <div className="space-y-6 animate-page-in">
       <div className={cn(
@@ -127,6 +167,114 @@ export function ReportsClient() {
             <StatCard label="Avg turnaround" value="4.1h" hint="Target < 5h" icon={<Clock className="w-5 h-5" />} />
             <StatCard label="Customers served" value="61" hint="Repeat rate 42%" icon={<Users className="w-5 h-5" />} />
             <StatCard label="Parts used" value="59" hint="Low stock 3 items" icon={<Package className="w-5 h-5" />} />
+          </div>
+
+          {/* Workforce activity */}
+          <div className="grid gap-4 mt-4 lg:grid-cols-3">
+            <GlassCard className="rounded-3xl p-0 overflow-hidden lg:col-span-2">
+              <div className="px-6 py-5 border-b border-[var(--border-default)] flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">Workforce activity</div>
+                  <div className="text-xs text-[var(--text-muted)] mt-1">Shop open/close and clock events per user.</div>
+                </div>
+                <div className="badge bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]">
+                  Last {activityByDate.length} days
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-wide text-[var(--text-faint)] border-b border-white/[0.06]">
+                      <th className="px-5 py-3">User</th>
+                      <th className="px-5 py-3">Action</th>
+                      <th className="px-5 py-3">When</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(loadingActivity ? [] : activity).slice(0, 15).map((ev) => {
+                      const date = new Date(ev.timestamp)
+                      const action =
+                        ev.type === 'shop_open' ? 'Opened shop' :
+                        ev.type === 'shop_close' ? 'Closed shop' :
+                        ev.type === 'clock_in' ? 'Clocked in' :
+                        ev.type === 'clock_out' ? 'Clocked out' :
+                        ev.type
+                      return (
+                        <tr key={ev.id} className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors">
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-500/40 border border-purple-500/30 flex items-center justify-center text-xs font-semibold text-purple-100">
+                                {(ev.userName || 'U').slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-[var(--text-primary)]">{ev.userName || 'User'}</div>
+                                <div className="text-xs text-[var(--text-muted)]">#{ev.userId?.slice(0, 4) ?? '—'}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3">
+                            <span className="text-sm text-[var(--text-primary)] capitalize">{action}</span>
+                          </td>
+                          <td className="px-5 py-3 text-sm text-[var(--text-secondary)]">
+                            {date.toLocaleDateString()} • {date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                    {!loadingActivity && activity.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="px-5 py-4 text-sm text-[var(--text-muted)]">
+                          No activity yet.
+                        </td>
+                      </tr>
+                    )}
+                    {loadingActivity && (
+                      <tr>
+                        <td colSpan={3} className="px-5 py-4 text-sm text-[var(--text-muted)]">
+                          Loading activity...
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="rounded-3xl p-0 overflow-hidden">
+              <div className="px-6 py-5 border-b border-[var(--border-default)] flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-purple-400" />
+                <div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">Activity calendar</div>
+                  <div className="text-xs text-[var(--text-muted)] mt-1">Heat by day for shop open/close and clock events.</div>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {activityByDate.map((day) => {
+                    const label = new Date(day.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+                    return (
+                      <div key={day.date} className="rounded-2xl bg-white/[0.03] border border-white/10 p-3">
+                        <div className="text-xs text-[var(--text-muted)]">{label}</div>
+                        <div className="text-lg font-semibold text-[var(--text-primary)] mt-1">{day.items.length}</div>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {day.items.slice(0, 4).map((ev) => (
+                            <span key={ev.id} className="px-2 py-1 rounded-full text-[10px] font-semibold bg-white/5 border border-white/10 text-[var(--text-secondary)] capitalize">
+                              {ev.type.replace('_', ' ')}
+                            </span>
+                          ))}
+                          {day.items.length > 4 && (
+                            <span className="text-[10px] text-[var(--text-muted)]">+{day.items.length - 4} more</span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                  {activityByDate.length === 0 && (
+                    <div className="text-xs text-[var(--text-muted)]">No activity yet.</div>
+                  )}
+                </div>
+              </div>
+            </GlassCard>
           </div>
 
           <div className="grid gap-4 mt-4 lg:grid-cols-4">
