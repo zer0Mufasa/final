@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { PageHeader } from '@/components/dashboard/ui/page-header'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Skeleton } from '@/components/dashboard/ui/skeleton'
@@ -29,6 +29,7 @@ export function ReportsClient() {
     Array<{ id: string; userId: string; userName?: string; type: string; timestamp: string }>
   >([])
   const [loadingActivity, setLoadingActivity] = useState(true)
+  const activityTimer = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -56,8 +57,11 @@ export function ReportsClient() {
       }
     }
     load()
+    // Poll every 15 seconds to keep activity live
+    activityTimer.current = setInterval(load, 15000)
     return () => {
       cancelled = true
+      if (activityTimer.current) clearInterval(activityTimer.current)
     }
   }, [])
 
@@ -177,8 +181,23 @@ export function ReportsClient() {
                   <div className="text-sm font-semibold text-[var(--text-primary)]">Workforce activity</div>
                   <div className="text-xs text-[var(--text-muted)] mt-1">Shop open/close and clock events per user.</div>
                 </div>
-                <div className="badge bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]">
-                  Last {activityByDate.length} days
+                <div className="flex items-center gap-2">
+                  <div className="badge bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]">
+                    Auto-refreshing
+                  </div>
+                  <button
+                    onClick={() => {
+                      // force refresh
+                      setLoadingActivity(true)
+                      fetch('/api/activity', { cache: 'no-store' })
+                        .then((res) => res.json())
+                        .then((data) => Array.isArray(data.events) && setActivity(data.events))
+                        .finally(() => setLoadingActivity(false))
+                    }}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[var(--text-secondary)] hover:bg-white/10 transition-colors"
+                  >
+                    Refresh
+                  </button>
                 </div>
               </div>
               <div className="overflow-x-auto">
