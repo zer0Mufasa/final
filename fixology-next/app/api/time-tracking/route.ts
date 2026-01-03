@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
   const dateFrom = searchParams.get('from')
   const dateTo = searchParams.get('to')
   const userId = searchParams.get('userId')
+  const range = searchParams.get('range')
 
   try {
     // Get all shop user IDs first
@@ -31,11 +32,24 @@ export async function GET(request: NextRequest) {
 
     const shopUserIds = shopUsers.map((u) => u.id)
 
+    // derive from range
+    let rangeFrom: Date | undefined
+    if (range === 'week') {
+      const d = new Date()
+      d.setDate(d.getDate() - 7)
+      rangeFrom = d
+    } else if (range === 'month') {
+      const d = new Date()
+      d.setDate(d.getDate() - 30)
+      rangeFrom = d
+    }
+
     const entries = await prisma.timeEntry.findMany({
       where: {
+        shopId: context.shopId,
         userId: userId || { in: shopUserIds },
         clockIn: {
-          ...(dateFrom ? { gte: new Date(dateFrom) } : {}),
+          ...(dateFrom ? { gte: new Date(dateFrom) } : rangeFrom ? { gte: rangeFrom } : {}),
           ...(dateTo ? { lte: new Date(dateTo) } : {}),
         },
       },
@@ -43,7 +57,7 @@ export async function GET(request: NextRequest) {
         user: { select: { id: true, name: true } },
       },
       orderBy: { clockIn: 'desc' },
-      take: 100,
+      take: 500,
     })
 
     const uiEntries = entries.map((e) => {
@@ -54,12 +68,16 @@ export async function GET(request: NextRequest) {
       return {
         id: e.id,
         userId: e.userId,
+        odisId: e.userId,
         userName: e.user.name,
+        staffName: e.user.name,
         clockIn: e.clockIn.toISOString(),
         clockOut: e.clockOut?.toISOString() || null,
         durationMinutes: duration,
         breakMinutes: e.breakMinutes,
         notes: e.notes,
+        openedShop: e.openedShop,
+        closedShop: e.closedShop,
         status: e.clockOut ? 'completed' : 'active',
       }
     })
@@ -71,6 +89,8 @@ export async function GET(request: NextRequest) {
     const todayEntries = uiEntries.filter((e) => new Date(e.clockIn) >= today)
     const totalMinutesToday = todayEntries.reduce((sum, e) => sum + (e.durationMinutes || 0), 0)
     const activeTimers = todayEntries.filter((e) => e.status === 'active').length
+    const totalMinutesAll = uiEntries.reduce((sum, e) => sum + (e.durationMinutes || 0), 0)
+    const distinctDays = new Set(uiEntries.map((e) => e.clockIn.slice(0, 10))).size
 
     return NextResponse.json({
       entries: uiEntries,
@@ -78,6 +98,9 @@ export async function GET(request: NextRequest) {
         totalHoursToday: Math.round((totalMinutesToday / 60) * 10) / 10,
         activeTimers,
         entriesCount: uiEntries.length,
+        totalHours: Math.round((totalMinutesAll / 60) * 10) / 10,
+        avgHoursPerDay: distinctDays > 0 ? Math.round((totalMinutesAll / 60 / distinctDays) * 10) / 10 : 0,
+        daysWorked: distinctDays,
       },
     })
   } catch (error: any) {
@@ -114,11 +137,14 @@ export async function POST(request: NextRequest) {
 
     const entry = await prisma.timeEntry.create({
       data: {
+        shopId: context.shopId,
         userId: data.userId || context.user.id,
         clockIn: new Date(data.clockIn),
         clockOut: data.clockOut ? new Date(data.clockOut) : null,
         breakMinutes: data.breakMinutes,
         notes: data.notes,
+        openedShop: false,
+        closedShop: false,
       },
     })
 
