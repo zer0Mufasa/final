@@ -27,10 +27,10 @@ export function AuditClient() {
 
       {/* Filters */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="inline-flex items-center gap-2 rounded-2xl bg-white/[0.04] border border-white/10 px-3 py-2">
-          <Filter className="w-4 h-4 text-white/45" />
+        <div className="inline-flex items-center gap-2 rounded-2xl bg-white/[0.04] border border-[var(--border-default)] px-3 py-2">
+          <Filter className="w-4 h-4 text-[var(--text-primary)]/45" />
           <select
-            className="bg-transparent text-sm text-white/75 outline-none"
+            className="bg-transparent text-sm text-[var(--text-primary)]/75 outline-none"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
@@ -57,14 +57,14 @@ export function AuditClient() {
         ) : (
           <div className="space-y-3">
             {mockLogs.map((log) => (
-              <div key={log.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
+              <div key={log.id} className="rounded-2xl bg-white/[0.03] border border-[var(--border-default)] p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-sm font-semibold text-white/90">{log.action}</div>
-                  <div className="text-xs text-white/50">{log.time}</div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">{log.action}</div>
+                  <div className="text-xs text-[var(--text-muted)]">{log.time}</div>
                 </div>
-                <div className="text-sm text-white/70">{log.user} • {log.ticket}</div>
+                <div className="text-sm text-[var(--text-secondary)]">{log.user} • {log.ticket}</div>
                 {log.from && log.to && (
-                  <div className="text-xs text-white/50 mt-1">
+                  <div className="text-xs text-[var(--text-muted)] mt-1">
                     {log.from} → {log.to}
                   </div>
                 )}

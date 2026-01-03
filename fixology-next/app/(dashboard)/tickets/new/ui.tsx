@@ -614,7 +614,7 @@ const shimmerClass =
   'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.4s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent'
 
 const fallbackSilhouette = (
-  <div className="flex flex-col items-center justify-center w-full h-full rounded-xl bg-black/25 border border-white/15 text-white/80">
+  <div className="flex flex-col items-center justify-center w-full h-full rounded-xl bg-black/25 border border-white/15 text-[var(--text-primary)]/80">
     <DeviceIcon className="w-8 h-8" />
     <span className="text-[11px] mt-1">No image</span>
   </div>
@@ -1039,12 +1039,12 @@ export function NewTicketClient() {
   return (
     <div className="min-h-screen pb-12">
       {/* Sticky header */}
-      <div className="sticky top-16 z-20 bg-black/40 backdrop-blur-xl border-b border-white/10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4">
+      <div className="sticky top-16 z-20 bg-black/40 backdrop-blur-xl border-b border-[var(--border-default)] -mx-4 sm:-mx-6 px-4 sm:px-6 py-4">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between gap-4 mb-3">
             <div>
-              <h1 className="text-xl font-bold text-white/90">Front Desk Intake</h1>
-              <p className="text-xs text-white/50 mt-0.5">Step {step} of {steps.length} • {steps[step - 1].label}</p>
+              <h1 className="text-xl font-bold text-[var(--text-primary)]">Front Desk Intake</h1>
+              <p className="text-xs text-[var(--text-muted)] mt-0.5">Step {step} of {steps.length} • {steps[step - 1].label}</p>
             </div>
             <Link href="/tickets" className="btn-secondary px-4 py-2 rounded-xl text-sm">
               Cancel
@@ -1052,7 +1052,7 @@ export function NewTicketClient() {
           </div>
 
           {/* Progress bar */}
-          <div className="h-1.5 rounded-full bg-white/5 border border-white/10 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-white/5 border border-[var(--border-default)] overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-purple-400/90 to-purple-600/90 transition-all duration-300"
               style={{ width: `${progress}%` }}
@@ -1081,19 +1081,19 @@ export function NewTicketClient() {
                       'w-8 h-8 rounded-xl flex items-center justify-center transition-all',
                       isComplete && 'bg-green-500/20 border border-green-400/30',
                       isActive && 'bg-purple-500/20 border border-purple-400/30',
-                      !isComplete && !isActive && 'bg-white/5 border border-white/10'
+                      !isComplete && !isActive && 'bg-white/5 border border-[var(--border-default)]'
                     )}
                   >
                     {isComplete ? (
                       <Check className="w-4 h-4 text-green-300" />
                     ) : (
-                      <Icon className={cn('w-4 h-4', isActive ? 'text-purple-300' : 'text-white/40')} />
+                      <Icon className={cn('w-4 h-4', isActive ? 'text-purple-300' : 'text-[var(--text-primary)]/40')} />
                     )}
                   </div>
                   <span
                     className={cn(
                       'text-[10px] font-semibold text-center',
-                      isActive ? 'text-white' : isComplete ? 'text-white/60' : 'text-white/40'
+                      isActive ? 'text-[var(--text-primary)]' : isComplete ? 'text-[var(--text-primary)]/60' : 'text-[var(--text-primary)]/40'
                     )}
                   >
                     {s.label}
@@ -1112,12 +1112,12 @@ export function NewTicketClient() {
           <GlassCard className="p-5 sm:p-6 rounded-3xl mb-6">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-2xl bg-white/[0.05] border border-[var(--border-default)] flex items-center justify-center">
                   <Sparkles className="w-5 h-5 text-purple-300" aria-hidden="true" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white/90">Quick intake</div>
-                  <div className="text-xs text-white/50 mt-0.5">
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">Quick intake</div>
+                  <div className="text-xs text-[var(--text-muted)] mt-0.5">
                     Paste one sentence — we’ll prefill fields. Doesn’t block intake.
                   </div>
                 </div>
@@ -1137,7 +1137,7 @@ export function NewTicketClient() {
               <textarea
                 value={quickText}
                 onChange={(e) => setQuickText(e.target.value)}
-                className="w-full rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-sm text-white/85 placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40 min-h-[120px] resize-none"
+                className="w-full rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4 text-sm text-[var(--text-primary)]/85 placeholder:text-[var(--text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40 min-h-[120px] resize-none"
                 placeholder='Try: “Jordan Lee 5125550142 iPhone 14 Pro cracked screen — wants same-day.”'
               />
 
@@ -1148,11 +1148,11 @@ export function NewTicketClient() {
                     setQuickText('Jordan Lee 5125550142 iPhone 14 Pro cracked screen wants same-day')
                     setQuickStatus(null)
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white/70 hover:bg-white/[0.06] hover:text-white transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-[var(--bg-input)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)] transition-colors"
                 >
                   Use example
                 </button>
-                <span className="text-xs text-white/40">Tip: include name + phone + device + issue.</span>
+                <span className="text-xs text-[var(--text-primary)]/40">Tip: include name + phone + device + issue.</span>
               </div>
 
               {quickStatus && (
@@ -1176,8 +1176,8 @@ export function NewTicketClient() {
                   <Sparkles className="w-4 h-4" aria-hidden="true" />
                   Fill form
                 </button>
-                <div className="text-xs text-white/45">
-                  You can still edit anything — <span className="text-white/65 font-semibold">nothing final yet</span>.
+                <div className="text-xs text-[var(--text-primary)]/45">
+                  You can still edit anything — <span className="text-[var(--text-primary)]/65 font-semibold">nothing final yet</span>.
                 </div>
               </div>
             </div>
@@ -1193,8 +1193,8 @@ export function NewTicketClient() {
                   <Phone className="w-6 h-6 text-purple-300" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white/90">Customer Information</h2>
-                  <p className="text-xs text-white/50 mt-0.5">Start with phone number — we'll find them if they exist</p>
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Customer Information</h2>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Start with phone number — we'll find them if they exist</p>
                 </div>
               </div>
 
@@ -1203,7 +1203,7 @@ export function NewTicketClient() {
                 <div>
                   <label className="label mb-2">Phone Number *</label>
                   <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-primary)]/40" />
                     <input
                       type="tel"
                       value={form.phone}
@@ -1213,7 +1213,7 @@ export function NewTicketClient() {
                         setField('phone', formatted)
                         setShowCustomerSearch(true)
                       }}
-                      className="input pl-12 bg-white/[0.04] border-white/10 text-lg"
+                      className="input pl-12 bg-[var(--bg-input)] border-[var(--border-default)] text-lg"
                       placeholder="(555) 123-4567"
                       autoFocus
                     />
@@ -1241,16 +1241,16 @@ export function NewTicketClient() {
                         <>
                           <User className="w-5 h-5 text-blue-300" />
                           <div>
-                            <div className="text-sm font-semibold text-white/90">First visit</div>
-                            <div className="text-xs text-white/50 mt-0.5">We'll create a new customer profile</div>
+                            <div className="text-sm font-semibold text-[var(--text-primary)]">First visit</div>
+                            <div className="text-xs text-[var(--text-muted)] mt-0.5">We'll create a new customer profile</div>
                           </div>
                         </>
                       ) : (
                         <>
                           <CheckCircle2 className="w-5 h-5 text-green-300" />
                           <div>
-                            <div className="text-sm font-semibold text-white/90">Returning customer</div>
-                            <div className="text-xs text-white/50 mt-0.5">Found in system — information auto-filled</div>
+                            <div className="text-sm font-semibold text-[var(--text-primary)]">Returning customer</div>
+                            <div className="text-xs text-[var(--text-muted)] mt-0.5">Found in system — information auto-filled</div>
                           </div>
                         </>
                       )}
@@ -1260,12 +1260,12 @@ export function NewTicketClient() {
 
                 {/* Customer search dropdown */}
                 {showCustomerSearch && form.phone.length >= 10 && !form.customerId && (
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-3 max-h-48 overflow-y-auto">
+                  <div className="rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-3 max-h-48 overflow-y-auto">
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="input bg-white/[0.04] border-white/10 mb-2"
+                      className="input bg-[var(--bg-input)] border-[var(--border-default)] mb-2"
                       placeholder="Search by name, phone, or email..."
                     />
                     {filteredCustomers.slice(0, 5).map((c) => (
@@ -1279,10 +1279,10 @@ export function NewTicketClient() {
                           setField('isNewCustomer', false)
                           setShowCustomerSearch(false)
                         }}
-                        className="w-full text-left rounded-xl bg-white/[0.03] border border-white/10 p-3 hover:bg-white/[0.05] transition-colors mb-2"
+                        className="w-full text-left rounded-xl bg-white/[0.03] border border-[var(--border-default)] p-3 hover:bg-white/[0.05] transition-colors mb-2"
                       >
-                        <div className="text-sm font-semibold text-white/90">{c.name}</div>
-                        <div className="text-xs text-white/50 mt-0.5">{c.phone} • {c.email || 'No email'}</div>
+                        <div className="text-sm font-semibold text-[var(--text-primary)]">{c.name}</div>
+                        <div className="text-xs text-[var(--text-muted)] mt-0.5">{c.phone} • {c.email || 'No email'}</div>
                       </button>
                     ))}
                   </div>
@@ -1295,7 +1295,7 @@ export function NewTicketClient() {
                     type="text"
                     value={form.customerName}
                     onChange={(e) => setField('customerName', e.target.value)}
-                    className="input bg-white/[0.04] border-white/10"
+                    className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                     placeholder="Full name"
                     disabled={!form.isNewCustomer && form.customerId !== null}
                   />
@@ -1304,22 +1304,22 @@ export function NewTicketClient() {
                 {/* Email (optional) */}
                 <div>
                   <label className="label mb-2">
-                    Email <span className="text-white/40 text-xs">(optional)</span>
+                    Email <span className="text-[var(--text-primary)]/40 text-xs">(optional)</span>
                   </label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={(e) => setField('email', e.target.value)}
-                    className="input bg-white/[0.04] border-white/10"
+                    className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                     placeholder="you@example.com"
                   />
                 </div>
               </div>
 
               {/* Trust microcopy */}
-              <div className="mt-6 rounded-2xl bg-white/[0.02] border border-white/5 p-4">
-                <p className="text-xs text-white/50 leading-relaxed">
-                  <span className="text-white/70 font-semibold">Nothing final yet.</span> You can update customer information anytime before creating the ticket.
+              <div className="mt-6 rounded-2xl bg-[var(--bg-card)] border border-white/5 p-4">
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  <span className="text-[var(--text-secondary)] font-semibold">Nothing final yet.</span> You can update customer information anytime before creating the ticket.
                 </p>
               </div>
             </GlassCard>
@@ -1335,8 +1335,8 @@ export function NewTicketClient() {
                   <Smartphone className="w-6 h-6 text-purple-300" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white/90">Device Information</h2>
-                  <p className="text-xs text-white/50 mt-0.5">Choose a category — we’ll auto-fill brand + type</p>
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Device Information</h2>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Choose a category — we’ll auto-fill brand + type</p>
                 </div>
               </div>
 
@@ -1406,7 +1406,7 @@ export function NewTicketClient() {
                         value={modelQuery}
                         onChange={(e) => setModelQuery(e.target.value)}
                         placeholder="Search model (e.g., “14 Pro Max”, “PS5 Slim”)…"
-                        className="input bg-white/[0.04] border-white/10 w-full"
+                        className="input bg-[var(--bg-input)] border-[var(--border-default)] w-full"
                       />
                     </div>
 
@@ -1444,7 +1444,7 @@ export function NewTicketClient() {
                           type="text"
                           value={form.model}
                           onChange={(e) => setField('model', e.target.value)}
-                          className="input bg-white/[0.04] border-white/10"
+                          className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                           placeholder="Type model (e.g., Lenovo Yoga 7i)"
                         />
                       </div>
@@ -1460,13 +1460,13 @@ export function NewTicketClient() {
                 <div>
                   <label className="label mb-2">Auto-filled</label>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3">
-                      <div className="text-[11px] text-white/45 font-semibold uppercase tracking-wider">Brand</div>
-                      <div className="text-sm text-white/85 font-semibold mt-1">{form.brand || '—'}</div>
+                    <div className="rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3">
+                      <div className="text-[11px] text-[var(--text-primary)]/45 font-semibold uppercase tracking-wider">Brand</div>
+                      <div className="text-sm text-[var(--text-primary)]/85 font-semibold mt-1">{form.brand || '—'}</div>
                     </div>
-                    <div className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3">
-                      <div className="text-[11px] text-white/45 font-semibold uppercase tracking-wider">Device</div>
-                      <div className="text-sm text-white/85 font-semibold mt-1">{form.model || '—'}</div>
+                    <div className="rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3">
+                      <div className="text-[11px] text-[var(--text-primary)]/45 font-semibold uppercase tracking-wider">Device</div>
+                      <div className="text-sm text-[var(--text-primary)]/85 font-semibold mt-1">{form.model || '—'}</div>
                     </div>
                   </div>
                 </div>
@@ -1475,14 +1475,14 @@ export function NewTicketClient() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="label mb-2">
-                      IMEI <span className="text-white/40 text-xs">(phones/tablets)</span>
+                      IMEI <span className="text-[var(--text-primary)]/40 text-xs">(phones/tablets)</span>
                     </label>
                     <div className="relative">
                       <input
                         type="text"
                         value={form.imei}
                         onChange={(e) => setField('imei', e.target.value)}
-                        className="input pr-12 bg-white/[0.04] border-white/10"
+                        className="input pr-12 bg-[var(--bg-input)] border-[var(--border-default)]"
                         placeholder="15 digits"
                         maxLength={15}
                       />
@@ -1491,28 +1491,28 @@ export function NewTicketClient() {
                         title="Scan IMEI"
                         type="button"
                       >
-                        <Camera className="w-4 h-4 text-white/50" />
+                        <Camera className="w-4 h-4 text-[var(--text-muted)]" />
                       </button>
                     </div>
                   </div>
                   <div>
                     <label className="label mb-2">
-                      Serial <span className="text-white/40 text-xs">(laptops/consoles)</span>
+                      Serial <span className="text-[var(--text-primary)]/40 text-xs">(laptops/consoles)</span>
                     </label>
                     <input
                       type="text"
                       value={form.serial}
                       onChange={(e) => setField('serial', e.target.value)}
-                      className="input bg-white/[0.04] border-white/10"
+                      className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                       placeholder="Optional"
                     />
                   </div>
                 </div>
 
-                <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-4">
+                <div className="rounded-2xl bg-[var(--bg-card)] border border-white/5 p-4">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-3.5 h-3.5 text-purple-300" />
-                    <span className="text-xs text-white/55">
+                    <span className="text-xs text-[var(--text-primary)]/55">
                       Category + model helps Fixology prefill parts, risk checks, and estimates. (UI only)
                     </span>
                   </div>
@@ -1531,15 +1531,15 @@ export function NewTicketClient() {
                   <AlertCircle className="w-6 h-6 text-purple-300" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white/90">What's Wrong?</h2>
-                  <p className="text-xs text-white/50 mt-0.5">Describe the problem in plain language</p>
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">What's Wrong?</h2>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Describe the problem in plain language</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 {/* Quick issue presets */}
-                <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-4">
-                  <div className="text-xs font-semibold text-white/60 mb-2">Quick options</div>
+                <div className="rounded-2xl bg-[var(--bg-card)] border border-white/5 p-4">
+                  <div className="text-xs font-semibold text-[var(--text-primary)]/60 mb-2">Quick options</div>
                   <div className="flex flex-wrap gap-2">
                     {(() => {
                       const isConsole = form.deviceCategory === 'ps5' || form.deviceCategory === 'xbox'
@@ -1567,14 +1567,14 @@ export function NewTicketClient() {
                                           : ''
                             setField('issue', preset)
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white/70 hover:bg-white/[0.06] hover:text-white transition-colors"
+                          className="px-3 py-1.5 rounded-xl bg-[var(--bg-input)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)] transition-colors"
                         >
                           {opt}
                         </button>
                       ))
                     })()}
                   </div>
-                  <div className="mt-2 text-xs text-white/40">
+                  <div className="mt-2 text-xs text-[var(--text-primary)]/40">
                     These don’t lock you in — they just start the sentence.
                   </div>
                 </div>
@@ -1585,7 +1585,7 @@ export function NewTicketClient() {
                   <textarea
                     value={form.issue}
                     onChange={(e) => setField('issue', e.target.value)}
-                    className="w-full rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-sm text-white/85 placeholder:text-white/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40 min-h-[140px] resize-none"
+                    className="w-full rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4 text-sm text-[var(--text-primary)]/85 placeholder:text-[var(--text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400/40 min-h-[140px] resize-none"
                     placeholder={
                       form.deviceCategory === 'ps5' || form.deviceCategory === 'xbox'
                         ? 'HDMI issue, no power, overheating, fan noise…'
@@ -1595,15 +1595,15 @@ export function NewTicketClient() {
                   <div className="mt-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-3.5 h-3.5 text-purple-300" />
-                      <span className="text-xs text-white/50">AI can auto-diagnose</span>
+                      <span className="text-xs text-[var(--text-muted)]">AI can auto-diagnose</span>
                     </div>
-                    <span className="text-xs text-white/40">{form.issue.length} characters</span>
+                    <span className="text-xs text-[var(--text-primary)]/40">{form.issue.length} characters</span>
                   </div>
                 </div>
 
                 {/* Example placeholders */}
-                <div className="rounded-2xl bg-white/[0.02] border border-white/5 p-4">
-                  <div className="text-xs font-semibold text-white/60 mb-2">Examples:</div>
+                <div className="rounded-2xl bg-[var(--bg-card)] border border-white/5 p-4">
+                  <div className="text-xs font-semibold text-[var(--text-primary)]/60 mb-2">Examples:</div>
                   <div className="flex flex-wrap gap-2">
                     {(() => {
                       const isConsole = form.deviceCategory === 'ps5' || form.deviceCategory === 'xbox'
@@ -1614,7 +1614,7 @@ export function NewTicketClient() {
                       <button
                         key={ex}
                         onClick={() => setField('issue', ex)}
-                        className="px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/10 text-xs text-white/70 hover:bg-white/[0.06] hover:text-white transition-colors"
+                        className="px-3 py-1.5 rounded-xl bg-[var(--bg-input)] border border-[var(--border-default)] text-xs text-[var(--text-secondary)] hover:bg-white/[0.06] hover:text-[var(--text-primary)] transition-colors"
                       >
                         {ex}
                       </button>
@@ -1636,8 +1636,8 @@ export function NewTicketClient() {
                   <CheckCircle2 className="w-6 h-6 text-purple-300" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white/90">Device Condition</h2>
-                  <p className="text-xs text-white/50 mt-0.5">Quick visual check — tap to confirm</p>
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Device Condition</h2>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Quick visual check — tap to confirm</p>
                 </div>
               </div>
 
@@ -1659,7 +1659,7 @@ export function NewTicketClient() {
                         'rounded-2xl p-4 border transition-all text-left',
                         checked
                           ? 'bg-green-500/10 border-green-400/30'
-                          : 'bg-white/[0.04] border-white/10 hover:bg-white/[0.06]'
+                          : 'bg-[var(--bg-input)] border-[var(--border-default)] hover:bg-white/[0.06]'
                       )}
                     >
                       <div className="flex items-center gap-3">
@@ -1672,11 +1672,11 @@ export function NewTicketClient() {
                           {checked ? (
                             <Check className="w-5 h-5 text-green-300" />
                           ) : (
-                            <Icon className="w-5 h-5 text-white/40" />
+                            <Icon className="w-5 h-5 text-[var(--text-primary)]/40" />
                           )}
                         </div>
                         <div className="flex-1">
-                          <div className={cn('text-sm font-semibold', checked ? 'text-white' : 'text-white/70')}>
+                          <div className={cn('text-sm font-semibold', checked ? 'text-[var(--text-primary)]' : 'text-[var(--text-secondary)]')}>
                             {item.label}
                           </div>
                         </div>
@@ -1686,8 +1686,8 @@ export function NewTicketClient() {
                 })}
               </div>
 
-              <div className="mt-4 rounded-2xl bg-white/[0.02] border border-white/5 p-4">
-                <p className="text-xs text-white/50 leading-relaxed">
+              <div className="mt-4 rounded-2xl bg-[var(--bg-card)] border border-white/5 p-4">
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                   All checks are optional. You can update these later during diagnosis.
                 </p>
               </div>
@@ -1704,8 +1704,8 @@ export function NewTicketClient() {
                   <DollarSign className="w-6 h-6 text-purple-300" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white/90">Estimated Quote</h2>
-                  <p className="text-xs text-white/50 mt-0.5">Non-binding estimate — final price after diagnosis</p>
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Estimated Quote</h2>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Non-binding estimate — final price after diagnosis</p>
                 </div>
               </div>
 
@@ -1716,7 +1716,7 @@ export function NewTicketClient() {
                     type="text"
                     value={form.estimatedRange}
                     onChange={(e) => setField('estimatedRange', e.target.value)}
-                    className="input bg-white/[0.04] border-white/10"
+                    className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                     placeholder="$150 - $250"
                   />
                 </div>
@@ -1727,7 +1727,7 @@ export function NewTicketClient() {
                     type="text"
                     value={form.timeEstimate}
                     onChange={(e) => setField('timeEstimate', e.target.value)}
-                    className="input bg-white/[0.04] border-white/10"
+                    className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                     placeholder="2-3 hours, Same day, 1-2 days..."
                   />
                 </div>
@@ -1736,8 +1736,8 @@ export function NewTicketClient() {
                   <div className="flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 text-yellow-300 mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="text-sm font-semibold text-white/90 mb-1">Estimated — not final</div>
-                      <div className="text-xs text-white/60 leading-relaxed">
+                      <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">Estimated — not final</div>
+                      <div className="text-xs text-[var(--text-primary)]/60 leading-relaxed">
                         This is a preliminary estimate. Final pricing will be confirmed after diagnosis. You stay in control.
                       </div>
                     </div>
@@ -1757,14 +1757,14 @@ export function NewTicketClient() {
                   <Shield className="w-6 h-6 text-purple-300" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white/90">Customer Consent</h2>
-                  <p className="text-xs text-white/50 mt-0.5">Authorization and acknowledgment</p>
+                  <h2 className="text-lg font-bold text-[var(--text-primary)]">Customer Consent</h2>
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">Authorization and acknowledgment</p>
                 </div>
               </div>
 
               <div className="space-y-4">
                 {/* Repair authorization */}
-                <label className="flex items-start gap-3 rounded-2xl bg-white/[0.04] border border-white/10 p-4 cursor-pointer hover:bg-white/[0.06] transition-colors">
+                <label className="flex items-start gap-3 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4 cursor-pointer hover:bg-white/[0.06] transition-colors">
                   <input
                     type="checkbox"
                     checked={form.repairAuthorized}
@@ -1772,13 +1772,13 @@ export function NewTicketClient() {
                     className="mt-0.5 accent-purple-500"
                   />
                   <div>
-                    <div className="text-sm font-semibold text-white/90">Repair Authorization</div>
-                    <div className="text-xs text-white/50 mt-1">Customer authorizes repair work to proceed</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">Repair Authorization</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-1">Customer authorizes repair work to proceed</div>
                   </div>
                 </label>
 
                 {/* Data risk */}
-                <label className="flex items-start gap-3 rounded-2xl bg-white/[0.04] border border-white/10 p-4 cursor-pointer hover:bg-white/[0.06] transition-colors">
+                <label className="flex items-start gap-3 rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4 cursor-pointer hover:bg-white/[0.06] transition-colors">
                   <input
                     type="checkbox"
                     checked={form.dataRiskAcknowledged}
@@ -1786,20 +1786,20 @@ export function NewTicketClient() {
                     className="mt-0.5 accent-purple-500"
                   />
                   <div>
-                    <div className="text-sm font-semibold text-white/90">Data Risk Acknowledgment</div>
-                    <div className="text-xs text-white/50 mt-1">Customer understands data loss risks</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">Data Risk Acknowledgment</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-1">Customer understands data loss risks</div>
                   </div>
                 </label>
 
                 {/* Signature */}
-                <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
-                  <div className="text-sm font-semibold text-white/90 mb-3">Signature</div>
+                <div className="rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4">
+                  <div className="text-sm font-semibold text-[var(--text-primary)] mb-3">Signature</div>
                   <div className="space-y-3">
-                    <div className="h-24 rounded-xl bg-white/[0.02] border border-dashed border-white/10 flex items-center justify-center">
+                    <div className="h-24 rounded-xl bg-[var(--bg-card)] border border-dashed border-[var(--border-default)] flex items-center justify-center">
                       {form.signature ? (
-                        <div className="text-sm text-white/70">Signature captured</div>
+                        <div className="text-sm text-[var(--text-secondary)]">Signature captured</div>
                       ) : (
-                        <div className="text-xs text-white/40 text-center px-4">Draw signature here (UI only)</div>
+                        <div className="text-xs text-[var(--text-primary)]/40 text-center px-4">Draw signature here (UI only)</div>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -1809,7 +1809,7 @@ export function NewTicketClient() {
                       >
                         Capture Signature
                       </button>
-                      <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/10 cursor-pointer hover:bg-white/[0.06] transition-colors">
+                      <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--bg-input)] border border-[var(--border-default)] cursor-pointer hover:bg-white/[0.06] transition-colors">
                         <input
                           type="checkbox"
                           checked={form.signLater}
@@ -1819,7 +1819,7 @@ export function NewTicketClient() {
                           }}
                           className="accent-purple-500"
                         />
-                        <span className="text-xs text-white/70">Sign later</span>
+                        <span className="text-xs text-[var(--text-secondary)]">Sign later</span>
                       </label>
                     </div>
                   </div>
@@ -1837,16 +1837,16 @@ export function NewTicketClient() {
                 <div className="w-16 h-16 rounded-3xl bg-green-500/20 border border-green-400/30 flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8 text-green-300" />
                 </div>
-                <h2 className="text-2xl font-bold text-white/90 mb-2">Ticket Created!</h2>
+                <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Ticket Created!</h2>
                 <div className="text-lg font-semibold text-purple-300 mb-6">{form.ticketNumber}</div>
                 <div className="space-y-3 max-w-md mx-auto">
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-left">
-                    <div className="text-xs text-white/50 mb-1">Status</div>
-                    <div className="text-sm font-semibold text-white/90">Intake</div>
+                  <div className="rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4 text-left">
+                    <div className="text-xs text-[var(--text-muted)] mb-1">Status</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">Intake</div>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4 text-left">
-                    <div className="text-xs text-white/50 mb-1">Next Step</div>
-                    <div className="text-sm font-semibold text-white/90">Device will be diagnosed</div>
+                  <div className="rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4 text-left">
+                    <div className="text-xs text-[var(--text-muted)] mb-1">Next Step</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">Device will be diagnosed</div>
                   </div>
                 </div>
                 <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -1865,26 +1865,26 @@ export function NewTicketClient() {
                     <Ticket className="w-6 h-6 text-purple-300" />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-white/90">Ready to Create</h2>
-                    <p className="text-xs text-white/50 mt-0.5">Review and create your repair ticket</p>
+                    <h2 className="text-lg font-bold text-[var(--text-primary)]">Ready to Create</h2>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">Review and create your repair ticket</p>
                   </div>
                 </div>
 
                 <div className="space-y-4 mb-6">
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
-                    <div className="text-xs text-white/50 mb-1">Customer</div>
-                    <div className="text-sm font-semibold text-white/90">{form.customerName}</div>
-                    <div className="text-xs text-white/50 mt-1">{form.phone}</div>
+                  <div className="rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4">
+                    <div className="text-xs text-[var(--text-muted)] mb-1">Customer</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">{form.customerName}</div>
+                    <div className="text-xs text-[var(--text-muted)] mt-1">{form.phone}</div>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
-                    <div className="text-xs text-white/50 mb-1">Device</div>
-                    <div className="text-sm font-semibold text-white/90">
+                  <div className="rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4">
+                    <div className="text-xs text-[var(--text-muted)] mb-1">Device</div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">
                       {form.brand} {form.model}
                     </div>
                   </div>
-                  <div className="rounded-2xl bg-white/[0.04] border border-white/10 p-4">
-                    <div className="text-xs text-white/50 mb-1">Issue</div>
-                    <div className="text-sm text-white/80">{form.issue || '—'}</div>
+                  <div className="rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4">
+                    <div className="text-xs text-[var(--text-muted)] mb-1">Issue</div>
+                    <div className="text-sm text-[var(--text-primary)]/80">{form.issue || '—'}</div>
                   </div>
                 </div>
 
@@ -1893,7 +1893,7 @@ export function NewTicketClient() {
                     <CheckCircle2 className="w-4 h-4" />
                     All required fields complete
                   </div>
-                  <div className="text-xs text-white/60">Ready to create ticket</div>
+                  <div className="text-xs text-[var(--text-primary)]/60">Ready to create ticket</div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -1911,7 +1911,7 @@ export function NewTicketClient() {
 
         {/* Navigation buttons */}
         {step < 7 && !form.ticketCreated && (
-          <div className="sticky bottom-0 bg-black/40 backdrop-blur-xl border-t border-white/10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
+          <div className="sticky bottom-0 bg-black/40 backdrop-blur-xl border-t border-[var(--border-default)] -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mt-8">
             <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
               <button
                 onClick={back}
@@ -1941,7 +1941,7 @@ export function NewTicketClient() {
         className={cn(
           'fixed bottom-6 right-6 z-[70]',
           'rounded-2xl px-4 py-3 border',
-          'bg-black/35 backdrop-blur-xl border-white/10 text-white/85',
+          'bg-black/35 backdrop-blur-xl border-[var(--border-default)] text-[var(--text-primary)]/85',
           'shadow-[0_24px_60px_rgba(0,0,0,0.45)]',
           'transition-all duration-300',
           showBackToTop ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-3 pointer-events-none'

@@ -29,11 +29,11 @@ export default function AutopilotPage() {
         <div className="glass-card max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
+              <Sparkles className="w-6 h-6 text-[var(--text-primary)]" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Autopilot Features</h2>
-              <p className="text-sm text-white/60">Automated workflows powered by AI</p>
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Autopilot Features</h2>
+              <p className="text-sm text-[var(--text-primary)]/60">Automated workflows powered by AI</p>
             </div>
           </div>
 
@@ -56,14 +56,14 @@ export default function AutopilotPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-white">{feature.name}</h3>
+                    <h3 className="font-semibold text-[var(--text-primary)]">{feature.name}</h3>
                     {feature.enabled && (
                       <span className="px-2 py-0.5 rounded text-xs font-semibold bg-green-500/20 text-green-400">
                         Active
                       </span>
                     )}
                   </div>
-                  <p className="text-sm text-white/60">{feature.description}</p>
+                  <p className="text-sm text-[var(--text-primary)]/60">{feature.description}</p>
                 </div>
               </div>
             ))}

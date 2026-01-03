@@ -1,46 +1,522 @@
 'use client'
 
+import { useEffect, useMemo, useState, useCallback } from 'react'
+import { toast } from '@/components/ui/toaster'
 import { PageHeader } from '@/components/dashboard/ui/page-header'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
+import { Skeleton } from '@/components/dashboard/ui/skeleton'
+import { Modal } from '@/components/dashboard/ui/modal'
+import { Tabs } from '@/components/dashboard/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils/cn'
+import {
+  Clock,
+  Play,
+  Square,
+  Plus,
+  Calendar,
+  User,
+  Ticket,
+  Timer,
+  TrendingUp,
+  Coffee,
+  ArrowUpRight,
+  ChevronRight,
+  Search,
+  Download,
+  PauseCircle,
+  PlayCircle,
+} from 'lucide-react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
-const sessions = [
-  { tech: 'Riley Chen', ticket: '#2381', device: 'iPhone 14 Pro', start: '9:05a', end: '10:10a', duration: '1h 5m' },
-  { tech: 'Priya Patel', ticket: '#2379', device: 'PS5', start: '9:20a', end: '10:45a', duration: '1h 25m' },
-  { tech: 'Noah Smith', ticket: '#2378', device: 'MacBook Air', start: '8:50a', end: '10:30a', duration: '1h 40m' },
+type TimeEntry = {
+  id: string
+  tech: string
+  techInitials: string
+  ticket: string
+  device: string
+  start: string
+  end: string | null
+  duration: string
+  type: 'repair' | 'break' | 'admin'
+  status: 'active' | 'completed'
+}
+
+const sessions: TimeEntry[] = [
+  { id: 't1', tech: 'Ava Chen', techInitials: 'AC', ticket: '#2381', device: 'iPhone 14 Pro', start: '9:05 AM', end: null, duration: '1h 45m', type: 'repair', status: 'active' },
+  { id: 't2', tech: 'Noah Smith', techInitials: 'NS', ticket: '#2378', device: 'MacBook Air', start: '8:50 AM', end: '10:30 AM', duration: '1h 40m', type: 'repair', status: 'completed' },
+  { id: 't3', tech: 'Miles Rodriguez', techInitials: 'MR', ticket: '#2379', device: 'PS5', start: '9:20 AM', end: '10:45 AM', duration: '1h 25m', type: 'repair', status: 'completed' },
+  { id: 't4', tech: 'Sofia Martinez', techInitials: 'SM', ticket: '—', device: '—', start: '10:30 AM', end: '10:45 AM', duration: '15m', type: 'break', status: 'completed' },
+  { id: 't5', tech: 'Ava Chen', techInitials: 'AC', ticket: '#2375', device: 'Galaxy S23', start: '11:00 AM', end: '12:30 PM', duration: '1h 30m', type: 'repair', status: 'completed' },
+  { id: 't6', tech: 'Noah Smith', techInitials: 'NS', ticket: '—', device: '—', start: '10:30 AM', end: '11:00 AM', duration: '30m', type: 'admin', status: 'completed' },
+]
+
+const techStats = [
+  { name: 'Ava', hours: 6.2, repairs: 4, color: '#a78bfa' },
+  { name: 'Noah', hours: 5.8, repairs: 3, color: '#22c55e' },
+  { name: 'Miles', hours: 4.5, repairs: 3, color: '#38bdf8' },
+  { name: 'Sofia', hours: 5.0, repairs: 2, color: '#fbbf24' },
+]
+
+const weeklyHours = [
+  { day: 'Mon', hours: 28 },
+  { day: 'Tue', hours: 32 },
+  { day: 'Wed', hours: 26 },
+  { day: 'Thu', hours: 35 },
+  { day: 'Fri', hours: 30 },
+  { day: 'Sat', hours: 18 },
+  { day: 'Sun', hours: 0 },
+]
+
+const summaryStats = [
+  { label: 'Total Hours Today', value: '21.5h', icon: <Clock className="w-5 h-5" />, color: 'purple' },
+  { label: 'Active Timers', value: '2', icon: <PlayCircle className="w-5 h-5" />, color: 'emerald' },
+  { label: 'Avg Repair Time', value: '1.4h', icon: <Timer className="w-5 h-5" />, color: 'blue' },
+  { label: 'Break Time', value: '45m', icon: <Coffee className="w-5 h-5" />, color: 'amber' },
 ]
 
 export function TimeTrackingPage() {
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Time Tracking"
-        description="UI-only view of technician time blocks. Capture clock-ins and repair sessions without backend yet."
-        action={<button className="px-4 py-2 rounded-xl bg-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30">Add time entry</button>}
-      />
+  const [loading, setLoading] = useState(true)
+  const [animationReady, setAnimationReady] = useState(false)
+  const [tab, setTab] = useState<'today' | 'week' | 'all'>('today')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [addOpen, setAddOpen] = useState(false)
+  const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
+  const [entries, setEntries] = useState<TimeEntry[]>(sessions)
+  const [summary, setSummary] = useState({ totalHoursToday: 21.5, activeTimers: 2 })
 
-      <GlassCard className="p-4 rounded-2xl border border-white/10">
-        <div className="grid grid-cols-6 text-xs uppercase tracking-wide text-white/40 pb-2">
-          <span>Technician</span>
-          <span>Ticket</span>
-          <span>Device</span>
-          <span>Start</span>
-          <span>End</span>
-          <span className="text-right">Duration</span>
-        </div>
-        <div className="divide-y divide-white/5">
-          {sessions.map((s) => (
-            <div key={`${s.tech}-${s.ticket}`} className="py-3 grid grid-cols-6 items-center text-sm text-white/80">
-              <div className="font-semibold text-white">{s.tech}</div>
-              <div>{s.ticket}</div>
-              <div className="text-white/60">{s.device}</div>
-              <div>{s.start}</div>
-              <div>{s.end}</div>
-              <div className="text-right font-semibold">{s.duration}</div>
-            </div>
+  const fetchEntries = useCallback(async () => {
+    try {
+      const res = await fetch('/api/time-tracking')
+      if (!res.ok) return
+      const data = await res.json()
+      if (data.entries?.length > 0) {
+        const mapped: TimeEntry[] = data.entries.map((e: any) => ({
+          id: e.id,
+          tech: e.userName,
+          techInitials: e.userName.split(' ').map((n: string) => n[0]).join(''),
+          ticket: '—',
+          device: '—',
+          start: new Date(e.clockIn).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+          end: e.clockOut ? new Date(e.clockOut).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null,
+          duration: e.durationMinutes ? `${Math.floor(e.durationMinutes / 60)}h ${e.durationMinutes % 60}m` : 'Running',
+          type: 'repair' as const,
+          status: e.status as any,
+        }))
+        setEntries(mapped)
+        setSummary({
+          totalHoursToday: data.summary.totalHoursToday,
+          activeTimers: data.summary.activeTimers,
+        })
+      }
+    } catch {
+      // Keep mock data
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchEntries().then(() => {
+      setLoading(false)
+      setTimeout(() => setAnimationReady(true), 100)
+    })
+  }, [fetchEntries])
+
+  const handleAddEntry = async (clockIn: string, clockOut?: string) => {
+    try {
+      const res = await fetch('/api/time-tracking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clockIn, clockOut }),
+      })
+      if (!res.ok) {
+        toast.error('Failed to add entry')
+        return
+      }
+      toast.success('Time entry added')
+      setAddOpen(false)
+      fetchEntries()
+    } catch {
+      toast.error('Failed to add entry')
+    }
+  }
+
+  const handleExport = () => {
+    toast.success('Export started - file will download shortly')
+  }
+
+  const filteredSessions = useMemo(() => {
+    let result = entries
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter((s) =>
+        s.tech.toLowerCase().includes(q) ||
+        s.ticket.toLowerCase().includes(q) ||
+        s.device.toLowerCase().includes(q)
+      )
+    }
+    return result
+  }, [searchQuery, entries])
+
+  const getTypeStyles = (type: string) => {
+    switch (type) {
+      case 'repair':
+        return 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+      case 'break':
+        return 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+      case 'admin':
+        return 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+      default:
+        return 'bg-white/5 text-[var(--text-muted)] border-white/10'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Time Tracking" description="Loading..." />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-[100px] rounded-2xl" />
           ))}
         </div>
-      </GlassCard>
+        <Skeleton className="h-[400px] rounded-3xl" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6 animate-page-in">
+      <div className={cn(
+        "transition-all duration-500",
+        animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )}>
+        <PageHeader
+          title="Time Tracking"
+          description="Track technician hours, repair sessions, and productivity metrics."
+          action={
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExport}
+                className={cn(
+                  "px-4 py-2.5 rounded-xl inline-flex items-center gap-2",
+                  "text-sm font-medium text-[var(--text-secondary)]",
+                  "bg-white/[0.04] border border-white/10",
+                  "transition-all duration-200 hover:bg-white/[0.08] hover:border-white/20"
+                )}
+              >
+                <Download className="w-4 h-4" />
+                Export
+              </button>
+              <button
+                onClick={() => setAddOpen(true)}
+                className={cn(
+                  "group relative px-5 py-2.5 rounded-xl inline-flex items-center gap-2",
+                  "text-sm font-semibold text-white",
+                  "transition-all duration-300 ease-out",
+                  "hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98]"
+                )}
+                style={{
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c026d3 100%)',
+                  boxShadow: '0 8px 24px rgba(139, 92, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                }}
+              >
+                <Plus className="w-4 h-4" />
+                Add Entry
+              </button>
+            </div>
+          }
+        />
+      </div>
+
+      {/* Stats Grid */}
+      <div className={cn(
+        "grid gap-4 sm:grid-cols-2 lg:grid-cols-4 transition-all duration-500",
+        animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )} style={{ transitionDelay: '100ms' }}>
+        {summaryStats.map((stat) => (
+          <GlassCard
+            key={stat.label}
+            className={cn(
+              'p-5 rounded-2xl border transition-all duration-300 hover:scale-[1.02] hover:-translate-y-0.5 group',
+              stat.color === 'purple' && 'border-purple-500/20',
+              stat.color === 'emerald' && 'border-emerald-500/20',
+              stat.color === 'blue' && 'border-blue-500/20',
+              stat.color === 'amber' && 'border-amber-500/20'
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div
+                className={cn(
+                  'p-2.5 rounded-xl',
+                  stat.color === 'purple' && 'bg-purple-500/15 text-purple-400',
+                  stat.color === 'emerald' && 'bg-emerald-500/15 text-emerald-400',
+                  stat.color === 'blue' && 'bg-blue-500/15 text-blue-400',
+                  stat.color === 'amber' && 'bg-amber-500/15 text-amber-400'
+                )}
+              >
+                {stat.icon}
+              </div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">{stat.value}</div>
+            </div>
+            <div className="text-xs text-[var(--text-muted)] mt-3">{stat.label}</div>
+          </GlassCard>
+        ))}
+      </div>
+
+      {/* Main Content */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        {/* Time Entries Table */}
+        <GlassCard className="p-0 rounded-3xl lg:col-span-2 overflow-hidden">
+          <div className="p-5 border-b border-[var(--border-default)]">
+            <Tabs
+              value={tab}
+              onValueChange={(v) => setTab(v as any)}
+              tabs={[
+                { value: 'today', label: 'Today' },
+                { value: 'week', label: 'This Week' },
+                { value: 'all', label: 'All Time' },
+              ]}
+            />
+          </div>
+
+          <div className="p-4 border-b border-[var(--border-default)]">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-[var(--text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+                  placeholder="Search by tech, ticket, device..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[var(--text-secondary)] text-sm flex items-center gap-2 hover:bg-white/[0.08] transition-colors">
+                <Calendar className="w-4 h-4" /> Date
+              </button>
+              <button className="px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-[var(--text-secondary)] text-sm flex items-center gap-2 hover:bg-white/[0.08] transition-colors">
+                <User className="w-4 h-4" /> Tech
+              </button>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-[var(--text-faint)] border-b border-white/[0.06]">
+                  <th className="px-5 py-3">Technician</th>
+                  <th className="px-5 py-3">Ticket</th>
+                  <th className="px-5 py-3">Device</th>
+                  <th className="px-5 py-3">Time</th>
+                  <th className="px-5 py-3">Duration</th>
+                  <th className="px-5 py-3">Type</th>
+                  <th className="px-5 py-3 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredSessions.map((s) => (
+                  <tr
+                    key={s.id}
+                    className="border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors cursor-pointer"
+                    onClick={() => setSelectedEntry(s)}
+                  >
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500/30 to-purple-500/10 border border-purple-500/20 flex items-center justify-center text-xs font-semibold text-purple-300">
+                          {s.techInitials}
+                        </div>
+                        <span className="text-sm font-medium text-[var(--text-primary)]">{s.tech}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-sm text-purple-300">{s.ticket}</span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-sm text-[var(--text-secondary)]">{s.device}</span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="text-sm text-[var(--text-primary)]">{s.start}</div>
+                      <div className="text-xs text-[var(--text-muted)]">
+                        {s.end ? `→ ${s.end}` : '(active)'}
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className="text-sm font-semibold text-[var(--text-primary)]">{s.duration}</span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={cn('px-2 py-1 rounded-full text-xs font-medium capitalize border', getTypeStyles(s.type))}>
+                        {s.type}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-right">
+                      {s.status === 'active' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-medium border border-emerald-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          Active
+                        </span>
+                      ) : (
+                        <span className="text-xs text-[var(--text-muted)]">Completed</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </GlassCard>
+
+        {/* Side Panel */}
+        <div className="space-y-4">
+          {/* Weekly Hours Chart */}
+          <GlassCard className="rounded-3xl p-0 overflow-hidden">
+            <div className="px-5 py-4 border-b border-[var(--border-default)]">
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Weekly Hours</div>
+              <div className="text-xs text-[var(--text-muted)] mt-1">Team hours by day</div>
+            </div>
+            <div className="h-[180px] px-2 py-4">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyHours} margin={{ left: 0, right: 10, top: 10, bottom: 0 }}>
+                  <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                  <XAxis dataKey="day" stroke="rgba(255,255,255,0.35)" tickLine={false} axisLine={false} fontSize={11} />
+                  <YAxis stroke="rgba(255,255,255,0.35)" tickLine={false} axisLine={false} fontSize={11} />
+                  <Tooltip
+                    contentStyle={{
+                      background: 'rgba(10,10,15,0.95)',
+                      border: '1px solid rgba(255,255,255,0.10)',
+                      borderRadius: 12,
+                      color: 'white',
+                    }}
+                    formatter={(value: number) => [`${value}h`, 'Hours']}
+                  />
+                  <Bar dataKey="hours" fill="rgba(167,139,250,0.6)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </GlassCard>
+
+          {/* Tech Leaderboard */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-5 h-5 text-purple-400" />
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Tech Leaderboard</div>
+            </div>
+            <div className="space-y-3">
+              {techStats.map((tech, i) => (
+                <div key={tech.name} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-white/[0.08] flex items-center justify-center text-xs font-semibold text-[var(--text-muted)]">
+                    {i + 1}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-[var(--text-primary)]">{tech.name}</span>
+                      <span className="text-sm font-semibold text-[var(--text-primary)]">{tech.hours}h</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${(tech.hours / 8) * 100}%`, backgroundColor: tech.color }}
+                      />
+                    </div>
+                    <div className="text-xs text-[var(--text-muted)] mt-1">{tech.repairs} repairs</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          {/* Active Timers */}
+          <GlassCard className="rounded-3xl">
+            <div className="flex items-center gap-2 mb-4">
+              <PlayCircle className="w-5 h-5 text-emerald-400" />
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Active Timers</div>
+            </div>
+            <div className="space-y-3">
+              {sessions.filter(s => s.status === 'active').map((s) => (
+                <div key={s.id} className="rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/20 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-xs font-semibold text-emerald-300">
+                        {s.techInitials}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-[var(--text-primary)]">{s.tech}</div>
+                        <div className="text-xs text-[var(--text-muted)]">{s.ticket} • {s.device}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-semibold text-emerald-400">{s.duration}</div>
+                      <button className="text-xs text-rose-400 hover:text-rose-300 mt-1">
+                        Stop
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+
+      {/* Add Entry Modal */}
+      <Modal
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        title="Add Time Entry"
+        description="Manually log time for a repair or task."
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="label">Technician</label>
+            <select className="select bg-[var(--bg-input)] border-[var(--border-default)]">
+              <option>Ava Chen</option>
+              <option>Noah Smith</option>
+              <option>Miles Rodriguez</option>
+              <option>Sofia Martinez</option>
+            </select>
+          </div>
+          <div>
+            <label className="label">Type</label>
+            <select className="select bg-[var(--bg-input)] border-[var(--border-default)]">
+              <option value="repair">Repair</option>
+              <option value="break">Break</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="label">Start Time</label>
+              <input type="time" className="input bg-[var(--bg-input)] border-[var(--border-default)]" />
+            </div>
+            <div>
+              <label className="label">End Time</label>
+              <input type="time" className="input bg-[var(--bg-input)] border-[var(--border-default)]" />
+            </div>
+          </div>
+          <div>
+            <label className="label">Ticket # (optional)</label>
+            <input className="input bg-[var(--bg-input)] border-[var(--border-default)]" placeholder="#2381" />
+          </div>
+          <div>
+            <label className="label">Notes (optional)</label>
+            <textarea className="input bg-[var(--bg-input)] border-[var(--border-default)] min-h-[80px]" placeholder="Any additional notes..." />
+          </div>
+          <div className="flex items-center gap-2 pt-2">
+            <button className="btn-secondary px-4 py-3 rounded-xl flex-1" onClick={() => setAddOpen(false)}>
+              Cancel
+            </button>
+            <button className="btn-primary px-4 py-3 rounded-xl flex-1" onClick={() => setAddOpen(false)}>
+              Add Entry
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
-

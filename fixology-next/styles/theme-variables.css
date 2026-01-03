@@ -1,0 +1,753 @@
+/* ============================================
+   FIXOLOGY THEME SYSTEM v2.1 - FIXED
+   Light mode that actually works
+   ============================================ */
+
+/* ===== DARK MODE (Default) ===== */
+:root,
+[data-theme="dark"],
+.dark {
+  --bg-base: #07070a;
+  --bg-elevated: #0a0a0e;
+  --bg-surface: #0d0d12;
+  --bg-card: rgba(255, 255, 255, 0.02);
+  --bg-card-hover: rgba(255, 255, 255, 0.04);
+  --bg-card-active: rgba(255, 255, 255, 0.06);
+  --bg-input: rgba(255, 255, 255, 0.04);
+  --bg-input-hover: rgba(255, 255, 255, 0.06);
+  --bg-input-focus: rgba(255, 255, 255, 0.08);
+  
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.70);
+  --text-muted: rgba(255, 255, 255, 0.50);
+  --text-faint: rgba(255, 255, 255, 0.30);
+  
+  --accent-primary: #8B5CF6;
+  --accent-primary-hover: #9D6FFF;
+  --accent-secondary: #D946EF;
+  
+  --status-success: #10B981;
+  --status-success-bg: rgba(16, 185, 129, 0.15);
+  --status-success-border: rgba(16, 185, 129, 0.30);
+  --status-warning: #F59E0B;
+  --status-warning-bg: rgba(245, 158, 11, 0.15);
+  --status-warning-border: rgba(245, 158, 11, 0.30);
+  --status-error: #EF4444;
+  --status-error-bg: rgba(239, 68, 68, 0.15);
+  --status-error-border: rgba(239, 68, 68, 0.30);
+  --status-info: #3B82F6;
+  --status-info-bg: rgba(59, 130, 246, 0.15);
+  --status-info-border: rgba(59, 130, 246, 0.30);
+  
+  --glow-purple: rgba(139, 92, 246, 0.15);
+  --glow-fuchsia: rgba(217, 70, 239, 0.10);
+  
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.5);
+  
+  --topbar-bg: rgba(7, 7, 10, 0.85);
+  --sidebar-bg: rgba(10, 10, 14, 0.90);
+  --dropdown-bg: rgba(15, 15, 20, 0.95);
+  
+  color-scheme: dark;
+}
+
+/* ===== LIGHT MODE - CLEAN & FUNCTIONAL ===== */
+[data-theme="light"],
+.light {
+  /* Clean whites and grays - NO lavender tint */
+  --bg-base: #f5f5f7;
+  --bg-elevated: #ffffff;
+  --bg-surface: #fafafa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f5f5f7;
+  --bg-card-active: #ebebed;
+  --bg-input: #ffffff;
+  --bg-input-hover: #f5f5f7;
+  --bg-input-focus: #ffffff;
+  
+  /* Visible borders */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.12);
+  --border-strong: rgba(0, 0, 0, 0.20);
+  
+  /* High contrast text */
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #6b6b6b;
+  --text-faint: #9a9a9a;
+  
+  /* Darker accents for visibility */
+  --accent-primary: #7C3AED;
+  --accent-primary-hover: #6D28D9;
+  --accent-secondary: #C026D3;
+  
+  /* Visible status colors */
+  --status-success: #059669;
+  --status-success-bg: #ecfdf5;
+  --status-success-border: #a7f3d0;
+  --status-warning: #D97706;
+  --status-warning-bg: #fffbeb;
+  --status-warning-border: #fde68a;
+  --status-error: #DC2626;
+  --status-error-bg: #fef2f2;
+  --status-error-border: #fecaca;
+  --status-info: #2563EB;
+  --status-info-bg: #eff6ff;
+  --status-info-border: #bfdbfe;
+  
+  /* Subtle glows */
+  --glow-purple: rgba(124, 58, 237, 0.05);
+  --glow-fuchsia: rgba(192, 38, 211, 0.03);
+  
+  /* Light shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.08);
+  
+  /* Layout backgrounds - clean white */
+  --topbar-bg: rgba(255, 255, 255, 0.95);
+  --sidebar-bg: rgba(255, 255, 255, 0.98);
+  --dropdown-bg: #ffffff;
+  
+  color-scheme: light;
+}
+
+/* ===== BASE STYLES ===== */
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* ===== BACKGROUND STRUCTURE ===== */
+.bg-structure {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: background 0.2s ease;
+}
+
+[data-theme="dark"] .bg-structure,
+.dark .bg-structure {
+  background:
+    radial-gradient(ellipse 100% 80% at 0% 0%, var(--glow-purple), transparent 50%),
+    radial-gradient(ellipse 80% 60% at 100% 100%, var(--glow-fuchsia), transparent 50%),
+    var(--bg-base);
+}
+
+[data-theme="light"] .bg-structure,
+.light .bg-structure {
+  background: var(--bg-base);
+}
+
+/* ===== LAYOUT COMPONENTS ===== */
+.topbar-bg {
+  background: var(--topbar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.sidebar-bg {
+  background: var(--sidebar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dropdown-bg {
+  background: var(--dropdown-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ===== CARD STYLES ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: 0.75rem;
+}
+
+[data-theme="light"] .card,
+.light .card {
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================
+   LIGHT MODE OVERRIDES
+   Fix all the Tailwind white-based classes
+   ============================================ */
+
+/* --- Background Overrides --- */
+[data-theme="light"] .bg-\[\#07070a\],
+[data-theme="light"] .bg-\[\#0a0a0e\],
+[data-theme="light"] .bg-\[\#0d0d12\] {
+  background-color: var(--bg-base) !important;
+}
+
+[data-theme="light"] .bg-white\/\[0\.02\],
+[data-theme="light"] .bg-white\/\[0\.03\],
+[data-theme="light"] .bg-white\/\[0\.04\] {
+  background-color: var(--bg-card) !important;
+}
+
+[data-theme="light"] .bg-white\/\[0\.05\],
+[data-theme="light"] .bg-white\/\[0\.06\],
+[data-theme="light"] .bg-white\/\[0\.08\],
+[data-theme="light"] .bg-white\/\[0\.10\] {
+  background-color: var(--bg-card-hover) !important;
+}
+
+/* --- Border Overrides --- */
+[data-theme="light"] .border-white\/\[0\.04\],
+[data-theme="light"] .border-white\/\[0\.06\] {
+  border-color: var(--border-subtle) !important;
+}
+
+[data-theme="light"] .border-white\/\[0\.08\],
+[data-theme="light"] .border-white\/10,
+[data-theme="light"] .border-white\/\[0\.10\],
+[data-theme="light"] .border-white\/\[0\.12\] {
+  border-color: var(--border-default) !important;
+}
+
+/* --- Text Overrides --- */
+[data-theme="light"] .text-white,
+[data-theme="light"] .text-white\/95,
+[data-theme="light"] .text-white\/90 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .text-white\/85,
+[data-theme="light"] .text-white\/80,
+[data-theme="light"] .text-white\/75,
+[data-theme="light"] .text-white\/70 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .text-white\/60,
+[data-theme="light"] .text-white\/50 {
+  color: var(--text-muted) !important;
+}
+
+[data-theme="light"] .text-white\/40,
+[data-theme="light"] .text-white\/30,
+[data-theme="light"] .text-white\/20 {
+  color: var(--text-faint) !important;
+}
+
+/* --- Placeholder Overrides --- */
+[data-theme="light"] .placeholder-white\/30::placeholder,
+[data-theme="light"] .placeholder-white\/40::placeholder,
+[data-theme="light"] .placeholder-white\/50::placeholder {
+  color: var(--text-faint) !important;
+}
+
+/* --- Hover State Overrides --- */
+[data-theme="light"] .hover\:bg-white\/\[0\.02\]:hover,
+[data-theme="light"] .hover\:bg-white\/\[0\.04\]:hover,
+[data-theme="light"] .hover\:bg-white\/\[0\.06\]:hover,
+[data-theme="light"] .hover\:bg-white\/\[0\.08\]:hover,
+[data-theme="light"] .hover\:bg-white\/10:hover {
+  background-color: var(--bg-card-hover) !important;
+}
+
+[data-theme="light"] .hover\:text-white:hover,
+[data-theme="light"] .hover\:text-white\/90:hover,
+[data-theme="light"] .hover\:text-white\/95:hover {
+  color: var(--text-primary) !important;
+}
+
+/* --- Focus State Overrides --- */
+[data-theme="light"] .focus\:border-white\/20:focus,
+[data-theme="light"] .focus\:border-white\/30:focus {
+  border-color: var(--border-strong) !important;
+}
+
+/* ============================================
+   STATUS BADGE FIXES - MUST BE VISIBLE
+   ============================================ */
+
+/* Success badges (Intake, Ready, etc) */
+[data-theme="light"] .bg-emerald-500\/10,
+[data-theme="light"] .bg-emerald-500\/15,
+[data-theme="light"] .bg-emerald-500\/20,
+[data-theme="light"] .bg-green-500\/10,
+[data-theme="light"] .bg-green-500\/15,
+[data-theme="light"] .bg-green-500\/20 {
+  background-color: var(--status-success-bg) !important;
+}
+
+[data-theme="light"] .border-emerald-500\/20,
+[data-theme="light"] .border-emerald-500\/30,
+[data-theme="light"] .border-green-500\/20,
+[data-theme="light"] .border-green-500\/30 {
+  border-color: var(--status-success-border) !important;
+}
+
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-emerald-500,
+[data-theme="light"] .text-green-400,
+[data-theme="light"] .text-green-500 {
+  color: var(--status-success) !important;
+}
+
+/* Warning badges (Watch, In Progress, etc) */
+[data-theme="light"] .bg-amber-500\/10,
+[data-theme="light"] .bg-amber-500\/15,
+[data-theme="light"] .bg-amber-500\/20,
+[data-theme="light"] .bg-yellow-500\/10,
+[data-theme="light"] .bg-yellow-500\/15,
+[data-theme="light"] .bg-yellow-500\/20,
+[data-theme="light"] .bg-orange-500\/10,
+[data-theme="light"] .bg-orange-500\/15,
+[data-theme="light"] .bg-orange-500\/20 {
+  background-color: var(--status-warning-bg) !important;
+}
+
+[data-theme="light"] .border-amber-500\/20,
+[data-theme="light"] .border-amber-500\/30,
+[data-theme="light"] .border-yellow-500\/20,
+[data-theme="light"] .border-yellow-500\/30,
+[data-theme="light"] .border-orange-500\/20,
+[data-theme="light"] .border-orange-500\/30 {
+  border-color: var(--status-warning-border) !important;
+}
+
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-amber-500,
+[data-theme="light"] .text-yellow-400,
+[data-theme="light"] .text-yellow-500,
+[data-theme="light"] .text-orange-400,
+[data-theme="light"] .text-orange-500 {
+  color: var(--status-warning) !important;
+}
+
+/* Error/Danger badges (High Risk, Late, etc) */
+[data-theme="light"] .bg-rose-500\/10,
+[data-theme="light"] .bg-rose-500\/15,
+[data-theme="light"] .bg-rose-500\/20,
+[data-theme="light"] .bg-red-500\/10,
+[data-theme="light"] .bg-red-500\/15,
+[data-theme="light"] .bg-red-500\/20 {
+  background-color: var(--status-error-bg) !important;
+}
+
+[data-theme="light"] .border-rose-500\/20,
+[data-theme="light"] .border-rose-500\/30,
+[data-theme="light"] .border-red-500\/20,
+[data-theme="light"] .border-red-500\/30 {
+  border-color: var(--status-error-border) !important;
+}
+
+[data-theme="light"] .text-rose-400,
+[data-theme="light"] .text-rose-500,
+[data-theme="light"] .text-red-400,
+[data-theme="light"] .text-red-500 {
+  color: var(--status-error) !important;
+}
+
+/* Info badges (Diagnosed, Low Risk, etc) */
+[data-theme="light"] .bg-blue-500\/10,
+[data-theme="light"] .bg-blue-500\/15,
+[data-theme="light"] .bg-blue-500\/20,
+[data-theme="light"] .bg-cyan-500\/10,
+[data-theme="light"] .bg-cyan-500\/15,
+[data-theme="light"] .bg-cyan-500\/20,
+[data-theme="light"] .bg-sky-500\/10,
+[data-theme="light"] .bg-sky-500\/15,
+[data-theme="light"] .bg-sky-500\/20 {
+  background-color: var(--status-info-bg) !important;
+}
+
+[data-theme="light"] .border-blue-500\/20,
+[data-theme="light"] .border-blue-500\/30,
+[data-theme="light"] .border-cyan-500\/20,
+[data-theme="light"] .border-cyan-500\/30,
+[data-theme="light"] .border-sky-500\/20,
+[data-theme="light"] .border-sky-500\/30 {
+  border-color: var(--status-info-border) !important;
+}
+
+[data-theme="light"] .text-blue-400,
+[data-theme="light"] .text-blue-500,
+[data-theme="light"] .text-cyan-400,
+[data-theme="light"] .text-cyan-500,
+[data-theme="light"] .text-sky-400,
+[data-theme="light"] .text-sky-500 {
+  color: var(--status-info) !important;
+}
+
+/* ============================================
+   PURPLE/VIOLET ACCENT FIXES
+   ============================================ */
+
+[data-theme="light"] .bg-violet-500\/10,
+[data-theme="light"] .bg-violet-500\/15,
+[data-theme="light"] .bg-violet-500\/20,
+[data-theme="light"] .bg-purple-500\/10,
+[data-theme="light"] .bg-purple-500\/15,
+[data-theme="light"] .bg-purple-500\/20,
+[data-theme="light"] .bg-\[\#8B5CF6\]\/10,
+[data-theme="light"] .bg-\[\#8B5CF6\]\/20 {
+  background-color: #f3f0ff !important;
+}
+
+[data-theme="light"] .border-violet-500\/20,
+[data-theme="light"] .border-violet-500\/30,
+[data-theme="light"] .border-purple-500\/20,
+[data-theme="light"] .border-purple-500\/30 {
+  border-color: #ddd6fe !important;
+}
+
+[data-theme="light"] .text-violet-400,
+[data-theme="light"] .text-violet-500,
+[data-theme="light"] .text-violet-300,
+[data-theme="light"] .text-purple-400,
+[data-theme="light"] .text-purple-500,
+[data-theme="light"] .text-purple-300 {
+  color: var(--accent-primary) !important;
+}
+
+/* Fuchsia/Pink accents */
+[data-theme="light"] .bg-fuchsia-500\/10,
+[data-theme="light"] .bg-fuchsia-500\/15,
+[data-theme="light"] .bg-fuchsia-500\/20,
+[data-theme="light"] .bg-pink-500\/10,
+[data-theme="light"] .bg-pink-500\/15,
+[data-theme="light"] .bg-pink-500\/20 {
+  background-color: #fdf4ff !important;
+}
+
+[data-theme="light"] .border-fuchsia-500\/20,
+[data-theme="light"] .border-fuchsia-500\/30,
+[data-theme="light"] .border-pink-500\/20,
+[data-theme="light"] .border-pink-500\/30 {
+  border-color: #f5d0fe !important;
+}
+
+[data-theme="light"] .text-fuchsia-400,
+[data-theme="light"] .text-fuchsia-500,
+[data-theme="light"] .text-fuchsia-300,
+[data-theme="light"] .text-pink-400,
+[data-theme="light"] .text-pink-500 {
+  color: var(--accent-secondary) !important;
+}
+
+/* ============================================
+   BUTTON & TAB FIXES - MUST BE VISIBLE
+   ============================================ */
+
+/* Tab buttons - ensure they're visible */
+[data-theme="light"] button[class*="bg-white/"],
+[data-theme="light"] [role="tab"][class*="bg-white/"] {
+  background-color: var(--bg-card) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border-default) !important;
+}
+
+[data-theme="light"] button[class*="bg-white/"]:hover,
+[data-theme="light"] [role="tab"][class*="bg-white/"]:hover {
+  background-color: var(--bg-card-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Active tab state */
+[data-theme="light"] [data-state="active"],
+[data-theme="light"] [aria-selected="true"] {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* ============================================
+   TABLE & LIST FIXES
+   ============================================ */
+
+/* Table headers */
+[data-theme="light"] th {
+  color: var(--text-muted) !important;
+  border-color: var(--border-default) !important;
+}
+
+/* Table rows */
+[data-theme="light"] tr {
+  border-color: var(--border-subtle) !important;
+}
+
+[data-theme="light"] tr:hover {
+  background-color: var(--bg-card-hover) !important;
+}
+
+/* Table cells */
+[data-theme="light"] td {
+  color: var(--text-primary) !important;
+}
+
+/* ============================================
+   INPUT & FORM FIXES
+   ============================================ */
+
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background-color: var(--bg-input) !important;
+  border-color: var(--border-default) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="light"] input:hover,
+[data-theme="light"] textarea:hover,
+[data-theme="light"] select:hover {
+  border-color: var(--border-strong) !important;
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1) !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: var(--text-faint) !important;
+}
+
+/* ============================================
+   DROPDOWN & POPOVER FIXES
+   ============================================ */
+
+[data-theme="light"] [data-radix-popper-content-wrapper] > div,
+[data-theme="light"] [role="menu"],
+[data-theme="light"] [role="listbox"],
+[data-theme="light"] [role="dialog"] {
+  background-color: var(--dropdown-bg) !important;
+  border-color: var(--border-default) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+[data-theme="light"] [role="menuitem"],
+[data-theme="light"] [role="option"] {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] [role="menuitem"]:hover,
+[data-theme="light"] [role="option"]:hover,
+[data-theme="light"] [role="menuitem"]:focus,
+[data-theme="light"] [role="option"]:focus {
+  background-color: var(--bg-card-hover) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ============================================
+   SHADOW FIXES
+   ============================================ */
+
+[data-theme="light"] .shadow-lg,
+[data-theme="light"] .shadow-xl,
+[data-theme="light"] .shadow-2xl {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+[data-theme="light"] .shadow-violet-500\/20,
+[data-theme="light"] .shadow-violet-500\/30,
+[data-theme="light"] .shadow-purple-500\/20,
+[data-theme="light"] .shadow-purple-500\/30 {
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.1) !important;
+}
+
+/* ============================================
+   GRADIENT FIXES
+   ============================================ */
+
+/* Keep gradient buttons but make text visible */
+[data-theme="light"] .bg-gradient-to-r.from-violet-600.to-fuchsia-600,
+[data-theme="light"] .bg-gradient-to-r.from-violet-500.to-fuchsia-500,
+[data-theme="light"] .bg-gradient-to-br.from-violet-600.to-fuchsia-600,
+[data-theme="light"] .bg-gradient-to-br.from-violet-500.to-fuchsia-500 {
+  /* Keep the gradient, just ensure text is white */
+  color: white !important;
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f5f5f7;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #b8b8be;
+}
+
+[data-theme="light"] * {
+  scrollbar-color: #d1d1d6 #f5f5f7;
+}
+
+/* ============================================
+   HEADER BUTTON FIXES FOR LIGHT MODE
+   ============================================ */
+
+/* Notification bell and user dropdown buttons */
+[data-theme="light"] header button[class*="bg-white/"],
+[data-theme="light"] .topbar-bg button[class*="bg-white/"] {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] header button[class*="bg-white/"]:hover,
+[data-theme="light"] .topbar-bg button[class*="bg-white/"]:hover {
+  background-color: #f5f5f7 !important;
+  border-color: rgba(0, 0, 0, 0.20) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Bell icon specifically */
+[data-theme="light"] header button svg,
+[data-theme="light"] .topbar-bg button svg {
+  color: var(--text-secondary) !important;
+  stroke: var(--text-secondary) !important;
+}
+
+[data-theme="light"] header button:hover svg,
+[data-theme="light"] .topbar-bg button:hover svg {
+  color: var(--text-primary) !important;
+  stroke: var(--text-primary) !important;
+}
+
+/* User avatar/initials circle */
+[data-theme="light"] header button span[class*="bg-"],
+[data-theme="light"] .topbar-bg button span[class*="rounded"] {
+  /* Keep purple avatar background */
+}
+
+/* Lucide icons in buttons */
+[data-theme="light"] header [class*="lucide"],
+[data-theme="light"] .topbar-bg [class*="lucide"] {
+  color: var(--text-secondary) !important;
+}
+
+/* ============================================
+   GHOST/SECONDARY BUTTON FIXES - CRITICAL
+   ============================================ */
+
+/* Ghost buttons that use white/[opacity] backgrounds */
+[data-theme="light"] button[class*="text-white"][class*="bg-white"],
+[data-theme="light"] button[class*="border-white"],
+[data-theme="light"] .btn-ghost,
+[data-theme="light"] .btn-secondary,
+[data-theme="light"] button.text-white\/70,
+[data-theme="light"] button.text-white\/80 {
+  background-color: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  color: #4a4a4a !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] button[class*="text-white"][class*="bg-white"]:hover,
+[data-theme="light"] button[class*="border-white"]:hover,
+[data-theme="light"] .btn-ghost:hover,
+[data-theme="light"] .btn-secondary:hover {
+  background-color: #f5f5f7 !important;
+  border-color: rgba(0, 0, 0, 0.25) !important;
+  color: #1a1a1a !important;
+}
+
+/* Specific fix for ghost buttons like Tags, Sort, Vendor, Clear, Cancel */
+[data-theme="light"] button:not([class*="bg-gradient"]):not([class*="bg-violet"]):not([class*="bg-purple"]):not([class*="bg-emerald"]):not([class*="bg-rose"]):not([class*="bg-amber"]) {
+  /* Only apply to buttons without colored backgrounds */
+}
+
+/* Table header row fix */
+[data-theme="light"] .bg-\[\#1a1a2e\],
+[data-theme="light"] .bg-\[\#0d0d12\],
+[data-theme="light"] [class*="bg-"][class*="/80"],
+[data-theme="light"] thead,
+[data-theme="light"] .table-header {
+  background-color: #f0f0f2 !important;
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] thead th,
+[data-theme="light"] .table-header * {
+  color: var(--text-secondary) !important;
+}
+
+/* Customer tags - VIP, Warranty, Business, New */
+[data-theme="light"] [class*="bg-violet"][class*="/10"],
+[data-theme="light"] [class*="bg-violet"][class*="/15"],
+[data-theme="light"] [class*="bg-purple"][class*="/10"],
+[data-theme="light"] [class*="bg-purple"][class*="/15"] {
+  background-color: #f3f0ff !important;
+  border: 1px solid #ddd6fe !important;
+  color: #7C3AED !important;
+}
+
+/* Low stock card content visibility */
+[data-theme="light"] [class*="text-white/90"],
+[data-theme="light"] [class*="text-white/80"] {
+  color: var(--text-primary) !important;
+}
+
+/* Badge text visibility */
+[data-theme="light"] span[class*="bg-"][class*="text-"] {
+  /* Ensure badge text is visible */
+}
+
+/* Reorder and action buttons */
+[data-theme="light"] button[class*="rounded"][class*="text-white\/"],
+[data-theme="light"] button[class*="border"][class*="bg-transparent"],
+[data-theme="light"] button:not([class*="bg-gradient"]):not([class*="bg-violet"]):not([class*="from-"]) {
+  /* Handled by specific overrides below */
+}
+
+/* ============================================
+   GLOW SPOT FIXES
+   ============================================ */
+
+.glow-spot {
+  position: absolute;
+  width: 540px;
+  height: 540px;
+  background: radial-gradient(circle, var(--glow-purple) 0%, transparent 70%);
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-theme="light"] .glow-spot {
+  opacity: 0.3;
+}
+
+/* ============================================
+   DASH SHELL & MAIN LAYOUT
+   ============================================ */
+
+.dash-shell {
+  min-height: 100vh;
+  position: relative;
+}
+
+.dash-main {
+  min-height: 100vh;
+  padding-left: 72px;
+  transition: padding-left 0.3s ease-out;
+}
+
+@media (max-width: 1024px) {
+  .dash-main {
+    padding-left: 0;
+  }
+}

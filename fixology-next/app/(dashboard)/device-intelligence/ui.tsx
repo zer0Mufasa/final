@@ -22,13 +22,13 @@ export function DeviceIntelligenceClient() {
       {/* Search */}
       <GlassCard className="p-6 rounded-3xl mb-6">
         <div className="flex items-center gap-3">
-          <Search className="w-5 h-5 text-white/50" />
+          <Search className="w-5 h-5 text-[var(--text-muted)]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by IMEI, serial number, or model..."
-            className="flex-1 bg-transparent text-white placeholder:text-white/40 outline-none text-sm"
+            className="flex-1 bg-transparent text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/40 outline-none text-sm"
           />
         </div>
       </GlassCard>
@@ -46,19 +46,19 @@ export function DeviceIntelligenceClient() {
           <div className="lg:col-span-2 space-y-6">
             {/* Device profile */}
             <GlassCard className="p-6 rounded-3xl">
-              <div className="text-sm font-semibold text-white/90 mb-4">Device profile</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Device profile</div>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/70">Model</span>
-                  <span className="text-sm font-semibold text-white/90">iPhone 14 Pro</span>
+                  <span className="text-sm text-[var(--text-secondary)]">Model</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">iPhone 14 Pro</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/70">IMEI</span>
-                  <span className="text-sm font-semibold text-white/90">356938035643809</span>
+                  <span className="text-sm text-[var(--text-secondary)]">IMEI</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">356938035643809</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-white/70">Serial</span>
-                  <span className="text-sm font-semibold text-white/90">F2LXN0C9Q1</span>
+                  <span className="text-sm text-[var(--text-secondary)]">Serial</span>
+                  <span className="text-sm font-semibold text-[var(--text-primary)]">F2LXN0C9Q1</span>
                 </div>
               </div>
             </GlassCard>
@@ -66,10 +66,10 @@ export function DeviceIntelligenceClient() {
             {/* Repair history */}
             <GlassCard className="p-6 rounded-3xl">
               <div className="flex items-center gap-2 mb-4">
-                <History className="w-5 h-5 text-white/50" />
-                <div className="text-sm font-semibold text-white/90">Repair history</div>
+                <History className="w-5 h-5 text-[var(--text-muted)]" />
+                <div className="text-sm font-semibold text-[var(--text-primary)]">Repair history</div>
               </div>
-              <div className="space-y-2 text-sm text-white/70">
+              <div className="space-y-2 text-sm text-[var(--text-secondary)]">
                 <div>Screen replacement — 2 weeks ago</div>
                 <div>Battery replacement — 3 months ago</div>
               </div>
@@ -80,21 +80,21 @@ export function DeviceIntelligenceClient() {
           <div className="space-y-6">
             <GlassCard className="p-6 rounded-3xl">
               <div className="flex items-center gap-2 mb-4">
-                <AlertTriangle className="w-5 h-5 text-white/50" />
-                <div className="text-sm font-semibold text-white/90">Risk indicators</div>
+                <AlertTriangle className="w-5 h-5 text-[var(--text-muted)]" />
+                <div className="text-sm font-semibold text-[var(--text-primary)]">Risk indicators</div>
               </div>
-              <div className="space-y-2 text-sm text-white/70">
+              <div className="space-y-2 text-sm text-[var(--text-secondary)]">
                 <div>No flags detected</div>
-                <div className="text-xs text-white/50 mt-2">UI only — will sync with IMEI checks</div>
+                <div className="text-xs text-[var(--text-muted)] mt-2">UI only — will sync with IMEI checks</div>
               </div>
             </GlassCard>
 
             <GlassCard className="p-6 rounded-3xl">
               <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-5 h-5 text-white/50" />
-                <div className="text-sm font-semibold text-white/90">Warranty</div>
+                <Shield className="w-5 h-5 text-[var(--text-muted)]" />
+                <div className="text-sm font-semibold text-[var(--text-primary)]">Warranty</div>
               </div>
-              <div className="text-sm text-white/70">No active warranty</div>
+              <div className="text-sm text-[var(--text-secondary)]">No active warranty</div>
             </GlassCard>
           </div>
         </div>

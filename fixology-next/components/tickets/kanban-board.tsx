@@ -12,9 +12,11 @@ import { TicketCard } from './ticket-card'
 export function KanbanBoard({
   tickets,
   setTickets,
+  onTicketClick,
 }: {
   tickets: Ticket[]
   setTickets: (next: Ticket[] | ((prev: Ticket[]) => Ticket[])) => void
+  onTicketClick?: (ticket: Ticket) => void
 }) {
   const [activeId, setActiveId] = useState<string | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -89,7 +91,6 @@ export function KanbanBoard({
     WAITING_PARTS: [],
     IN_REPAIR: [],
     READY: [],
-    PICKED_UP: [],
   }
   for (const t of tickets) grouped[t.status].push(t)
 
@@ -126,7 +127,7 @@ export function KanbanBoard({
       <div ref={scrollContainerRef} className="overflow-x-auto pb-2 cursor-grab active:cursor-grabbing">
         <div className="flex items-start gap-3 min-w-max">
           {ticketColumns.map((col) => (
-            <Column key={col.key} status={col.key} title={col.label} tickets={grouped[col.key]} isDragging={!!activeId} />
+            <Column key={col.key} status={col.key} title={col.label} tickets={grouped[col.key]} isDragging={!!activeId} onTicketClick={onTicketClick} />
           ))}
         </div>
       </div>
@@ -149,11 +150,13 @@ function Column({
   title,
   tickets,
   isDragging,
+  onTicketClick,
 }: {
   status: TicketStatus
   title: string
   tickets: Ticket[]
   isDragging: boolean
+  onTicketClick?: (ticket: Ticket) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: status })
 
@@ -180,7 +183,7 @@ function Column({
         <SortableContext items={tickets.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {tickets.map((t) => (
-              <TicketCard key={t.id} ticket={t} />
+              <TicketCard key={t.id} ticket={t} onClick={onTicketClick} />
             ))}
           </div>
         </SortableContext>

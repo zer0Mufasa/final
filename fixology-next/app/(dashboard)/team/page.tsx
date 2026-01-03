@@ -57,10 +57,10 @@ export default async function TeamPage() {
                     <Users className="w-5 h-5 text-purple-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white truncate">
+                    <p className="font-semibold text-[var(--text-primary)] truncate">
                       {user.name}
                     </p>
-                    <p className="text-sm text-white/60 truncate">
+                    <p className="text-sm text-[var(--text-primary)]/60 truncate">
                       {user.email} • {user.role}
                     </p>
                   </div>
@@ -73,10 +73,10 @@ export default async function TeamPage() {
           ) : (
             <div className="text-center py-12">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto mb-4">
-                <UserPlus className="w-8 h-8 text-white/40" />
+                <UserPlus className="w-8 h-8 text-[var(--text-primary)]/40" />
               </div>
-              <p className="text-lg font-semibold text-white mb-2">No team members</p>
-              <p className="text-sm text-white/60">Team management coming soon</p>
+              <p className="text-lg font-semibold text-[var(--text-primary)] mb-2">No team members</p>
+              <p className="text-sm text-[var(--text-primary)]/60">Team management coming soon</p>
             </div>
           )}
         </div>

@@ -73,8 +73,8 @@ export default function LoginPage() {
       }
 
       toast.success('Welcome back!')
-      router.push(redirect)
-      router.refresh()
+      // Use window.location for full page navigation to avoid refresh loop
+      window.location.href = redirect
     } catch (error: any) {
       console.error('Login exception:', error)
       toast.error(error?.message || 'Something went wrong. Please try again.')
@@ -87,8 +87,8 @@ export default function LoginPage() {
     // Clears any prior real-session cookies by moving the app into demo mode explicitly.
     document.cookie = `fx_demo=1; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`
     toast.success('Entered demo mode')
-    router.push('/dashboard')
-    router.refresh()
+    // Use window.location for full page navigation to avoid refresh loop
+    window.location.href = '/dashboard'
   }
 
   return (

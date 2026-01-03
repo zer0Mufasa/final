@@ -27,19 +27,19 @@ export function BusinessHealthClient() {
       {/* Repair mix */}
       <div className="grid gap-6 lg:grid-cols-2">
         <GlassCard className="p-6 rounded-3xl">
-          <div className="text-sm font-semibold text-white/90 mb-4">Repair mix</div>
+          <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Repair mix</div>
           <div className="space-y-3">
             {['Screen replacements (45%)', 'Battery replacements (30%)', 'Charge ports (15%)', 'Other (10%)'].map((item) => (
               <div key={item} className="flex items-center justify-between">
-                <span className="text-sm text-white/70">{item}</span>
+                <span className="text-sm text-[var(--text-secondary)]">{item}</span>
               </div>
             ))}
           </div>
         </GlassCard>
 
         <GlassCard className="p-6 rounded-3xl">
-          <div className="text-sm font-semibold text-white/90 mb-4">Profit health</div>
-          <div className="space-y-3 text-sm text-white/70">
+          <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Profit health</div>
+          <div className="space-y-3 text-sm text-[var(--text-secondary)]">
             <div>Margin: 52% (Healthy)</div>
             <div>Labor efficiency: 85%</div>
             <div>Parts utilization: 78%</div>

@@ -3,17 +3,21 @@
 import { cn } from '@/lib/utils/cn'
 import { theme } from '@/lib/theme/tokens'
 
+interface GlassRowProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string
+  children: React.ReactNode
+  interactive?: boolean
+}
+
 export function GlassRow({
   className,
   children,
   interactive = true,
-}: {
-  className?: string
-  children: React.ReactNode
-  interactive?: boolean
-}) {
+  ...props
+}: GlassRowProps) {
   return (
     <div
+      {...props}
       className={cn(
         'border flex items-center gap-3 px-4 py-3',
         interactive && 'hover:bg-white/[0.05] transition',

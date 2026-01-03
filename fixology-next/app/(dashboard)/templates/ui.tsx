@@ -51,8 +51,8 @@ export function TemplatesClient() {
           <div className="space-y-3">
             {mockTemplates[tab as keyof typeof mockTemplates].map((name) => (
               <div key={name} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 hover:bg-white/[0.05] transition-colors cursor-pointer">
-                <div className="text-sm font-semibold text-white/90">{name}</div>
-                <div className="text-xs text-white/50 mt-1">Click to edit or use</div>
+                <div className="text-sm font-semibold text-[var(--text-primary)]">{name}</div>
+                <div className="text-xs text-[var(--text-muted)] mt-1">Click to edit or use</div>
               </div>
             ))}
           </div>

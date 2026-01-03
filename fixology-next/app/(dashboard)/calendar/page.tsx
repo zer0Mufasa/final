@@ -56,14 +56,14 @@ export default async function CalendarPage() {
         <div className="glass-card">
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto mb-4">
-              <CalendarIcon className="w-8 h-8 text-white/40" />
+              <CalendarIcon className="w-8 h-8 text-[var(--text-primary)]/40" />
             </div>
-            <p className="text-lg font-semibold text-white mb-2">Calendar View</p>
-            <p className="text-sm text-white/60 mb-6">Calendar functionality coming soon</p>
+            <p className="text-lg font-semibold text-[var(--text-primary)] mb-2">Calendar View</p>
+            <p className="text-sm text-[var(--text-primary)]/60 mb-6">Calendar functionality coming soon</p>
 
             {upcomingTickets.length > 0 && (
               <div className="mt-8 space-y-3 max-w-2xl mx-auto">
-                <h3 className="text-sm font-semibold text-white/80 mb-4">Upcoming Items</h3>
+                <h3 className="text-sm font-semibold text-[var(--text-primary)]/80 mb-4">Upcoming Items</h3>
                 {upcomingTickets.map((ticket) => (
                   <div
                     key={ticket.id}
@@ -71,17 +71,17 @@ export default async function CalendarPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold text-white">{ticket.ticketNumber}</p>
-                        <p className="text-sm text-white/60">
+                        <p className="font-semibold text-[var(--text-primary)]">{ticket.ticketNumber}</p>
+                        <p className="text-sm text-[var(--text-primary)]/60">
                           {ticket.customer.firstName} {ticket.customer.lastName} • {ticket.deviceBrand} {ticket.deviceType}
                         </p>
                       </div>
                       {ticket.dueAt && (
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-semibold text-[var(--text-primary)]">
                             {new Date(ticket.dueAt).toLocaleDateString()}
                           </p>
-                          <p className="text-xs text-white/60">
+                          <p className="text-xs text-[var(--text-primary)]/60">
                             {new Date(ticket.dueAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>

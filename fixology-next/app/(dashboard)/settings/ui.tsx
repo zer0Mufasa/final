@@ -27,6 +27,7 @@ export function SettingsClient() {
   const router = useRouter()
   const sp = useSearchParams()
   const [loading, setLoading] = useState(true)
+  const [animationReady, setAnimationReady] = useState(false)
   const tab = sp.get('tab') || 'shop'
   const { actor, staff, setStaff } = useActor()
   const { canManageSettings } = useRole()
@@ -40,7 +41,10 @@ export function SettingsClient() {
   const [draftStatus, setDraftStatus] = useState<StaffStatus>('ACTIVE')
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 500)
+    const t = setTimeout(() => {
+      setLoading(false)
+      setTimeout(() => setAnimationReady(true), 100)
+    }, 500)
     return () => clearTimeout(t)
   }, [])
 
@@ -123,7 +127,7 @@ export function SettingsClient() {
         return (
           <div className="grid gap-4 lg:grid-cols-3">
             <GlassCard className="rounded-3xl lg:col-span-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                 <Users className="w-4 h-4 text-purple-300" aria-hidden="true" />
                 Team members
               </div>
@@ -144,11 +148,11 @@ export function SettingsClient() {
                   .map((m) => (
                     <div
                       key={m.id}
-                      className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 flex items-center justify-between gap-3"
+                      className="rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3 flex items-center justify-between gap-3"
                     >
                       <div className="min-w-0">
-                        <div className="text-sm font-semibold text-white/85 truncate">{m.name}</div>
-                        <div className="text-xs text-white/45 mt-0.5">
+                        <div className="text-sm font-semibold text-[var(--text-primary)]/85 truncate">{m.name}</div>
+                        <div className="text-xs text-[var(--text-primary)]/45 mt-0.5">
                           {m.role === 'FRONT_DESK' ? 'Front Desk' : m.role === 'TECHNICIAN' ? 'Technician' : 'Owner'}
                           {actor.id === m.id ? <span className="text-purple-300 font-semibold"> • current</span> : null}
                         </div>
@@ -160,7 +164,7 @@ export function SettingsClient() {
                             m.status === 'ACTIVE'
                               ? 'bg-green-500/20 text-green-300'
                               : m.status === 'OFF'
-                                ? 'bg-white/5 text-white/55 border border-white/10'
+                                ? 'bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]'
                                 : 'bg-amber-500/15 text-amber-300 border border-amber-400/20'
                           )}
                         >
@@ -191,13 +195,13 @@ export function SettingsClient() {
             </GlassCard>
 
             <GlassCard className="rounded-3xl">
-              <div className="text-sm font-semibold text-white/90">Roles & permissions</div>
-              <div className="mt-2 text-sm text-white/55 leading-relaxed">
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Roles & permissions</div>
+              <div className="mt-2 text-sm text-[var(--text-primary)]/55 leading-relaxed">
                 Keep front desk fast and technicians focused. Fine-grained permissions will be wired later.
               </div>
               <div className="mt-4 space-y-2">
                 {['Owner: billing + settings', 'Manager: tickets + customers', 'Technician: repairs + notes'].map((x) => (
-                  <div key={x} className="rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 text-sm text-white/75">
+                  <div key={x} className="rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3 text-sm text-[var(--text-primary)]/75">
                     {x}
                   </div>
                 ))}
@@ -205,8 +209,8 @@ export function SettingsClient() {
             </GlassCard>
 
             <GlassCard className="rounded-3xl lg:col-span-3">
-              <div className="text-sm font-semibold text-white/90">Performance snapshot</div>
-              <div className="text-xs text-white/50 mt-1">
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Performance snapshot</div>
+              <div className="text-xs text-[var(--text-muted)] mt-1">
                 UI-only — shows what an owner would see: workload, quality, and customer sentiment.
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -215,27 +219,27 @@ export function SettingsClient() {
                   .map((m) => {
                     const p = perfFor(m.id)
                     return (
-                      <div key={m.id} className="rounded-3xl bg-white/[0.03] border border-white/10 p-5">
-                        <div className="text-sm font-semibold text-white/90">{m.name}</div>
-                        <div className="text-xs text-white/45 mt-0.5">
+                      <div key={m.id} className="rounded-3xl bg-white/[0.03] border border-[var(--border-default)] p-5">
+                        <div className="text-sm font-semibold text-[var(--text-primary)]">{m.name}</div>
+                        <div className="text-xs text-[var(--text-primary)]/45 mt-0.5">
                           {m.role === 'TECHNICIAN' ? 'Technician' : 'Front Desk'}
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-                          <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-3">
-                            <div className="text-white/45 uppercase tracking-wider font-semibold">Tickets</div>
-                            <div className="text-white/85 font-bold mt-1">{p.tickets}</div>
+                          <div className="rounded-2xl bg-white/[0.02] border border-[var(--border-default)] p-3">
+                            <div className="text-[var(--text-primary)]/45 uppercase tracking-wider font-semibold">Tickets</div>
+                            <div className="text-[var(--text-primary)]/85 font-bold mt-1">{p.tickets}</div>
                           </div>
-                          <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-3">
-                            <div className="text-white/45 uppercase tracking-wider font-semibold">Avg time</div>
-                            <div className="text-white/85 font-bold mt-1">{p.avgHrs}h</div>
+                          <div className="rounded-2xl bg-white/[0.02] border border-[var(--border-default)] p-3">
+                            <div className="text-[var(--text-primary)]/45 uppercase tracking-wider font-semibold">Avg time</div>
+                            <div className="text-[var(--text-primary)]/85 font-bold mt-1">{p.avgHrs}h</div>
                           </div>
-                          <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-3">
-                            <div className="text-white/45 uppercase tracking-wider font-semibold">Rework</div>
-                            <div className="text-white/85 font-bold mt-1">{p.rework}%</div>
+                          <div className="rounded-2xl bg-white/[0.02] border border-[var(--border-default)] p-3">
+                            <div className="text-[var(--text-primary)]/45 uppercase tracking-wider font-semibold">Rework</div>
+                            <div className="text-[var(--text-primary)]/85 font-bold mt-1">{p.rework}%</div>
                           </div>
-                          <div className="rounded-2xl bg-white/[0.02] border border-white/10 p-3">
-                            <div className="text-white/45 uppercase tracking-wider font-semibold">CSAT</div>
-                            <div className="text-white/85 font-bold mt-1">{p.csat}/5</div>
+                          <div className="rounded-2xl bg-white/[0.02] border border-[var(--border-default)] p-3">
+                            <div className="text-[var(--text-primary)]/45 uppercase tracking-wider font-semibold">CSAT</div>
+                            <div className="text-[var(--text-primary)]/85 font-bold mt-1">{p.csat}/5</div>
                           </div>
                         </div>
                       </div>
@@ -251,10 +255,10 @@ export function SettingsClient() {
             <GlassCard className="rounded-3xl lg:col-span-2">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-sm font-semibold text-white/90">Plan & billing</div>
-                  <div className="text-xs text-white/50 mt-0.5">Designed to match your Pricing vibe (inside dashboard).</div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">Plan & billing</div>
+                  <div className="text-xs text-[var(--text-muted)] mt-0.5">Designed to match your Pricing vibe (inside dashboard).</div>
                 </div>
-                <span className="badge bg-white/5 text-white/55 border border-white/10">UI only</span>
+                <span className="badge bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]">UI only</span>
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
@@ -263,17 +267,17 @@ export function SettingsClient() {
                   { name: 'Professional', price: '$249', hint: '30-day warranty', active: true },
                   { name: 'Custom', price: '?', hint: 'Contact sales', active: false },
                 ].map((p) => (
-                  <div key={p.name} className={cn('rounded-3xl border p-5', p.active ? 'bg-purple-500/[0.08] border-purple-400/25' : 'bg-white/[0.03] border-white/10')}>
+                  <div key={p.name} className={cn('rounded-3xl border p-5', p.active ? 'bg-purple-500/[0.08] border-purple-400/25' : 'bg-white/[0.03] border-[var(--border-default)]')}>
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <div className="text-sm font-semibold text-white/90">{p.name}</div>
-                        <div className="text-xs text-white/50 mt-0.5">{p.hint}</div>
+                        <div className="text-sm font-semibold text-[var(--text-primary)]">{p.name}</div>
+                        <div className="text-xs text-[var(--text-muted)] mt-0.5">{p.hint}</div>
                       </div>
                       {p.active ? <span className="badge bg-green-500/20 text-green-300">Current</span> : null}
                     </div>
-                    <div className="mt-4 text-3xl font-extrabold tracking-tight text-white">
+                    <div className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
                       {p.price}
-                      {p.price.startsWith('$') ? <span className="text-sm font-semibold text-white/45">/mo</span> : null}
+                      {p.price.startsWith('$') ? <span className="text-sm font-semibold text-[var(--text-primary)]/45">/mo</span> : null}
                     </div>
                     <button className={cn('mt-4 w-full px-4 py-3 rounded-xl text-sm font-semibold', p.active ? 'btn-secondary' : p.name === 'Custom' ? 'btn-secondary' : 'btn-primary')}>
                       {p.active ? 'Manage billing' : p.name === 'Custom' ? 'Contact sales' : 'Upgrade (UI)'}
@@ -284,13 +288,13 @@ export function SettingsClient() {
             </GlassCard>
 
             <GlassCard className="rounded-3xl">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                 <CreditCard className="w-4 h-4 text-purple-300" aria-hidden="true" />
                 Payment method
               </div>
-              <div className="mt-3 rounded-2xl bg-white/[0.03] border border-white/10 p-4">
-                <div className="text-sm font-semibold text-white/85">Visa •••• 4242</div>
-                <div className="text-xs text-white/45 mt-1">Expires 12/28</div>
+              <div className="mt-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] p-4">
+                <div className="text-sm font-semibold text-[var(--text-primary)]/85">Visa •••• 4242</div>
+                <div className="text-xs text-[var(--text-primary)]/45 mt-1">Expires 12/28</div>
               </div>
               <button className="btn-secondary px-4 py-3 rounded-xl w-full mt-3">Update card (UI)</button>
               <button className="btn-secondary px-4 py-3 rounded-xl w-full mt-2">View invoices (UI)</button>
@@ -301,7 +305,7 @@ export function SettingsClient() {
         return (
           <div className="grid gap-4 lg:grid-cols-3">
             <GlassCard className="rounded-3xl lg:col-span-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                 <Bell className="w-4 h-4 text-purple-300" aria-hidden="true" />
                 Notifications
               </div>
@@ -312,10 +316,10 @@ export function SettingsClient() {
                   { t: 'Customer replies', d: 'Show replies in messages inbox.' },
                   { t: 'Daily summary', d: 'One recap in the morning.' },
                 ].map((n, i) => (
-                  <label key={n.t} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 cursor-pointer">
+                  <label key={n.t} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3 cursor-pointer">
                     <div>
-                      <div className="text-sm font-semibold text-white/85">{n.t}</div>
-                      <div className="text-xs text-white/45 mt-0.5">{n.d}</div>
+                      <div className="text-sm font-semibold text-[var(--text-primary)]/85">{n.t}</div>
+                      <div className="text-xs text-[var(--text-primary)]/45 mt-0.5">{n.d}</div>
                     </div>
                     <input type="checkbox" defaultChecked={i < 2} className="accent-[#a78bfa]" />
                   </label>
@@ -323,11 +327,11 @@ export function SettingsClient() {
               </div>
             </GlassCard>
             <GlassCard className="rounded-3xl">
-              <div className="text-sm font-semibold text-white/90">Channels</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Channels</div>
               <div className="mt-4 space-y-2">
                 {['In-app', 'Email', 'SMS (later)'].map((x, i) => (
-                  <label key={x} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 cursor-pointer">
-                    <span className="text-sm text-white/80">{x}</span>
+                  <label key={x} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3 cursor-pointer">
+                    <span className="text-sm text-[var(--text-primary)]/80">{x}</span>
                     <input type="checkbox" defaultChecked={i < 2} className="accent-[#a78bfa]" />
                   </label>
                 ))}
@@ -339,7 +343,7 @@ export function SettingsClient() {
         return (
           <div className="grid gap-4 lg:grid-cols-3">
             <GlassCard className="rounded-3xl lg:col-span-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                 <FileText className="w-4 h-4 text-purple-300" aria-hidden="true" />
                 Message templates (UI)
               </div>
@@ -349,9 +353,9 @@ export function SettingsClient() {
                   { name: 'Estimate ready', text: 'Your estimate is ready. Reply YES to approve and we’ll proceed.' },
                   { name: 'Ready for pickup', text: 'Good news — your repair is complete and ready for pickup.' },
                 ].map((t) => (
-                  <div key={t.name} className="rounded-3xl bg-white/[0.03] border border-white/10 p-5">
-                    <div className="text-sm font-semibold text-white/85">{t.name}</div>
-                    <div className="mt-2 text-sm text-white/65 leading-relaxed">{t.text}</div>
+                  <div key={t.name} className="rounded-3xl bg-white/[0.03] border border-[var(--border-default)] p-5">
+                    <div className="text-sm font-semibold text-[var(--text-primary)]/85">{t.name}</div>
+                    <div className="mt-2 text-sm text-[var(--text-primary)]/65 leading-relaxed">{t.text}</div>
                     <div className="mt-3 flex items-center gap-2">
                       <button className="btn-secondary px-4 py-2 rounded-xl text-sm">Edit</button>
                       <button className="btn-secondary px-4 py-2 rounded-xl text-sm">Duplicate</button>
@@ -361,8 +365,8 @@ export function SettingsClient() {
               </div>
             </GlassCard>
             <GlassCard className="rounded-3xl">
-              <div className="text-sm font-semibold text-white/90">Tone</div>
-              <div className="mt-2 text-sm text-white/55 leading-relaxed">
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Tone</div>
+              <div className="mt-2 text-sm text-[var(--text-primary)]/55 leading-relaxed">
                 Fixology templates are short, calm, and confident — designed for busy customers.
               </div>
               <button className="btn-primary px-4 py-3 rounded-xl w-full mt-4">Create template</button>
@@ -373,7 +377,7 @@ export function SettingsClient() {
         return (
           <div className="grid gap-4 lg:grid-cols-3">
             <GlassCard className="rounded-3xl lg:col-span-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                 <Lock className="w-4 h-4 text-purple-300" aria-hidden="true" />
                 Security
               </div>
@@ -391,10 +395,10 @@ export function SettingsClient() {
                   { t: 'Session timeout', d: 'Auto-log out after inactivity.' },
                   { t: '2FA (later)', d: 'Enable two-factor authentication.' },
                 ].map((n, i) => (
-                  <label key={n.t} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 cursor-pointer">
+                  <label key={n.t} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3 cursor-pointer">
                     <div>
-                      <div className="text-sm font-semibold text-white/85">{n.t}</div>
-                      <div className="text-xs text-white/45 mt-0.5">{n.d}</div>
+                      <div className="text-sm font-semibold text-[var(--text-primary)]/85">{n.t}</div>
+                      <div className="text-xs text-[var(--text-primary)]/45 mt-0.5">{n.d}</div>
                     </div>
                     <input type="checkbox" defaultChecked={i === 0} className="accent-[#a78bfa]" />
                   </label>
@@ -402,8 +406,8 @@ export function SettingsClient() {
               </div>
             </GlassCard>
             <GlassCard className="rounded-3xl">
-              <div className="text-sm font-semibold text-white/90">Password</div>
-              <div className="mt-2 text-xs text-white/50">UI only — wire later.</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Password</div>
+              <div className="mt-2 text-xs text-[var(--text-muted)]">UI only — wire later.</div>
               <button className="btn-secondary px-4 py-3 rounded-xl w-full mt-4">Change password</button>
               <button className="btn-secondary px-4 py-3 rounded-xl w-full mt-2">View login activity</button>
             </GlassCard>
@@ -413,18 +417,18 @@ export function SettingsClient() {
         return (
           <div className="grid gap-4 lg:grid-cols-3">
             <GlassCard className="rounded-3xl lg:col-span-2">
-              <div className="flex items-center gap-2 text-sm font-semibold text-white/90">
+              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
                 <SettingsIcon className="w-4 h-4 text-purple-300" aria-hidden="true" />
                 Shop
               </div>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="label">Shop name</label>
-                  <input className="input bg-white/[0.04] border-white/10" defaultValue="Demo Shop" />
+                  <input className="input bg-[var(--bg-input)] border-[var(--border-default)]" defaultValue="Demo Shop" />
                 </div>
                 <div>
                   <label className="label">Timezone</label>
-                  <select className="select bg-white/[0.04] border-white/10" defaultValue="America/Chicago">
+                  <select className="select bg-[var(--bg-input)] border-[var(--border-default)]" defaultValue="America/Chicago">
                     <option value="America/Chicago">America/Chicago</option>
                     <option value="America/Los_Angeles">America/Los_Angeles</option>
                     <option value="America/New_York">America/New_York</option>
@@ -432,15 +436,15 @@ export function SettingsClient() {
                 </div>
                 <div>
                   <label className="label">Phone</label>
-                  <input className="input bg-white/[0.04] border-white/10" defaultValue="(512) 555-0100" />
+                  <input className="input bg-[var(--bg-input)] border-[var(--border-default)]" defaultValue="(512) 555-0100" />
                 </div>
                 <div>
                   <label className="label">Email</label>
-                  <input className="input bg-white/[0.04] border-white/10" defaultValue="shop@fixology.local" />
+                  <input className="input bg-[var(--bg-input)] border-[var(--border-default)]" defaultValue="shop@fixology.local" />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="label">Address</label>
-                  <input className="input bg-white/[0.04] border-white/10" defaultValue="123 Repair Lane, Austin, TX" />
+                  <input className="input bg-[var(--bg-input)] border-[var(--border-default)]" defaultValue="123 Repair Lane, Austin, TX" />
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-end gap-2">
@@ -450,11 +454,11 @@ export function SettingsClient() {
             </GlassCard>
 
             <GlassCard className="rounded-3xl">
-              <div className="text-sm font-semibold text-white/90">Defaults</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Defaults</div>
               <div className="mt-4 space-y-2">
                 {['Require waiver on intake', 'Auto-set promised time to 4h', 'Notify on low stock'].map((x, i) => (
-                  <label key={x} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-white/10 px-4 py-3 cursor-pointer">
-                    <span className="text-sm text-white/80">{x}</span>
+                  <label key={x} className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] px-4 py-3 cursor-pointer">
+                    <span className="text-sm text-[var(--text-primary)]/80">{x}</span>
                     <input type="checkbox" defaultChecked={i < 2} className="accent-[#a78bfa]" />
                   </label>
                 ))}
@@ -466,18 +470,40 @@ export function SettingsClient() {
   })()
 
   return (
-    <div>
-      <PageHeader
-        title="Settings"
-        description="Configure your workspace: shop details, team, billing, notifications, templates, and security."
-        action={
-          <Button rightIcon={<ArrowRight className="w-4 h-4" aria-hidden="true" />} variant="secondary">
-            Save all (UI)
-          </Button>
-        }
-      />
+    <div className="space-y-6 animate-page-in">
+      <div className={cn(
+        "transition-all duration-500",
+        animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )}>
+        <PageHeader
+          title="Settings"
+          description="Configure your workspace: shop details, team, billing, notifications, templates, and security."
+          action={
+            <button
+              className={cn(
+                "group relative px-5 py-3 rounded-xl inline-flex items-center gap-2",
+                "text-sm font-semibold text-white",
+                "transition-all duration-300 ease-out",
+                "hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98]"
+              )}
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c026d3 100%)',
+                boxShadow: '0 8px 24px rgba(139, 92, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              Save all (UI)
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          }
+        />
+      </div>
 
-      <Tabs value={tab} onValueChange={setTab} tabs={tabDefs} className="mb-4" />
+      <div className={cn(
+        "transition-all duration-500",
+        animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )} style={{ transitionDelay: '100ms' }}>
+        <Tabs value={tab} onValueChange={setTab} tabs={tabDefs} className="mb-4" />
+      </div>
 
       {loading ? (
         <div className="grid gap-4 lg:grid-cols-3">
@@ -503,7 +529,7 @@ export function SettingsClient() {
               <div className="sm:col-span-2">
                 <label className="label">Name</label>
                 <input
-                  className="input bg-white/[0.04] border-white/10"
+                  className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                   value={draftName}
                   onChange={(e) => setDraftName(e.target.value)}
                 />
@@ -511,7 +537,7 @@ export function SettingsClient() {
               <div>
                 <label className="label">Role</label>
                 <select
-                  className="select bg-white/[0.04] border-white/10"
+                  className="select bg-[var(--bg-input)] border-[var(--border-default)]"
                   value={draftRole}
                   onChange={(e) => setDraftRole(e.target.value as any)}
                 >
@@ -523,7 +549,7 @@ export function SettingsClient() {
               <div>
                 <label className="label">Status</label>
                 <select
-                  className="select bg-white/[0.04] border-white/10"
+                  className="select bg-[var(--bg-input)] border-[var(--border-default)]"
                   value={draftStatus}
                   onChange={(e) => setDraftStatus(e.target.value as any)}
                 >
@@ -535,13 +561,13 @@ export function SettingsClient() {
               <div className="sm:col-span-2">
                 <label className="label">6-digit PIN</label>
                 <input
-                  className="input bg-white/[0.04] border-white/10 tracking-[0.45em] text-center font-semibold"
+                  className="input bg-[var(--bg-input)] border-[var(--border-default)] tracking-[0.45em] text-center font-semibold"
                   value={draftPin}
                   onChange={(e) => setDraftPin(normalizePin(e.target.value))}
                   placeholder="••••••"
                   inputMode="numeric"
                 />
-                <div className="text-xs text-white/45 mt-2">Each technician and owner has their own 6-digit PIN.</div>
+                <div className="text-xs text-[var(--text-primary)]/45 mt-2">Each technician and owner has their own 6-digit PIN.</div>
               </div>
             </div>
 
@@ -570,7 +596,7 @@ export function SettingsClient() {
                 Remove employee
               </button>
             ) : (
-              <div className="text-xs text-white/45">Owner account cannot be removed.</div>
+              <div className="text-xs text-[var(--text-primary)]/45">Owner account cannot be removed.</div>
             )}
           </div>
         )}
@@ -591,7 +617,7 @@ export function SettingsClient() {
               <div className="sm:col-span-2">
                 <label className="label">Name</label>
                 <input
-                  className="input bg-white/[0.04] border-white/10"
+                  className="input bg-[var(--bg-input)] border-[var(--border-default)]"
                   value={draftName}
                   onChange={(e) => setDraftName(e.target.value)}
                   placeholder="e.g., Sam"
@@ -600,7 +626,7 @@ export function SettingsClient() {
               <div>
                 <label className="label">Role</label>
                 <select
-                  className="select bg-white/[0.04] border-white/10"
+                  className="select bg-[var(--bg-input)] border-[var(--border-default)]"
                   value={draftRole}
                   onChange={(e) => setDraftRole(e.target.value as any)}
                 >
@@ -611,7 +637,7 @@ export function SettingsClient() {
               <div>
                 <label className="label">Status</label>
                 <select
-                  className="select bg-white/[0.04] border-white/10"
+                  className="select bg-[var(--bg-input)] border-[var(--border-default)]"
                   value={draftStatus}
                   onChange={(e) => setDraftStatus(e.target.value as any)}
                 >
@@ -623,7 +649,7 @@ export function SettingsClient() {
               <div className="sm:col-span-2">
                 <label className="label">6-digit PIN</label>
                 <input
-                  className="input bg-white/[0.04] border-white/10 tracking-[0.45em] text-center font-semibold"
+                  className="input bg-[var(--bg-input)] border-[var(--border-default)] tracking-[0.45em] text-center font-semibold"
                   value={draftPin}
                   onChange={(e) => setDraftPin(normalizePin(e.target.value))}
                   placeholder="••••••"
@@ -645,7 +671,7 @@ export function SettingsClient() {
               </button>
             </div>
 
-            <div className="text-xs text-white/45">
+            <div className="text-xs text-[var(--text-primary)]/45">
               Design note: this is UI-only. Later we’ll enforce PINs server-side and add audit logs.
             </div>
           </div>

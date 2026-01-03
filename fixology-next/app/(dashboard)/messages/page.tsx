@@ -62,14 +62,14 @@ export default async function MessagesPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="font-semibold text-white">
+                        <p className="font-semibold text-[var(--text-primary)]">
                           {message.customer.firstName} {message.customer.lastName}
                         </p>
-                        <span className="text-xs text-white/50">
+                        <span className="text-xs text-[var(--text-muted)]">
                           {new Date(message.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm text-white/70 whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap">{message.content}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
                           message.direction === 'OUTBOUND' 
@@ -78,7 +78,7 @@ export default async function MessagesPage() {
                         }`}>
                           {message.direction}
                         </span>
-                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-white/10 text-white/60">
+                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-white/10 text-[var(--text-primary)]/60">
                           {message.channel}
                         </span>
                       </div>
@@ -90,10 +90,10 @@ export default async function MessagesPage() {
           ) : (
             <div className="text-center py-12">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-8 h-8 text-white/40" />
+                <MessageSquare className="w-8 h-8 text-[var(--text-primary)]/40" />
               </div>
-              <p className="text-lg font-semibold text-white mb-2">No messages yet</p>
-              <p className="text-sm text-white/60">Messages sent to customers will appear here</p>
+              <p className="text-lg font-semibold text-[var(--text-primary)] mb-2">No messages yet</p>
+              <p className="text-sm text-[var(--text-primary)]/60">Messages sent to customers will appear here</p>
             </div>
           )}
         </div>

@@ -21,6 +21,14 @@ export async function GET(request: NextRequest) {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
+    // Get all active inventory items up front (used for low-stock alerts + duplicate detection).
+    const allInventory = await prisma.inventoryItem.findMany({
+      where: {
+        shopId,
+        isActive: true,
+      },
+    })
+
     // Get all parts used in last 30 days
     const recentParts = await prisma.ticketPart.findMany({
       where: {
@@ -75,7 +83,7 @@ export async function GET(request: NextRequest) {
       const similarItems = allInventory.filter(inv => 
         inv.id !== inventoryId &&
         inv.name.toLowerCase().includes(data.name.toLowerCase().split(' ')[0]) &&
-        Math.abs(Number(inv.sellPrice) - Number((data as any).sellPrice || 0)) < 20 // Similar price
+        Math.abs(Number(inv.sellPrice) - 0) < 20 // Similar price (best-effort)
       )
 
       return {
@@ -108,14 +116,6 @@ export async function GET(request: NextRequest) {
         return a.isLowStock ? -1 : 1
       }
       return b.suggestedReorder - a.suggestedReorder
-    })
-
-    // Get all low stock items (even if no recent usage)
-    const allInventory = await prisma.inventoryItem.findMany({
-      where: {
-        shopId,
-        isActive: true,
-      },
     })
 
     const lowStockAlerts = allInventory

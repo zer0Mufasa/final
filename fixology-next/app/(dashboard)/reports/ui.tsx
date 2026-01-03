@@ -24,9 +24,13 @@ import {
 
 export function ReportsClient() {
   const [loading, setLoading] = useState(true)
+  const [animationReady, setAnimationReady] = useState(false)
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 650)
+    const t = setTimeout(() => {
+      setLoading(false)
+      setTimeout(() => setAnimationReady(true), 100)
+    }, 650)
     return () => clearTimeout(t)
   }, [])
 
@@ -75,17 +79,36 @@ export function ReportsClient() {
     []
   )
 
+  const cn = (...classes: (string | boolean | undefined | null)[]) => classes.filter(Boolean).join(' ')
+
   return (
-    <div>
-      <PageHeader
-        title="Reports"
-        description="High-signal analytics for a busy shop: volume, turnaround, top repairs, and parts usage. (Mocked data for now.)"
-        action={
-          <Button rightIcon={<ArrowRight className="w-4 h-4" aria-hidden="true" />}>
-            Export (UI)
-          </Button>
-        }
-      />
+    <div className="space-y-6 animate-page-in">
+      <div className={cn(
+        "transition-all duration-500",
+        animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )}>
+        <PageHeader
+          title="Reports"
+          description="High-signal analytics for a busy shop: volume, turnaround, top repairs, and parts usage. (Mocked data for now.)"
+          action={
+            <button
+              className={cn(
+                "group relative px-5 py-3 rounded-xl inline-flex items-center gap-2",
+                "text-sm font-semibold text-white",
+                "transition-all duration-300 ease-out",
+                "hover:scale-[1.02] hover:-translate-y-0.5 active:scale-[0.98]"
+              )}
+              style={{
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c026d3 100%)',
+                boxShadow: '0 8px 24px rgba(139, 92, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              Export (UI)
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+          }
+        />
+      </div>
 
       {loading ? (
         <div className="grid gap-4 lg:grid-cols-4">
@@ -108,12 +131,12 @@ export function ReportsClient() {
 
           <div className="grid gap-4 mt-4 lg:grid-cols-4">
             <GlassCard className="rounded-3xl lg:col-span-2 p-0 overflow-hidden">
-              <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+              <div className="px-6 py-5 border-b border-[var(--border-default)] flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-white/90">Ticket volume</div>
-                  <div className="text-xs text-white/50 mt-1">Daily tickets — keep intake predictable.</div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">Ticket volume</div>
+                  <div className="text-xs text-[var(--text-muted)] mt-1">Daily tickets — keep intake predictable.</div>
                 </div>
-                <div className="badge bg-white/5 text-white/55 border border-white/10">Last 7 days</div>
+                <div className="badge bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]">Last 7 days</div>
               </div>
               <div className="h-[300px] px-2 py-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -135,9 +158,9 @@ export function ReportsClient() {
             </GlassCard>
 
             <GlassCard className="rounded-3xl p-0 overflow-hidden">
-              <div className="px-6 py-5 border-b border-white/10">
-                <div className="text-sm font-semibold text-white/90">Average turnaround</div>
-                <div className="text-xs text-white/50 mt-1">How fast repairs finish.</div>
+              <div className="px-6 py-5 border-b border-[var(--border-default)]">
+                <div className="text-sm font-semibold text-[var(--text-primary)]">Average turnaround</div>
+                <div className="text-xs text-[var(--text-muted)] mt-1">How fast repairs finish.</div>
               </div>
               <div className="h-[300px] px-2 py-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -153,9 +176,9 @@ export function ReportsClient() {
             </GlassCard>
 
             <GlassCard className="rounded-3xl p-0 overflow-hidden">
-              <div className="px-6 py-5 border-b border-white/10">
-                <div className="text-sm font-semibold text-white/90">Top repairs</div>
-                <div className="text-xs text-white/50 mt-1">Where revenue concentrates.</div>
+              <div className="px-6 py-5 border-b border-[var(--border-default)]">
+                <div className="text-sm font-semibold text-[var(--text-primary)]">Top repairs</div>
+                <div className="text-xs text-[var(--text-muted)] mt-1">Where revenue concentrates.</div>
               </div>
               <div className="h-[300px] px-2 py-4">
                 <ResponsiveContainer width="100%" height="100%">
@@ -171,12 +194,12 @@ export function ReportsClient() {
 
           <div className="grid gap-4 mt-4 lg:grid-cols-4">
             <GlassCard className="rounded-3xl lg:col-span-4 p-0 overflow-hidden">
-              <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+              <div className="px-6 py-5 border-b border-[var(--border-default)] flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-white/90">Parts usage</div>
-                  <div className="text-xs text-white/50 mt-1">Most used parts — keep these stocked.</div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">Parts usage</div>
+                  <div className="text-xs text-[var(--text-muted)] mt-1">Most used parts — keep these stocked.</div>
                 </div>
-                <div className="badge bg-white/5 text-white/55 border border-white/10">Mocked</div>
+                <div className="badge bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]">Mocked</div>
               </div>
               <div className="h-[280px] px-2 py-4">
                 <ResponsiveContainer width="100%" height="100%">

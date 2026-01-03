@@ -2,12 +2,22 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 import { OnboardingWizard } from './wizard'
+import { BillingRequired } from './billing-required'
 
 export const metadata = {
   title: 'Onboarding',
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: { billing?: string; reason?: string }
+}) {
+  // Handle billing required case first to prevent redirect loops
+  if (searchParams.billing === 'required') {
+    return <BillingRequired reason={searchParams.reason} />
+  }
+
   const supabase = createClient()
 
   const {
@@ -18,13 +28,20 @@ export default async function OnboardingPage() {
     redirect('/login?redirect=/onboarding')
   }
 
-  const shopUser = await prisma.shopUser.findFirst({
-    where: {
-      email: session.user.email!,
-      status: 'ACTIVE',
-    },
-    include: { shop: true },
-  })
+  let shopUser
+  try {
+    shopUser = await prisma.shopUser.findFirst({
+      where: {
+        email: session.user.email!,
+        status: 'ACTIVE',
+      },
+      include: { shop: true },
+    })
+  } catch (error) {
+    // Database error - show billing required page as fallback
+    console.error('Database error in onboarding:', error)
+    return <BillingRequired reason="database_error" />
+  }
 
   if (!shopUser) {
     redirect('/login?error=no_shop')

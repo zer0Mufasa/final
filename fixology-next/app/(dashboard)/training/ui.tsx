@@ -24,8 +24,8 @@ export function TrainingClient() {
         <GlassCard className="p-6 rounded-3xl">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-white/50" />
-              <div className="text-sm font-semibold text-white/90">Training mode</div>
+              <GraduationCap className="w-5 h-5 text-[var(--text-muted)]" />
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Training mode</div>
             </div>
             <button
               onClick={() => setTrainingMode(!trainingMode)}
@@ -34,11 +34,11 @@ export function TrainingClient() {
               {trainingMode ? (
                 <ToggleRight className="w-10 h-10 text-green-400" />
               ) : (
-                <ToggleLeft className="w-10 h-10 text-white/30" />
+                <ToggleLeft className="w-10 h-10 text-[var(--text-primary)]/30" />
               )}
             </button>
           </div>
-          <div className="text-sm text-white/70">
+          <div className="text-sm text-[var(--text-secondary)]">
             {trainingMode
               ? 'Training mode is active. All tickets are fake and clearly labeled.'
               : 'Enable training mode to practice with fake data.'}
@@ -47,7 +47,7 @@ export function TrainingClient() {
 
         {/* Progress */}
         <GlassCard className="p-6 rounded-3xl">
-          <div className="text-sm font-semibold text-white/90 mb-4">Training progress</div>
+          <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Training progress</div>
           <div className="space-y-3">
             {['Create a ticket', 'Move ticket to next stage', 'Send customer update', 'Create invoice'].map((item, i) => (
               <div key={item} className="flex items-center gap-3">
@@ -56,7 +56,7 @@ export function TrainingClient() {
                 ) : (
                   <div className="w-5 h-5 rounded-full border-2 border-white/20" />
                 )}
-                <div className={cn('text-sm', i < 2 ? 'text-white/70' : 'text-white/50')}>{item}</div>
+                <div className={cn('text-sm', i < 2 ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]')}>{item}</div>
               </div>
             ))}
           </div>

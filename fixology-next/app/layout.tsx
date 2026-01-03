@@ -4,7 +4,9 @@
 import type { Metadata } from 'next'
 import { IBM_Plex_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import '@/styles/theme-variables.css'
 import { Toaster } from '@/components/ui/toaster'
+import { ThemeScript } from '@/contexts/theme-context'
 
 const ibmPlexSans = IBM_Plex_Sans({
   subsets: ['latin'],
@@ -73,7 +75,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body
         className={`${ibmPlexSans.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >

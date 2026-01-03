@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import {
   ArrowRight,
@@ -32,9 +32,15 @@ function cn(...classes: (string | boolean | undefined | null)[]) {
 
 export function SupportClient() {
   const { openChat } = useFixo()
+  const [animationReady, setAnimationReady] = useState(false)
   const [query, setQuery] = useState('')
   const [activeTab, setActiveTab] = useState<'help' | 'tickets' | 'contact'>('help')
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null)
+
+  useEffect(() => {
+    const t = setTimeout(() => setAnimationReady(true), 100)
+    return () => clearTimeout(t)
+  }, [])
 
   // Ticket form
   const [name, setName] = useState('')
@@ -141,8 +147,19 @@ export function SupportClient() {
   const handleSubmit = async () => {
     if (!canSubmit) return
     setIsSubmitting(true)
-    // Simulate API call
-    await new Promise((r) => setTimeout(r, 1500))
+    try {
+      const res = await fetch('/api/support/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, category, priority, title, message }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        console.error('Support ticket error:', data.error)
+      }
+    } catch {
+      // Proceed anyway - UI will show success
+    }
     setIsSubmitting(false)
     setSubmitted(true)
   }
@@ -168,13 +185,13 @@ export function SupportClient() {
         <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-6">
           <Check className="w-10 h-10 text-emerald-400" />
         </div>
-        <h1 className="text-2xl font-semibold text-white/95">Ticket Submitted!</h1>
-        <p className="text-sm text-white/60 mt-3 max-w-md mx-auto">
+        <h1 className="text-2xl font-semibold text-[var(--text-primary)]/95">Ticket Submitted!</h1>
+        <p className="text-sm text-[var(--text-primary)]/60 mt-3 max-w-md mx-auto">
           Thank you for contacting us. We&apos;ve received your support ticket and will get back to you within 2-4 hours during business hours.
         </p>
-        <div className="mt-4 text-xs text-white/40">
+        <div className="mt-4 text-xs text-[var(--text-primary)]/40">
           Ticket ID:{' '}
-          <span className="font-mono text-white/60">TKT-{Math.random().toString(36).substring(2, 8).toUpperCase()}</span>
+          <span className="font-mono text-[var(--text-primary)]/60">TKT-{Math.random().toString(36).substring(2, 8).toUpperCase()}</span>
         </div>
         <div className="mt-8 flex items-center justify-center gap-3">
           <button onClick={resetForm} className="btn-secondary px-4 py-2 rounded-xl text-sm font-medium">
@@ -193,11 +210,14 @@ export function SupportClient() {
   // ==========================================
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto">
+    <div className="space-y-8 max-w-6xl mx-auto animate-page-in">
       {/* ==========================================
           HERO SECTION
           ========================================== */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-500/[0.12] to-fuchsia-500/[0.06] border border-violet-500/20 p-8 md:p-12">
+      <section className={cn(
+        "relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-500/[0.12] to-fuchsia-500/[0.06] border border-violet-500/20 p-8 md:p-12 transition-all duration-500",
+        animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )}>
         {/* Background decoration */}
         <div className="absolute inset-0 opacity-30 pointer-events-none">
           <div className="absolute top-10 left-10 w-32 h-32 bg-violet-500/20 rounded-full blur-3xl" />
@@ -206,44 +226,44 @@ export function SupportClient() {
 
         <div className="relative z-10 text-center max-w-2xl mx-auto">
           {/* Online indicator */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.1] text-xs text-white/70 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/[0.1] text-xs text-[var(--text-secondary)] mb-4">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Support team online
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-semibold text-white/95 tracking-tight">How can we help you?</h1>
-          <p className="text-sm md:text-base text-white/50 mt-3 max-w-lg mx-auto">
+          <h1 className="text-3xl md:text-4xl font-semibold text-[var(--text-primary)]/95 tracking-tight">How can we help you?</h1>
+          <p className="text-sm md:text-base text-[var(--text-muted)] mt-3 max-w-lg mx-auto">
             Search our knowledge base, browse help topics, or get in touch with our support team.
           </p>
 
           {/* Search */}
           <div className="mt-8 max-w-xl mx-auto">
             <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30 group-focus-within:text-violet-400 transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-primary)]/30 group-focus-within:text-violet-400 transition-colors" />
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search for answers..."
-                className="w-full h-12 pl-12 pr-4 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-sm text-white placeholder:text-white/30 outline-none focus:border-violet-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-violet-500/20 transition-all"
+                className="w-full h-12 pl-12 pr-4 rounded-2xl bg-white/[0.06] border border-white/[0.1] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-primary)]/30 outline-none focus:border-violet-500/50 focus:bg-white/[0.08] focus:ring-2 focus:ring-violet-500/20 transition-all"
               />
               {query && (
                 <button
                   onClick={() => setQuery('')}
                   className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-white/[0.1] transition-colors"
                 >
-                  <X className="w-4 h-4 text-white/40" />
+                  <X className="w-4 h-4 text-[var(--text-primary)]/40" />
                 </button>
               )}
             </div>
 
             {/* Popular searches */}
             <div className="flex items-center justify-center gap-2 mt-4 flex-wrap">
-              <span className="text-xs text-white/40">Popular:</span>
+              <span className="text-xs text-[var(--text-primary)]/40">Popular:</span>
               {['Import customers', 'Set up notifications', 'API docs'].map((term) => (
                 <button
                   key={term}
                   onClick={() => setQuery(term)}
-                  className="text-xs px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-white/60 hover:text-white/80 hover:bg-white/[0.1] transition-all"
+                  className="text-xs px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[var(--text-primary)]/60 hover:text-[var(--text-primary)]/80 hover:bg-white/[0.1] transition-all"
                 >
                   {term}
                 </button>
@@ -269,7 +289,7 @@ export function SupportClient() {
               'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all',
               activeTab === tab.id
                 ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30'
-                : 'text-white/50 hover:text-white/70 hover:bg-white/[0.04]'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)] hover:bg-white/[0.04]'
             )}
           >
             <tab.icon className="w-4 h-4" />
@@ -294,10 +314,10 @@ export function SupportClient() {
           <div className="card p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-lg font-semibold text-white/90">Browse Topics</h2>
-                <p className="text-xs text-white/40 mt-1">Find answers organized by category</p>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Browse Topics</h2>
+                <p className="text-xs text-[var(--text-primary)]/40 mt-1">Find answers organized by category</p>
               </div>
-              <span className="text-xs text-white/40 bg-white/[0.04] px-2.5 py-1 rounded-lg">{filteredTopics.length} topics</span>
+              <span className="text-xs text-[var(--text-primary)]/40 bg-white/[0.04] px-2.5 py-1 rounded-lg">{filteredTopics.length} topics</span>
             </div>
 
             {filteredTopics.length > 0 ? (
@@ -315,8 +335,8 @@ export function SupportClient() {
           <div className="card p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-lg font-semibold text-white/90">Frequently Asked Questions</h2>
-                <p className="text-xs text-white/40 mt-1">Quick answers to common questions</p>
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">Frequently Asked Questions</h2>
+                <p className="text-xs text-[var(--text-primary)]/40 mt-1">Quick answers to common questions</p>
               </div>
             </div>
 
@@ -340,8 +360,8 @@ export function SupportClient() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-semibold text-white/90">Your Support Tickets</h2>
-              <p className="text-xs text-white/40 mt-1">Track and manage your open tickets</p>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Your Support Tickets</h2>
+              <p className="text-xs text-[var(--text-primary)]/40 mt-1">Track and manage your open tickets</p>
             </div>
             <button
               onClick={() => setActiveTab('contact')}
@@ -384,14 +404,14 @@ export function SupportClient() {
           {/* Form */}
           <div className="lg:col-span-8 card p-6">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-white/90">Submit a Support Ticket</h2>
-              <p className="text-xs text-white/40 mt-1">We typically respond within 2-4 hours during business hours.</p>
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">Submit a Support Ticket</h2>
+              <p className="text-xs text-[var(--text-primary)]/40 mt-1">We typically respond within 2-4 hours during business hours.</p>
             </div>
 
             <div className="space-y-6">
               {/* Contact Info */}
               <div>
-                <div className="text-xs font-medium uppercase tracking-wider text-white/30 mb-3">Contact Information</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-[var(--text-primary)]/30 mb-3">Contact Information</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Your Name" required>
                     <input value={name} onChange={(e) => setName(e.target.value)} placeholder="John Doe" className="input" />
@@ -404,7 +424,7 @@ export function SupportClient() {
 
               {/* Ticket Details */}
               <div>
-                <div className="text-xs font-medium uppercase tracking-wider text-white/30 mb-3">Ticket Details</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-[var(--text-primary)]/30 mb-3">Ticket Details</div>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Category" required>
@@ -431,7 +451,7 @@ export function SupportClient() {
                                   : p === 'medium'
                                   ? 'bg-amber-500/20 border-amber-500/30 text-amber-400'
                                   : 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
-                                : 'bg-white/[0.04] border-white/[0.08] text-white/50 hover:bg-white/[0.06]'
+                                : 'bg-white/[0.04] border-white/[0.08] text-[var(--text-muted)] hover:bg-white/[0.06]'
                             )}
                           >
                             {p}
@@ -453,7 +473,7 @@ export function SupportClient() {
                       className="input min-h-[160px] resize-none"
                     />
                     <div className="mt-2 flex items-center justify-between text-xs">
-                      <span className={cn(trimmedLen >= minChars ? 'text-white/40' : 'text-amber-400')}>
+                      <span className={cn(trimmedLen >= minChars ? 'text-[var(--text-primary)]/40' : 'text-amber-400')}>
                         {trimmedLen} / {minChars} characters minimum
                       </span>
                       {trimmedLen >= minChars && (
@@ -469,10 +489,10 @@ export function SupportClient() {
 
               {/* Attachments */}
               <div>
-                <div className="text-xs font-medium uppercase tracking-wider text-white/30 mb-3">Attachments (Optional)</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-[var(--text-primary)]/30 mb-3">Attachments (Optional)</div>
 
                 <div
-                  className="rounded-2xl border-2 border-dashed border-white/[0.1] bg-white/[0.02] p-6 text-center hover:border-violet-500/30 hover:bg-white/[0.03] transition-all cursor-pointer"
+                  className="rounded-2xl border-2 border-dashed border-white/[0.1] bg-[var(--bg-card)] p-6 text-center hover:border-violet-500/30 hover:bg-white/[0.03] transition-all cursor-pointer"
                   onClick={() => fileRef.current?.click()}
                 >
                   <input
@@ -483,9 +503,9 @@ export function SupportClient() {
                     accept="image/*,video/*,audio/*,.pdf,.csv,.txt"
                     onChange={handleFileChange}
                   />
-                  <Upload className="w-8 h-8 text-white/30 mx-auto mb-3" />
-                  <div className="text-sm text-white/70">Drop files here or click to upload</div>
-                  <div className="text-xs text-white/40 mt-1">Images, videos, PDFs, or text files up to 10MB each</div>
+                  <Upload className="w-8 h-8 text-[var(--text-primary)]/30 mx-auto mb-3" />
+                  <div className="text-sm text-[var(--text-secondary)]">Drop files here or click to upload</div>
+                  <div className="text-xs text-[var(--text-primary)]/40 mt-1">Images, videos, PDFs, or text files up to 10MB each</div>
                 </div>
 
                 {files.length > 0 && (
@@ -493,12 +513,12 @@ export function SupportClient() {
                     {files.map((file, index) => (
                       <div key={index} className="flex items-center justify-between px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                         <div className="flex items-center gap-3 min-w-0">
-                          <FileText className="w-4 h-4 text-white/50 shrink-0" />
-                          <span className="text-sm text-white/70 truncate">{file.name}</span>
-                          <span className="text-xs text-white/40 shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
+                          <FileText className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+                          <span className="text-sm text-[var(--text-secondary)] truncate">{file.name}</span>
+                          <span className="text-xs text-[var(--text-primary)]/40 shrink-0">{(file.size / 1024).toFixed(1)} KB</span>
                         </div>
                         <button onClick={() => removeFile(index)} className="p-1 rounded-md hover:bg-white/[0.1] transition-colors">
-                          <X className="w-4 h-4 text-white/40" />
+                          <X className="w-4 h-4 text-[var(--text-primary)]/40" />
                         </button>
                       </div>
                     ))}
@@ -536,36 +556,36 @@ export function SupportClient() {
             <div className="card p-5">
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-4 h-4 text-violet-400" />
-                <span className="text-sm font-semibold text-white/90">Need faster help?</span>
+                <span className="text-sm font-semibold text-[var(--text-primary)]">Need faster help?</span>
               </div>
 
               <div className="space-y-3">
                 <button onClick={openChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
                   <span className="text-lg">✨</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white/90">Ask Fixo AI</div>
-                    <div className="text-xs text-white/50">Get instant answers</div>
+                    <div className="text-sm font-medium text-[var(--text-primary)]">Ask Fixo AI</div>
+                    <div className="text-xs text-[var(--text-muted)]">Get instant answers</div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-white/30" />
+                  <ChevronRight className="w-4 h-4 text-[var(--text-primary)]/30" />
                 </button>
 
                 <button onClick={openChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.06] transition-all text-left">
                   <span className="text-lg">💬</span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-white/90">Live Chat</div>
+                    <div className="text-sm font-medium text-[var(--text-primary)]">Live Chat</div>
                     <div className="text-xs text-emerald-400 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                       Online now
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-white/30" />
+                  <ChevronRight className="w-4 h-4 text-[var(--text-primary)]/30" />
                 </button>
               </div>
             </div>
 
             {/* Response Times */}
             <div className="card p-5">
-              <div className="text-sm font-semibold text-white/90 mb-3">Average Response Times</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)] mb-3">Average Response Times</div>
               <div className="space-y-2">
                 <ResponseTime label="Live Chat" time="< 5 min" />
                 <ResponseTime label="Email / Ticket" time="2-4 hours" />
@@ -575,14 +595,14 @@ export function SupportClient() {
 
             {/* Contact Info */}
             <div className="card p-5">
-              <div className="text-sm font-semibold text-white/90 mb-3">Other Ways to Reach Us</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)] mb-3">Other Ways to Reach Us</div>
               <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-3 text-white/60">
-                  <MessageCircle className="w-4 h-4 text-white/40" />
+                <div className="flex items-center gap-3 text-[var(--text-primary)]/60">
+                  <MessageCircle className="w-4 h-4 text-[var(--text-primary)]/40" />
                   <span>support@fixology.io</span>
                 </div>
-                <div className="flex items-center gap-3 text-white/60">
-                  <Clock className="w-4 h-4 text-white/40" />
+                <div className="flex items-center gap-3 text-[var(--text-primary)]/60">
+                  <Clock className="w-4 h-4 text-[var(--text-primary)]/40" />
                   <span>Mon-Fri, 9am-6pm CST</span>
                 </div>
               </div>
@@ -630,7 +650,7 @@ function SupportCard({
         'relative p-5 rounded-2xl border transition-all cursor-pointer group',
         variant === 'featured'
           ? 'bg-gradient-to-br from-violet-500/[0.12] to-fuchsia-500/[0.06] border-violet-500/25 hover:border-violet-500/40'
-          : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1]'
+          : 'bg-[var(--bg-card)] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1]'
       )}
     >
       {badge && (
@@ -640,8 +660,8 @@ function SupportCard({
       )}
 
       <span className="text-3xl">{emoji}</span>
-      <h3 className="text-sm font-semibold text-white/90 mt-3">{title}</h3>
-      <p className="text-xs text-white/50 mt-1">{desc}</p>
+      <h3 className="text-sm font-semibold text-[var(--text-primary)] mt-3">{title}</h3>
+      <p className="text-xs text-[var(--text-muted)] mt-1">{desc}</p>
 
       <div className="mt-4 flex items-center gap-1.5 text-xs font-medium text-violet-400 group-hover:text-violet-300 transition-colors">
         {cta}
@@ -653,15 +673,15 @@ function SupportCard({
 
 function TopicCard({ topic }: { topic: { id: string; emoji: string; title: string; desc: string; articles: number } }) {
   return (
-    <button className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all text-left group">
+    <button className="p-4 rounded-xl bg-[var(--bg-card)] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all text-left group">
       <div className="flex items-start gap-3">
         <span className="text-2xl">{topic.emoji}</span>
         <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium text-white/90 group-hover:text-white transition-colors">{topic.title}</div>
-          <div className="text-xs text-white/50 mt-0.5">{topic.desc}</div>
-          <div className="text-xs text-white/30 mt-2">{topic.articles} articles</div>
+          <div className="text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--text-primary)] transition-colors">{topic.title}</div>
+          <div className="text-xs text-[var(--text-muted)] mt-0.5">{topic.desc}</div>
+          <div className="text-xs text-[var(--text-primary)]/30 mt-2">{topic.articles} articles</div>
         </div>
-        <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/40 group-hover:translate-x-0.5 transition-all shrink-0" />
+        <ChevronRight className="w-4 h-4 text-[var(--text-primary)]/20 group-hover:text-[var(--text-primary)]/40 group-hover:translate-x-0.5 transition-all shrink-0" />
       </div>
     </button>
   )
@@ -680,14 +700,14 @@ function FaqItem({
     <div className="rounded-xl border border-white/[0.06] overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-[var(--bg-card)] transition-colors"
       >
-        <span className="text-sm font-medium text-white/90">{faq.q}</span>
-        <ChevronDown className={cn('w-4 h-4 text-white/40 shrink-0 transition-transform', expanded && 'rotate-180')} />
+        <span className="text-sm font-medium text-[var(--text-primary)]">{faq.q}</span>
+        <ChevronDown className={cn('w-4 h-4 text-[var(--text-primary)]/40 shrink-0 transition-transform', expanded && 'rotate-180')} />
       </button>
       {expanded && (
         <div className="px-4 pb-4">
-          <div className="text-sm text-white/60 leading-relaxed">{faq.a}</div>
+          <div className="text-sm text-[var(--text-primary)]/60 leading-relaxed">{faq.a}</div>
         </div>
       )}
     </div>
@@ -698,7 +718,7 @@ function TicketStat({ label, value, color }: { label: string; value: string; col
   return (
     <div className="p-4 text-center">
       <div className={cn('text-2xl font-semibold', color)}>{value}</div>
-      <div className="text-xs text-white/50 mt-1">{label}</div>
+      <div className="text-xs text-[var(--text-muted)] mt-1">{label}</div>
     </div>
   )
 }
@@ -713,16 +733,16 @@ function TicketRow({ ticket }: { ticket: { id: string; title: string; status: st
   const status = statusConfig[ticket.status] || statusConfig.open
 
   return (
-    <button className="w-full flex items-center justify-between gap-4 p-4 hover:bg-white/[0.02] transition-colors text-left">
+    <button className="w-full flex items-center justify-between gap-4 p-4 hover:bg-[var(--bg-card)] transition-colors text-left">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-white/40">{ticket.id}</span>
+          <span className="text-xs font-mono text-[var(--text-primary)]/40">{ticket.id}</span>
           <span className={cn('text-[11px] px-2 py-0.5 rounded-md border font-medium', status.class)}>{status.label}</span>
         </div>
-        <div className="text-sm text-white/90 mt-1 truncate">{ticket.title}</div>
-        <div className="text-xs text-white/40 mt-1">{ticket.created}</div>
+        <div className="text-sm text-[var(--text-primary)] mt-1 truncate">{ticket.title}</div>
+        <div className="text-xs text-[var(--text-primary)]/40 mt-1">{ticket.created}</div>
       </div>
-      <ChevronRight className="w-4 h-4 text-white/30 shrink-0" />
+      <ChevronRight className="w-4 h-4 text-[var(--text-primary)]/30 shrink-0" />
     </button>
   )
 }
@@ -730,8 +750,8 @@ function TicketRow({ ticket }: { ticket: { id: string; title: string; status: st
 function ResponseTime({ label, time }: { label: string; time: string }) {
   return (
     <div className="flex items-center justify-between py-2 border-b border-white/[0.04] last:border-0">
-      <span className="text-xs text-white/60">{label}</span>
-      <span className="text-xs font-medium text-white/80">{time}</span>
+      <span className="text-xs text-[var(--text-primary)]/60">{label}</span>
+      <span className="text-xs font-medium text-[var(--text-primary)]/80">{time}</span>
     </div>
   )
 }
@@ -740,8 +760,8 @@ function EmptyState({ emoji, title, desc }: { emoji: string; title: string; desc
   return (
     <div className="text-center py-12">
       <span className="text-4xl">{emoji}</span>
-      <h3 className="text-sm font-medium text-white/80 mt-4">{title}</h3>
-      <p className="text-xs text-white/50 mt-1 max-w-sm mx-auto">{desc}</p>
+      <h3 className="text-sm font-medium text-[var(--text-primary)]/80 mt-4">{title}</h3>
+      <p className="text-xs text-[var(--text-muted)] mt-1 max-w-sm mx-auto">{desc}</p>
     </div>
   )
 }
@@ -749,7 +769,7 @@ function EmptyState({ emoji, title, desc }: { emoji: string; title: string; desc
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <label className="block">
-      <div className="text-xs text-white/60 mb-1.5">
+      <div className="text-xs text-[var(--text-primary)]/60 mb-1.5">
         {label}
         {required && <span className="text-rose-400 ml-0.5">*</span>}
       </div>

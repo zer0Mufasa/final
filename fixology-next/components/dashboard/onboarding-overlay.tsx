@@ -16,23 +16,32 @@ const COMPLETE_KEY = 'fx_onboarding_completed'
 const TWO_DAYS_MS = 1000 * 60 * 60 * 24 * 2
 
 export function OnboardingOverlay() {
+  const [mounted, setMounted] = useState(false)
   const [open, setOpen] = useState(false)
   const [current, setCurrent] = useState(0)
 
-  // Respect skip/complete persistence
+  // Respect skip/complete persistence - only run once on mount
   useEffect(() => {
+    // Check localStorage synchronously to determine initial state
     try {
-      const completed = typeof window !== 'undefined' ? localStorage.getItem(COMPLETE_KEY) : null
-      if (completed === '1') return
-      const dismissedAt = typeof window !== 'undefined' ? localStorage.getItem(DISMISS_KEY) : null
+      const completed = localStorage.getItem(COMPLETE_KEY)
+      if (completed === '1') {
+        setMounted(true)
+        return
+      }
+      const dismissedAt = localStorage.getItem(DISMISS_KEY)
       if (dismissedAt) {
         const ts = Number(dismissedAt)
-        if (!Number.isNaN(ts) && Date.now() - ts < TWO_DAYS_MS) return
+        if (!Number.isNaN(ts) && Date.now() - ts < TWO_DAYS_MS) {
+          setMounted(true)
+          return
+        }
       }
       setOpen(true)
     } catch {
       setOpen(true)
     }
+    setMounted(true)
   }, [])
 
   // Close on Escape (UI only)
@@ -44,7 +53,8 @@ export function OnboardingOverlay() {
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
-  if (!open) return null
+  // Don't render anything until mounted to prevent flash
+  if (!mounted || !open) return null
 
   const percent = Math.round(((current + 1) / steps.length) * 100)
 

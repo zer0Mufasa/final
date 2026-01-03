@@ -61,8 +61,8 @@ export function CommunicationsClient() {
         <div className="space-y-4">
           <GlassCard className="p-6 rounded-3xl">
             <div className="flex items-center justify-between mb-4">
-              <div className="text-sm font-semibold text-white/90">Inbox</div>
-              <div className="text-xs text-white/50">{mockMessages.filter((m) => m.unread).length} unread</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Inbox</div>
+              <div className="text-xs text-[var(--text-muted)]">{mockMessages.filter((m) => m.unread).length} unread</div>
             </div>
             <div className="space-y-2">
               {mockMessages.map((msg) => (
@@ -80,15 +80,15 @@ export function CommunicationsClient() {
                   <div className="flex items-center gap-2 mb-2">
                     {msg.type === 'sms' && <Phone className="w-4 h-4 text-blue-300" />}
                     {msg.type === 'email' && <Mail className="w-4 h-4 text-purple-300" />}
-                    {msg.type === 'note' && <MessageSquare className="w-4 h-4 text-white/50" />}
-                    <div className="text-xs font-semibold text-white/90">{msg.ticketNumber}</div>
+                    {msg.type === 'note' && <MessageSquare className="w-4 h-4 text-[var(--text-muted)]" />}
+                    <div className="text-xs font-semibold text-[var(--text-primary)]">{msg.ticketNumber}</div>
                     {msg.unread && (
                       <div className="w-2 h-2 rounded-full bg-yellow-400" />
                     )}
                   </div>
-                  <div className="text-sm font-semibold text-white/80 mb-1">{msg.customer}</div>
-                  <div className="text-xs text-white/60 line-clamp-2">{msg.message}</div>
-                  <div className="text-xs text-white/40 mt-2">{msg.time}</div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]/80 mb-1">{msg.customer}</div>
+                  <div className="text-xs text-[var(--text-primary)]/60 line-clamp-2">{msg.message}</div>
+                  <div className="text-xs text-[var(--text-primary)]/40 mt-2">{msg.time}</div>
                 </button>
               ))}
             </div>
@@ -109,7 +109,7 @@ export function CommunicationsClient() {
         <div>
           {selectedTicket ? (
             <GlassCard className="p-6 rounded-3xl">
-              <div className="text-sm font-semibold text-white/90 mb-4">Conversation</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Conversation</div>
               <div className="space-y-4 mb-6">
                 {[
                   { who: 'Fixology', msg: 'We received your device and started diagnostics.', time: 'Today, 10:14 AM' },
@@ -117,10 +117,10 @@ export function CommunicationsClient() {
                 ].map((m, i) => (
                   <div key={i} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="text-sm font-semibold text-white/85">{m.who}</div>
-                      <div className="text-xs text-white/45">{m.time}</div>
+                      <div className="text-sm font-semibold text-[var(--text-primary)]/85">{m.who}</div>
+                      <div className="text-xs text-[var(--text-primary)]/45">{m.time}</div>
                     </div>
-                    <div className="text-sm text-white/75 leading-relaxed">{m.msg}</div>
+                    <div className="text-sm text-[var(--text-primary)]/75 leading-relaxed">{m.msg}</div>
                   </div>
                 ))}
               </div>
@@ -133,9 +133,9 @@ export function CommunicationsClient() {
             </GlassCard>
           ) : (
             <GlassCard className="p-12 rounded-3xl text-center">
-              <MessageSquare className="w-12 h-12 text-white/20 mx-auto mb-4" />
-              <div className="text-sm font-semibold text-white/70 mb-2">Select a conversation</div>
-              <div className="text-xs text-white/50">Choose a message from the inbox to view the full conversation</div>
+              <MessageSquare className="w-12 h-12 text-[var(--text-primary)]/20 mx-auto mb-4" />
+              <div className="text-sm font-semibold text-[var(--text-secondary)] mb-2">Select a conversation</div>
+              <div className="text-xs text-[var(--text-muted)]">Choose a message from the inbox to view the full conversation</div>
             </GlassCard>
           )}
         </div>

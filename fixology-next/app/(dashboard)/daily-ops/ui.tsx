@@ -38,8 +38,8 @@ export function DailyOpsClient() {
           {/* Today's commitments */}
           <GlassCard className="p-6 rounded-3xl">
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-5 h-5 text-white/50" />
-              <div className="text-sm font-semibold text-white/90">Today's commitments</div>
+              <Clock className="w-5 h-5 text-[var(--text-muted)]" />
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Today's commitments</div>
             </div>
             <div className="space-y-3">
               {activeTickets.slice(0, 5).map((t) => {
@@ -54,13 +54,13 @@ export function DailyOpsClient() {
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <div className="text-sm font-semibold text-white/90">{t.ticketNumber}</div>
+                          <div className="text-sm font-semibold text-[var(--text-primary)]">{t.ticketNumber}</div>
                           <StatusBadge status={t.status} />
                           {t.risk !== 'none' && <RiskBadge risk={t.risk} />}
                         </div>
-                        <div className="text-sm text-white/70">{t.customerName} • {t.device}</div>
+                        <div className="text-sm text-[var(--text-secondary)]">{t.customerName} • {t.device}</div>
                       </div>
-                      <div className={cn('text-sm font-semibold', hrs < 0 ? 'text-red-300' : 'text-white/60')}>
+                      <div className={cn('text-sm font-semibold', hrs < 0 ? 'text-red-300' : 'text-[var(--text-primary)]/60')}>
                         {label}
                       </div>
                     </div>
@@ -75,15 +75,15 @@ export function DailyOpsClient() {
             <GlassCard className="p-6 rounded-3xl border-yellow-400/30 bg-yellow-500/5">
               <div className="flex items-center gap-2 mb-4">
                 <AlertTriangle className="w-5 h-5 text-yellow-300" />
-                <div className="text-sm font-semibold text-white/90">Tickets likely to miss promise time</div>
+                <div className="text-sm font-semibold text-[var(--text-primary)]">Tickets likely to miss promise time</div>
               </div>
               <div className="space-y-2">
                 {atRisk.slice(0, 3).map((t) => {
                   const hrs = hoursFromNow(t.promisedAt)
                   return (
                     <div key={t.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-3">
-                      <div className="text-sm font-semibold text-white/90">{t.ticketNumber}</div>
-                      <div className="text-xs text-white/60 mt-1">
+                      <div className="text-sm font-semibold text-[var(--text-primary)]">{t.ticketNumber}</div>
+                      <div className="text-xs text-[var(--text-primary)]/60 mt-1">
                         Promised in {hrs}h • {t.assignedTo || 'Unassigned'}
                       </div>
                     </div>
@@ -106,8 +106,8 @@ export function DailyOpsClient() {
           {/* Staff workload */}
           <GlassCard className="p-6 rounded-3xl">
             <div className="flex items-center gap-2 mb-4">
-              <Users className="w-5 h-5 text-white/50" />
-              <div className="text-sm font-semibold text-white/90">Staff workload</div>
+              <Users className="w-5 h-5 text-[var(--text-muted)]" />
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Staff workload</div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               {mockTechs.slice(0, 4).map((tech, i) => (
@@ -125,13 +125,13 @@ export function DailyOpsClient() {
           {/* Parts arriving */}
           <GlassCard className="p-6 rounded-3xl">
             <div className="flex items-center gap-2 mb-4">
-              <Package className="w-5 h-5 text-white/50" />
-              <div className="text-sm font-semibold text-white/90">Parts arriving today</div>
+              <Package className="w-5 h-5 text-[var(--text-muted)]" />
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Parts arriving today</div>
             </div>
-            <div className="space-y-2 text-sm text-white/70">
+            <div className="space-y-2 text-sm text-[var(--text-secondary)]">
               <div>iPhone 14 Pro Screen (x3) — 2:00 PM</div>
               <div>Samsung S23 Battery (x2) — 3:30 PM</div>
-              <div className="text-xs text-white/50 mt-2">UI only — will sync with suppliers</div>
+              <div className="text-xs text-[var(--text-muted)] mt-2">UI only — will sync with suppliers</div>
             </div>
           </GlassCard>
         </div>

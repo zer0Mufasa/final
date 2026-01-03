@@ -1,7 +1,5 @@
 'use client'
 
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { Ticket } from '@/lib/mock/types'
@@ -19,8 +17,13 @@ function hoursFromNow(iso: string) {
   return Math.round(diff / (60 * 60 * 1000))
 }
 
-export function TicketCard({ ticket }: { ticket: Ticket }) {
-  const router = useRouter()
+export function TicketCard({
+  ticket,
+  onClick,
+}: {
+  ticket: Ticket
+  onClick?: (ticket: Ticket) => void
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: ticket.id })
 
   const style = {
@@ -37,7 +40,7 @@ export function TicketCard({ ticket }: { ticket: Ticket }) {
     if ((e.target as HTMLElement).closest('button')) {
       return
     }
-    router.push(`/tickets/${ticket.id}`)
+    onClick?.(ticket)
   }
 
   return (
@@ -73,17 +76,6 @@ export function TicketCard({ ticket }: { ticket: Ticket }) {
             <span className="badge bg-red-500/15 text-red-200 border border-red-500/30 text-[11px]">
               Due {fmtMoney(ticket.price)}
             </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                // UI-only: would open checkout drawer
-                console.log('Collect payment (UI)')
-              }}
-              className="p-2 rounded-lg bg-white/5 border border-white/10 hover:border-purple-400/40 hover:text-white text-white/70"
-              title={`Due ${fmtMoney(ticket.price)}`}
-            >
-              $
-            </button>
           </div>
         </div>
       </div>
