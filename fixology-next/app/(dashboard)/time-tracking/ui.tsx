@@ -50,6 +50,14 @@ type TimeEntry = {
   status: 'active' | 'completed'
 }
 
+type ActivityEvent = {
+  id: string
+  userId: string
+  userName?: string
+  type: 'shop_open' | 'shop_close' | 'clock_in' | 'clock_out'
+  timestamp: string
+}
+
 const sessions: TimeEntry[] = [
   { id: 't1', tech: 'Ava Chen', techInitials: 'AC', ticket: '#2381', device: 'iPhone 14 Pro', start: '9:05 AM', end: null, duration: '1h 45m', type: 'repair', status: 'active' },
   { id: 't2', tech: 'Noah Smith', techInitials: 'NS', ticket: '#2378', device: 'MacBook Air', start: '8:50 AM', end: '10:30 AM', duration: '1h 40m', type: 'repair', status: 'completed' },
@@ -92,6 +100,7 @@ export function TimeTrackingPage() {
   const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
   const [entries, setEntries] = useState<TimeEntry[]>(sessions)
   const [summary, setSummary] = useState({ totalHoursToday: 21.5, activeTimers: 2 })
+  const [activity, setActivity] = useState<ActivityEvent[]>([])
 
   const fetchEntries = useCallback(async () => {
     try {
@@ -122,12 +131,25 @@ export function TimeTrackingPage() {
     }
   }, [])
 
+  const fetchActivity = useCallback(async () => {
+    try {
+      const res = await fetch('/api/activity')
+      if (!res.ok) return
+      const data = await res.json()
+      if (Array.isArray(data.events)) {
+        setActivity(data.events)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
   useEffect(() => {
-    fetchEntries().then(() => {
+    Promise.all([fetchEntries(), fetchActivity()]).then(() => {
       setLoading(false)
       setTimeout(() => setAnimationReady(true), 100)
     })
-  }, [fetchEntries])
+  }, [fetchEntries, fetchActivity])
 
   const handleAddEntry = async (clockIn: string, clockOut?: string) => {
     try {
@@ -431,34 +453,38 @@ export function TimeTrackingPage() {
             </div>
           </GlassCard>
 
-          {/* Active Timers */}
+          {/* Recent Activity */}
           <GlassCard className="rounded-3xl">
             <div className="flex items-center gap-2 mb-4">
-              <PlayCircle className="w-5 h-5 text-emerald-400" />
-              <div className="text-sm font-semibold text-[var(--text-primary)]">Active Timers</div>
+              <Clock className="w-5 h-5 text-purple-400" />
+              <div className="text-sm font-semibold text-[var(--text-primary)]">Recent Activity</div>
             </div>
             <div className="space-y-3">
-              {sessions.filter(s => s.status === 'active').map((s) => (
-                <div key={s.id} className="rounded-2xl bg-emerald-500/[0.08] border border-emerald-500/20 p-4">
+              {activity.slice(0, 8).map((ev) => (
+                <div key={ev.id} className="rounded-2xl bg-white/[0.03] border border-white/10 p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center text-xs font-semibold text-emerald-300">
-                        {s.techInitials}
+                      <div className="w-8 h-8 rounded-lg bg-purple-500/15 border border-purple-500/25 flex items-center justify-center text-xs font-semibold text-purple-200">
+                        {(ev.userName || 'U').slice(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-[var(--text-primary)]">{s.tech}</div>
-                        <div className="text-xs text-[var(--text-muted)]">{s.ticket} • {s.device}</div>
+                        <div className="text-sm font-medium text-[var(--text-primary)]">
+                          {ev.userName || 'User'}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted)] capitalize">
+                          {ev.type.replace('_', ' ')}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold text-emerald-400">{s.duration}</div>
-                      <button className="text-xs text-rose-400 hover:text-rose-300 mt-1">
-                        Stop
-                      </button>
+                    <div className="text-xs text-[var(--text-muted)]">
+                      {new Date(ev.timestamp).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                     </div>
                   </div>
                 </div>
               ))}
+              {activity.length === 0 && (
+                <div className="text-xs text-[var(--text-muted)]">No recent activity yet.</div>
+              )}
             </div>
           </GlassCard>
         </div>

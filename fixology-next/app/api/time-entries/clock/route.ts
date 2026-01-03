@@ -4,6 +4,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-context'
+import crypto from 'crypto'
+
+async function appendActivity(shopId: string, features: any, event: any) {
+  const activityLog = Array.isArray(features?.activityLog) ? features.activityLog : []
+  const nextLog = [
+    {
+      id: crypto.randomUUID(),
+      ...event,
+    },
+    ...activityLog,
+  ].slice(0, 200)
+
+  await prisma.shop.update({
+    where: { id: shopId },
+    data: {
+      features: {
+        ...features,
+        activityLog: nextLog,
+      },
+    },
+  })
+}
 
 export async function GET() {
   const context = await getShopContext()
@@ -51,6 +73,16 @@ export async function POST(request: NextRequest) {
       where: { id: open.id },
       data: { clockOut: new Date() },
     })
+    // Log activity
+    const shop = await prisma.shop.findUnique({ where: { id: context.shopId }, select: { features: true } })
+    await appendActivity(context.shopId, (shop?.features as any) || {}, {
+      type: 'clock_out',
+      userId: context.user.id,
+      userName: context.user.name || context.user.email,
+      timestamp: new Date().toISOString(),
+      entryId: closed.id,
+    })
+
     return NextResponse.json({ clockedIn: false, entry: closed })
   }
 
@@ -60,6 +92,16 @@ export async function POST(request: NextRequest) {
       clockIn: new Date(),
       breakMinutes: 0,
     },
+  })
+
+  // Log activity
+  const shop = await prisma.shop.findUnique({ where: { id: context.shopId }, select: { features: true } })
+  await appendActivity(context.shopId, (shop?.features as any) || {}, {
+    type: 'clock_in',
+    userId: context.user.id,
+    userName: context.user.name || context.user.email,
+    timestamp: new Date().toISOString(),
+    entryId: created.id,
   })
 
   return NextResponse.json({ clockedIn: true, entry: created })
