@@ -51,6 +51,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // If Supabase env vars are missing (common misconfig on Vercel), do NOT crash the entire site.
+  // Fail open: pages can still render, and server components can handle "no session" cases normally.
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return NextResponse.next()
+  }
+
   const secure = request.nextUrl.protocol === 'https:'
   let response = NextResponse.next({
     request: {
@@ -58,10 +66,8 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
+  try {
+    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value
@@ -87,15 +93,18 @@ export async function middleware(request: NextRequest) {
           response.cookies.set({ name, value: '', ...options, secure })
         },
       },
-    }
-  )
+    })
 
-  // IMPORTANT: keep this lightweight to avoid Supabase auth rate limits in dev.
-  // `getSession()` reads from cookies and will refresh only when needed.
-  try {
-    await supabase.auth.getSession()
+    // IMPORTANT: keep this lightweight to avoid Supabase auth rate limits in dev.
+    // `getSession()` reads from cookies and will refresh only when needed.
+    try {
+      await supabase.auth.getSession()
+    } catch {
+      // Best-effort: never break requests due to auth refresh failures.
+    }
   } catch {
-    // Best-effort: never break requests due to auth refresh failures.
+    // Never block requests if Supabase client init fails (invalid env var / bad URL, etc.)
+    return response
   }
 
   return response
