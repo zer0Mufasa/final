@@ -7,12 +7,13 @@ import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Skeleton } from '@/components/dashboard/ui/skeleton'
 import { Tabs } from '@/components/dashboard/ui/tabs'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Bell, CreditCard, FileText, Lock, Settings as SettingsIcon, Users } from 'lucide-react'
+import { ArrowRight, Bell, CreditCard, FileText, Lock, Settings as SettingsIcon, Users, Loader2, ExternalLink } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { useActor, type StaffMember, type StaffRole, type StaffStatus } from '@/contexts/actor-context'
 import { useRole } from '@/contexts/role-context'
 import { StateBanner } from '@/components/dashboard/ui/state-banner'
 import { Modal } from '@/components/dashboard/ui/modal'
+import { toast } from '@/components/ui/toaster'
 
 const tabDefs = [
   { value: 'shop', label: 'Shop' },
@@ -22,6 +23,251 @@ const tabDefs = [
   { value: 'templates', label: 'Templates' },
   { value: 'security', label: 'Security' },
 ]
+
+function BillingTabContent() {
+  const [subscription, setSubscription] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetchSubscription()
+  }, [])
+
+  const fetchSubscription = async () => {
+    try {
+      const res = await fetch('/api/stripe/subscription')
+      const data = await res.json()
+      setSubscription(data)
+    } catch (error) {
+      console.error('Failed to fetch subscription')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const openBillingPortal = async () => {
+    setPortalLoading(true)
+    try {
+      const res = await fetch('/api/stripe/create-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+
+      const data = await res.json()
+
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        toast.error(data.error || 'Failed to open billing portal')
+      }
+    } catch (error) {
+      toast.error('Failed to open billing portal')
+    } finally {
+      setPortalLoading(false)
+    }
+  }
+
+  const handleUpgrade = async (plan: 'starter' | 'professional') => {
+    setCheckoutLoading(plan)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      })
+
+      const data = await res.json()
+
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        toast.error(data.error || 'Failed to start checkout')
+      }
+    } catch (error) {
+      toast.error('Failed to start checkout')
+    } finally {
+      setCheckoutLoading(null)
+    }
+  }
+
+  const currentPlan = subscription?.plan || 'FREE'
+  const plans = [
+    { 
+      id: 'starter', 
+      name: 'Starter', 
+      price: '$99', 
+      hint: '14-day trial', 
+      active: currentPlan === 'STARTER',
+      dbPlan: 'STARTER'
+    },
+    { 
+      id: 'professional', 
+      name: 'Professional', 
+      price: '$249', 
+      hint: '30-day trial', 
+      active: currentPlan === 'PRO',
+      dbPlan: 'PRO'
+    },
+    { 
+      id: 'custom', 
+      name: 'Custom', 
+      price: '?', 
+      hint: 'Contact sales', 
+      active: false,
+      dbPlan: null
+    },
+  ]
+
+  if (loading) {
+    return (
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="flex items-center justify-center py-12 lg:col-span-2">
+          <Loader2 className="w-6 h-6 animate-spin text-white/60" />
+        </div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 animate-spin text-white/60" />
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-3">
+      <GlassCard className="rounded-3xl lg:col-span-2">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-sm font-semibold text-[var(--text-primary)]">Plan & billing</div>
+            <div className="text-xs text-[var(--text-muted)] mt-0.5">Upgrade or manage your subscription</div>
+          </div>
+        </div>
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {plans.map((p) => (
+            <div key={p.id} className={cn('rounded-3xl border p-5', p.active ? 'bg-purple-500/[0.08] border-purple-400/25' : 'bg-white/[0.03] border-[var(--border-default)]')}>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">{p.name}</div>
+                  <div className="text-xs text-[var(--text-muted)] mt-0.5">{p.hint}</div>
+                </div>
+                {p.active ? <span className="badge bg-green-500/20 text-green-300">Current</span> : null}
+              </div>
+              <div className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                {p.price}
+                {p.price.startsWith('$') ? <span className="text-sm font-semibold text-[var(--text-primary)]/45">/mo</span> : null}
+              </div>
+              <button
+                onClick={() => {
+                  if (p.id === 'custom') {
+                    window.open('mailto:sales@fixology.io?subject=Enterprise Plan Inquiry', '_blank')
+                  } else if (p.active) {
+                    openBillingPortal()
+                  } else {
+                    handleUpgrade(p.id as 'starter' | 'professional')
+                  }
+                }}
+                disabled={portalLoading || checkoutLoading === p.id}
+                className={cn(
+                  'mt-4 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all',
+                  p.active 
+                    ? 'btn-secondary' 
+                    : p.id === 'custom' 
+                      ? 'btn-secondary' 
+                      : 'btn-primary',
+                  (portalLoading || checkoutLoading === p.id) && 'opacity-50 cursor-not-allowed'
+                )}
+              >
+                {checkoutLoading === p.id ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                    Loading...
+                  </>
+                ) : portalLoading && p.active ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                    Opening...
+                  </>
+                ) : p.active ? (
+                  <>
+                    Manage billing
+                    <ExternalLink className="w-4 h-4 inline ml-2" />
+                  </>
+                ) : p.id === 'custom' ? (
+                  'Contact sales'
+                ) : (
+                  'Upgrade'
+                )}
+              </button>
+            </div>
+          ))}
+        </div>
+      </GlassCard>
+
+      <GlassCard className="rounded-3xl">
+        <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+          <CreditCard className="w-4 h-4 text-purple-300" aria-hidden="true" />
+          Payment method
+        </div>
+        {subscription?.hasSubscription ? (
+          <>
+            <div className="mt-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] p-4">
+              <div className="text-sm font-semibold text-[var(--text-primary)]/85">
+                {subscription?.planDetails?.name || 'Active subscription'}
+              </div>
+              <div className="text-xs text-[var(--text-primary)]/45 mt-1">
+                {subscription?.status === 'TRIAL' && subscription?.trialEnd
+                  ? `Trial ends ${new Date(subscription.trialEnd).toLocaleDateString()}`
+                  : subscription?.currentPeriodEnd
+                    ? `Next billing: ${new Date(subscription.currentPeriodEnd).toLocaleDateString()}`
+                    : 'Manage in portal'}
+              </div>
+            </div>
+            <button
+              onClick={openBillingPortal}
+              disabled={portalLoading}
+              className="btn-secondary px-4 py-3 rounded-xl w-full mt-3 disabled:opacity-50"
+            >
+              {portalLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                  Opening...
+                </>
+              ) : (
+                <>
+                  Update card
+                  <ExternalLink className="w-4 h-4 inline ml-2" />
+                </>
+              )}
+            </button>
+            <button
+              onClick={openBillingPortal}
+              disabled={portalLoading}
+              className="btn-secondary px-4 py-3 rounded-xl w-full mt-2 disabled:opacity-50"
+            >
+              {portalLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
+                  Opening...
+                </>
+              ) : (
+                <>
+                  View invoices
+                  <ExternalLink className="w-4 h-4 inline ml-2" />
+                </>
+              )}
+            </button>
+          </>
+        ) : (
+          <div className="mt-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] p-4">
+            <div className="text-sm text-[var(--text-primary)]/65">No active subscription</div>
+            <div className="text-xs text-[var(--text-primary)]/45 mt-1">Subscribe to get started</div>
+          </div>
+        )}
+      </GlassCard>
+    </div>
+  )
+}
 
 export function SettingsClient() {
   const router = useRouter()
@@ -250,57 +496,7 @@ export function SettingsClient() {
           </div>
         )
       case 'billing':
-        return (
-          <div className="grid gap-4 lg:grid-cols-3">
-            <GlassCard className="rounded-3xl lg:col-span-2">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-[var(--text-primary)]">Plan & billing</div>
-                  <div className="text-xs text-[var(--text-muted)] mt-0.5">Designed to match your Pricing vibe (inside dashboard).</div>
-                </div>
-                <span className="badge bg-white/5 text-[var(--text-primary)]/55 border border-[var(--border-default)]">UI only</span>
-              </div>
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {[
-                  { name: 'Starter', price: '$99', hint: '14-day trial', active: false },
-                  { name: 'Professional', price: '$249', hint: '30-day warranty', active: true },
-                  { name: 'Custom', price: '?', hint: 'Contact sales', active: false },
-                ].map((p) => (
-                  <div key={p.name} className={cn('rounded-3xl border p-5', p.active ? 'bg-purple-500/[0.08] border-purple-400/25' : 'bg-white/[0.03] border-[var(--border-default)]')}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold text-[var(--text-primary)]">{p.name}</div>
-                        <div className="text-xs text-[var(--text-muted)] mt-0.5">{p.hint}</div>
-                      </div>
-                      {p.active ? <span className="badge bg-green-500/20 text-green-300">Current</span> : null}
-                    </div>
-                    <div className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
-                      {p.price}
-                      {p.price.startsWith('$') ? <span className="text-sm font-semibold text-[var(--text-primary)]/45">/mo</span> : null}
-                    </div>
-                    <button className={cn('mt-4 w-full px-4 py-3 rounded-xl text-sm font-semibold', p.active ? 'btn-secondary' : p.name === 'Custom' ? 'btn-secondary' : 'btn-primary')}>
-                      {p.active ? 'Manage billing' : p.name === 'Custom' ? 'Contact sales' : 'Upgrade (UI)'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-
-            <GlassCard className="rounded-3xl">
-              <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
-                <CreditCard className="w-4 h-4 text-purple-300" aria-hidden="true" />
-                Payment method
-              </div>
-              <div className="mt-3 rounded-2xl bg-white/[0.03] border border-[var(--border-default)] p-4">
-                <div className="text-sm font-semibold text-[var(--text-primary)]/85">Visa •••• 4242</div>
-                <div className="text-xs text-[var(--text-primary)]/45 mt-1">Expires 12/28</div>
-              </div>
-              <button className="btn-secondary px-4 py-3 rounded-xl w-full mt-3">Update card (UI)</button>
-              <button className="btn-secondary px-4 py-3 rounded-xl w-full mt-2">View invoices (UI)</button>
-            </GlassCard>
-          </div>
-        )
+        return <BillingTabContent />
       case 'notifications':
         return (
           <div className="grid gap-4 lg:grid-cols-3">
