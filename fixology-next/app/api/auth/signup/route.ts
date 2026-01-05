@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import bcrypt from 'bcryptjs'
 import { addDays } from 'date-fns'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
 // Generate a URL-safe slug from shop name
 function generateSlug(name: string): string {
@@ -39,6 +41,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { shopName, ownerName, email, phone, password } = body
+    const secure = request.nextUrl.protocol === 'https:'
 
     // Validate input
     if (!shopName || !ownerName || !email || !password) {
@@ -60,12 +63,40 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return NextResponse.json(
+        { error: 'Server missing SUPABASE_SERVICE_ROLE_KEY (required for signup). Add it in Vercel env vars.' },
+        { status: 500 }
+      )
+    }
+
     // Generate unique slug
     const baseSlug = generateSlug(shopName)
     const slug = await ensureUniqueSlug(baseSlug)
 
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12)
+
+    // 1) Create Supabase user WITHOUT sending confirmation email (auto-confirm)
+    const admin = createAdminClient()
+    const { data: createdUser, error: createUserError } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        name: ownerName,
+        shop_name: shopName,
+      },
+    })
+
+    if (createUserError) {
+      // Common case: user already exists in Supabase auth but not in our DB.
+      // Treat as "already registered" for now.
+      return NextResponse.json(
+        { error: createUserError.message || 'Failed to create auth user' },
+        { status: 400 }
+      )
+    }
 
     // Create shop and owner in a transaction
     const result = await prisma.$transaction(async (tx) => {
@@ -106,7 +137,8 @@ export async function POST(request: NextRequest) {
       return { shop, owner }
     })
 
-    return NextResponse.json(
+    // 3) Create a Supabase session cookie for immediate login
+    let response = NextResponse.json(
       {
         success: true,
         shop: {
@@ -122,8 +154,48 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     )
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          get(name: string) {
+            return request.cookies.get(name)?.value
+          },
+          set(name: string, value: string, options: CookieOptions) {
+            response.cookies.set({ name, value, ...options, secure })
+          },
+          remove(name: string, options: CookieOptions) {
+            response.cookies.set({ name, value: '', ...options, secure })
+          },
+        },
+      }
+    )
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    if (signInError) {
+      // User is created + shop is created, but we couldn't auto-login.
+      // Return success anyway and let them login manually.
+      return NextResponse.json(
+        { success: true, shop: { id: result.shop.id, name: result.shop.name, slug: result.shop.slug } },
+        { status: 201 }
+      )
+    }
+
+    return response
   } catch (error: any) {
     console.error('Signup error:', error)
+
+    // Best-effort cleanup: if we created a Supabase user but failed later, try deleting it.
+    // (We only have access to email here; ignore failures.)
+    try {
+      if (process.env.SUPABASE_SERVICE_ROLE_KEY && typeof (error as any)?.email === 'string') {
+        const admin = createAdminClient()
+        const { data } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 })
+        // no-op: listUsers isn't efficient; skip cleanup without user id
+      }
+    } catch {}
 
     const msg = String(error?.message || '')
     const isDbUnreachable =

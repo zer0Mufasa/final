@@ -89,30 +89,7 @@ export default function SignupPage() {
     setLoading(true)
     
     try {
-      // Sign up with Supabase Auth
-      const supabase = createClient()
-      
-      const { error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.ownerName,
-            shop_name: formData.shopName,
-          },
-        },
-      })
-      
-      if (authError) {
-        if (authError.message.includes('already registered')) {
-          toast.error('This email is already registered. Please login.')
-        } else {
-          toast.error(authError.message)
-        }
-        return
-      }
-      
-      // Create shop via API
+      // Create shop + auth user via API (server-side, avoids Supabase confirmation email failures)
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
