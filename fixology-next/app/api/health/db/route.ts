@@ -18,6 +18,12 @@ function redactDb(url: string) {
 export async function GET() {
   const dbUrl = process.env.DATABASE_URL || ''
   const info = dbUrl ? redactDb(dbUrl) : { host: '(missing)', db: '(missing)' }
+  const version =
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_REF ||
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF ||
+    null
 
   try {
     // Basic connectivity
@@ -42,12 +48,12 @@ export async function GET() {
 
     if (missing.length) {
       return NextResponse.json(
-        { ok: false, database: info, schema: { ok: false, missing } },
+        { ok: false, version, database: info, schema: { ok: false, missing } },
         { status: 503 }
       )
     }
 
-    return NextResponse.json({ ok: true, database: info, schema: { ok: true } })
+    return NextResponse.json({ ok: true, version, database: info, schema: { ok: true } })
   } catch (error: any) {
     // Prisma "missing column" (schema out of date) can also show up here depending on the query.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2022') {
@@ -55,6 +61,7 @@ export async function GET() {
       return NextResponse.json(
         {
           ok: false,
+          version,
           database: info,
           schema: { ok: false, missing: missingColumn ? [missingColumn] : ['P2022 (missing column)'] },
           error: 'Database schema is out of date',
@@ -65,6 +72,7 @@ export async function GET() {
     return NextResponse.json(
       {
         ok: false,
+        version,
         database: info,
         error: error?.message || 'DB error',
       },
