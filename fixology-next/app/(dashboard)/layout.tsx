@@ -319,6 +319,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
+  try {
   const cookieStore = cookies()
   const isDemo = cookieStore.get('fx_demo')?.value === '1'
 
@@ -594,5 +595,47 @@ export default async function DashboardLayout({
       </RoleProvider>
     </ThemeProvider>
   )
+  } catch (err: any) {
+    // Preserve Next.js control-flow errors (redirect/notFound) so routing still works.
+    const digest = typeof err?.digest === 'string' ? err.digest : ''
+    if (digest.startsWith('NEXT_REDIRECT') || digest.startsWith('NEXT_NOT_FOUND')) {
+      throw err
+    }
+
+    return (
+      <div className="min-h-screen bg-[#07070a] flex items-center justify-center px-6">
+        <div className="glass-card" style={{ maxWidth: 860, width: '100%', padding: 28 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: 'rgba(196,181,253,.9)' }}>Fixology</div>
+          <h1 style={{ fontSize: 22, fontWeight: 900, color: '#fff', marginTop: 10, marginBottom: 10 }}>
+            Dashboard crashed (server-side)
+          </h1>
+          <p style={{ color: 'rgba(196,181,253,.75)', lineHeight: 1.7, marginBottom: 14 }}>
+            This page is currently failing to render on the server. The details below will tell us exactly what to fix.
+          </p>
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 14,
+              border: '1px solid rgba(167,139,250,.18)',
+              background: 'rgba(15,10,26,.45)',
+              color: 'rgba(196,181,253,.85)',
+              fontSize: 12,
+              lineHeight: 1.6,
+              marginBottom: 16,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            <div style={{ fontWeight: 900, marginBottom: 6 }}>Debug</div>
+            <div>Digest: {digest || 'n/a'}</div>
+            <div style={{ marginTop: 8 }}>{String(err?.message || err || '')}</div>
+          </div>
+          <a className="glow-button" href="/login" style={{ display: 'inline-block', padding: '12px 16px' }}>
+            Back to login
+          </a>
+        </div>
+      </div>
+    )
+  }
 }
 
