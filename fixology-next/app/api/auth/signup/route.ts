@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs'
 import { addDays } from 'date-fns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { Prisma } from '@prisma/client'
 
 // Generate a URL-safe slug from shop name
 function generateSlug(name: string): string {
@@ -63,6 +64,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      return NextResponse.json(
+        {
+          error:
+            'Server missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel.',
+        },
+        { status: 500 }
+      )
+    }
+
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json(
         { error: 'Server missing SUPABASE_SERVICE_ROLE_KEY (required for signup). Add it in Vercel env vars.' },
@@ -90,52 +101,69 @@ export async function POST(request: NextRequest) {
     })
 
     if (createUserError) {
-      // Common case: user already exists in Supabase auth but not in our DB.
-      // Treat as "already registered" for now.
       return NextResponse.json(
-        { error: createUserError.message || 'Failed to create auth user' },
+        {
+          error:
+            createUserError.message?.includes('already registered') ||
+            createUserError.message?.toLowerCase().includes('user already') ||
+            createUserError.status === 400
+              ? 'Email already registered'
+              : createUserError.message || 'Failed to create auth user',
+        },
         { status: 400 }
       )
     }
 
-    // Create shop and owner in a transaction
-    const result = await prisma.$transaction(async (tx) => {
-      // Create the shop
-      const shop = await tx.shop.create({
-        data: {
-          name: shopName,
-          slug,
-          email,
-          phone,
-          status: 'TRIAL',
-          plan: 'FREE',
-          trialEndsAt: addDays(new Date(), 14),
-          features: {
-            max_tickets: 25,
-            max_users: 1,
-            max_customers: 100,
-            sms: false,
-            ai: true,
-            workflows: false,
+    const supabaseUserId = createdUser?.user?.id
+
+    // 2) Create shop + owner in a transaction (and cleanup auth user if DB fails)
+    let result: { shop: any; owner: any }
+    try {
+      result = await prisma.$transaction(async (tx) => {
+        const shop = await tx.shop.create({
+          data: {
+            name: shopName,
+            slug,
+            email,
+            phone,
+            status: 'TRIAL',
+            plan: 'FREE',
+            trialEndsAt: addDays(new Date(), 14),
+            features: {
+              max_tickets: 25,
+              max_users: 1,
+              max_customers: 100,
+              sms: false,
+              ai: true,
+              workflows: false,
+            },
           },
-        },
-      })
+        })
 
-      // Create the shop owner
-      const owner = await tx.shopUser.create({
-        data: {
-          shopId: shop.id,
-          email,
-          passwordHash,
-          name: ownerName,
-          role: 'OWNER',
-          phone,
-          status: 'ACTIVE',
-        },
-      })
+        const owner = await tx.shopUser.create({
+          data: {
+            shopId: shop.id,
+            email,
+            passwordHash,
+            name: ownerName,
+            role: 'OWNER',
+            phone,
+            status: 'ACTIVE',
+          },
+        })
 
-      return { shop, owner }
-    })
+        return { shop, owner }
+      })
+    } catch (dbError) {
+      if (supabaseUserId) {
+        try {
+          await admin.auth.admin.deleteUser(supabaseUserId)
+        } catch {
+          // ignore cleanup errors
+        }
+      }
+      throw dbError
+    }
 
     // 3) Create a Supabase session cookie for immediate login
     let response = NextResponse.json(
@@ -156,8 +184,8 @@ export async function POST(request: NextRequest) {
     )
 
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
           get(name: string) {
@@ -187,27 +215,34 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Signup error:', error)
 
-    // Best-effort cleanup: if we created a Supabase user but failed later, try deleting it.
-    // (We only have access to email here; ignore failures.)
-    try {
-      if (process.env.SUPABASE_SERVICE_ROLE_KEY && typeof (error as any)?.email === 'string') {
-        const admin = createAdminClient()
-        const { data } = await admin.auth.admin.listUsers({ page: 1, perPage: 1 })
-        // no-op: listUsers isn't efficient; skip cleanup without user id
-      }
-    } catch {}
-
     const msg = String(error?.message || '')
     const isDbUnreachable =
       msg.includes('P1001') ||
       msg.includes("Can't reach database server") ||
       msg.toLowerCase().includes('prismaclientinitializationerror')
 
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') {
+        return NextResponse.json({ error: 'Email already registered' }, { status: 400 })
+      }
+
+      return NextResponse.json(
+        { error: 'Database error while creating account', detail: error.code },
+        { status: 500 }
+      )
+    }
+
     return NextResponse.json(
       {
         error: isDbUnreachable
           ? 'Database is unreachable from the server. Check Vercel DATABASE_URL (Supabase pooler recommended).'
-          : 'Failed to create account',
+          : msg.includes('SUPABASE_SERVICE_ROLE_KEY')
+            ? 'Server missing SUPABASE_SERVICE_ROLE_KEY (required for signup). Add it in Vercel env vars.'
+            : msg.includes('NEXT_PUBLIC_SUPABASE_URL') || msg.includes('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+              ? 'Server missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in Vercel.'
+              : 'Failed to create account',
+        // Keep detail short; helps debugging in Vercel logs without dumping stack traces to users.
+        detail: msg ? msg.slice(0, 180) : undefined,
       },
       { status: 500 }
     )
