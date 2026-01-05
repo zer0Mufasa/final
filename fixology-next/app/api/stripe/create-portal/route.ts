@@ -36,7 +36,22 @@ export async function POST(req: NextRequest) {
     // Get shop for user
     const shopUser = await prisma.shopUser.findFirst({
       where: { email: session.user.email, status: 'ACTIVE' },
-      include: { shop: true },
+      include: {
+        shop: {
+          // Avoid selecting columns that may not exist yet in production (e.g. imei_credits).
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            plan: true,
+            status: true,
+            trialEndsAt: true,
+            stripeCustomerId: true,
+            stripeSubscriptionId: true,
+            features: true,
+          },
+        },
+      },
     })
 
     const shop = shopId

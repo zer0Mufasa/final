@@ -42,7 +42,31 @@ export default async function OnboardingPage({
         email: session.user.email!,
         status: 'ACTIVE',
       },
-      include: { shop: true },
+      include: {
+        shop: {
+          // Avoid selecting columns that may not exist yet in production (e.g. imei_credits).
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            phone: true,
+            address: true,
+            city: true,
+            state: true,
+            zip: true,
+            timezone: true,
+            onboardingCompletedAt: true,
+            businessHours: true,
+            repairFocus: true,
+            plan: true,
+            status: true,
+            trialEndsAt: true,
+            features: true,
+            stripeCustomerId: true,
+            stripeSubscriptionId: true,
+          },
+        },
+      },
     })
   } catch (error) {
     // Database error - show billing required page as fallback

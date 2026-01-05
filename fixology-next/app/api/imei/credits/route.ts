@@ -5,6 +5,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 
+async function hasImeiCreditsColumn() {
+  const rows = (await prisma.$queryRawUnsafe(
+    `SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='shops' AND column_name='imei_credits' LIMIT 1`
+  )) as any[]
+  return !!rows?.length
+}
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -19,15 +26,26 @@ export async function GET(request: NextRequest) {
     // Get shop for this user
     const shopUser = await prisma.shopUser.findFirst({
       where: { email: user.email },
-      include: { shop: true },
+      include: { shop: { select: { id: true } } },
     })
 
-    if (!shopUser || !shopUser.shop) {
+    if (!shopUser?.shop?.id) {
       return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
     }
 
+    const enabled = await hasImeiCreditsColumn()
+    if (!enabled) {
+      return NextResponse.json({ credits: 0, enabled: false })
+    }
+
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopUser.shop.id },
+      select: { imeiCredits: true },
+    })
+
     return NextResponse.json({
-      credits: shopUser.shop.imeiCredits || 0,
+      credits: shop?.imeiCredits || 0,
+      enabled: true,
     })
   } catch (error: any) {
     console.error('IMEI Credits Error:', error)
@@ -56,14 +74,27 @@ export async function POST(request: NextRequest) {
     // Get shop for this user
     const shopUser = await prisma.shopUser.findFirst({
       where: { email: user.email },
-      include: { shop: true },
+      include: { shop: { select: { id: true } } },
     })
 
-    if (!shopUser || !shopUser.shop) {
+    if (!shopUser?.shop?.id) {
       return NextResponse.json({ error: 'Shop not found' }, { status: 404 })
     }
 
-    const currentCredits = shopUser.shop.imeiCredits || 0
+    const enabled = await hasImeiCreditsColumn()
+    if (!enabled) {
+      return NextResponse.json(
+        { error: 'Credits system is not enabled on the database yet. Apply migrations and retry.', enabled: false },
+        { status: 503 }
+      )
+    }
+
+    const shop = await prisma.shop.findUnique({
+      where: { id: shopUser.shop.id },
+      select: { imeiCredits: true },
+    })
+
+    const currentCredits = shop?.imeiCredits || 0
 
     if (action === 'deduct') {
       if (currentCredits < amount) {

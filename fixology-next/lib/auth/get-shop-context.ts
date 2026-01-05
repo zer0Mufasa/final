@@ -95,7 +95,20 @@ export async function getShopContext(): Promise<ShopContext> {
       email,
       status: 'ACTIVE',
     },
-    include: { shop: true },
+    include: {
+      shop: {
+        // IMPORTANT: do NOT select every column (e.g. imei_credits) because prod DB can lag behind migrations.
+        // Select only what we need for auth/context checks.
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          status: true,
+          plan: true,
+          features: true,
+        },
+      },
+    },
   })
 
   if (!shopUser) {

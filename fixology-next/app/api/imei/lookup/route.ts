@@ -49,25 +49,42 @@ export async function POST(request: NextRequest) {
       } = await supabase.auth.getUser()
 
       if (user) {
-        const shopUser = await prisma.shopUser.findFirst({
-          where: { email: user.email },
-          include: { shop: true },
-        })
+        // Credits are best-effort: if the database is missing the column (migrations not applied),
+        // do NOT crash lookup and do NOT block the scan. We simply skip enforcing credits.
+        try {
+          const rows = (await prisma.$queryRawUnsafe(
+            `SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='shops' AND column_name='imei_credits' LIMIT 1`
+          )) as any[]
+          const enabled = !!rows?.length
 
-        if (shopUser && shopUser.shop) {
-          const credits = shopUser.shop.imeiCredits || 0
-          if (credits < 1) {
-            return NextResponse.json(
-              { error: 'Insufficient credits. Deep scan requires 1 credit.' },
-              { status: 402 }
-            )
+          if (enabled) {
+            const shopUser = await prisma.shopUser.findFirst({
+              where: { email: user.email },
+              include: { shop: { select: { id: true } } },
+            })
+
+            if (shopUser?.shop?.id) {
+              const shop = await prisma.shop.findUnique({
+                where: { id: shopUser.shop.id },
+                select: { imeiCredits: true },
+              })
+              const credits = shop?.imeiCredits || 0
+              if (credits < 1) {
+                return NextResponse.json(
+                  { error: 'Insufficient credits. Deep scan requires 1 credit.' },
+                  { status: 402 }
+                )
+              }
+
+              // Deduct credit
+              await prisma.shop.update({
+                where: { id: shopUser.shop.id },
+                data: { imeiCredits: credits - 1 },
+              })
+            }
           }
-
-          // Deduct credit
-          await prisma.shop.update({
-            where: { id: shopUser.shop.id },
-            data: { imeiCredits: credits - 1 },
-          })
+        } catch (e) {
+          console.warn('IMEI credit check skipped due to DB/schema issue:', e)
         }
       }
     }
