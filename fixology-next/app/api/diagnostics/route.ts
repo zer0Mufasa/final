@@ -4,11 +4,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-context'
 import { z } from 'zod'
-import OpenAI from 'openai'
+import { createChatCompletion } from '@/lib/ai/novita-client'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 
 const DiagnosticsInputSchema = z.object({
   deviceType: z.string(),
@@ -67,23 +66,15 @@ Return ONLY valid JSON matching this schema:
   "riskFlags": ["flag 1", "flag 2", ...]
 }`
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert repair technician. Provide accurate, actionable diagnostics.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      response_format: { type: 'json_object' },
+    const completion = await createChatCompletion({
+      systemPrompt: 'You are an expert repair technician. Provide accurate, actionable diagnostics.',
+      messages: [{ role: 'user', content: prompt }],
+      responseFormat: 'json_object',
       temperature: 0.3,
+      maxTokens: 1200,
     })
 
-    const rawResult = JSON.parse(completion.choices[0].message.content || '{}')
+    const rawResult = JSON.parse(completion.content || '{}')
     const result = DiagnosticsOutputSchema.parse(rawResult)
 
     return NextResponse.json(result, { status: 200 })
@@ -97,9 +88,9 @@ Return ONLY valid JSON matching this schema:
       )
     }
 
-    if (error.message?.includes('API key')) {
+    if (error.message?.includes('NOVITA_API_KEY') || error.message?.includes('API key')) {
       return NextResponse.json(
-        { error: 'OpenAI API key not configured' },
+        { error: 'AI API key not configured' },
         { status: 500 }
       )
     }
