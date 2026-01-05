@@ -1,4 +1,4 @@
-// app/(dashboard)/pricing/page.tsx
+// app/(dashboard)/quotes/page.tsx
 // Pricing & Quotes - reduce price hesitation
 
 import { PricingClient } from './ui'

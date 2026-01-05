@@ -1,6 +1,6 @@
 'use client'
 
-// app/(dashboard)/pricing/ui.tsx
+// app/(dashboard)/quotes/ui.tsx
 // Quote builder and pricing confidence
 
 import { PageHeader } from '@/components/dashboard/ui/page-header'
