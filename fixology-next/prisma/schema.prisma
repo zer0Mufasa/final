@@ -27,26 +27,26 @@ model PlatformAdmin {
   updatedAt    DateTime     @updatedAt @map("updated_at")
 
   // Admin system relations (CEO portal)
-  auditLogs      AdminAuditLog[]
-  announcements  Announcement[] @relation("AnnouncementCreator")
-  shopNotes      ShopNote[]
-  templates      ShopTemplate[] @relation("TemplateCreator")
-  cloneHistory   CloneHistory[] @relation("CloneHistoryAdmin")
-  emailBroadcasts EmailBroadcast[] @relation("EmailBroadcastCreator")
-  alertRules     AlertRule[] @relation("AlertRuleCreator")
-  segments       Segment[] @relation("SegmentCreator")
-  experiments    Experiment[] @relation("ExperimentCreator")
+  auditLogs          AdminAuditLog[]
+  announcements      Announcement[]      @relation("AnnouncementCreator")
+  shopNotes          ShopNote[]
+  templates          ShopTemplate[]      @relation("TemplateCreator")
+  cloneHistory       CloneHistory[]      @relation("CloneHistoryAdmin")
+  emailBroadcasts    EmailBroadcast[]    @relation("EmailBroadcastCreator")
+  alertRules         AlertRule[]         @relation("AlertRuleCreator")
+  segments           Segment[]           @relation("SegmentCreator")
+  experiments        Experiment[]        @relation("ExperimentCreator")
   maintenanceWindows MaintenanceWindow[] @relation("MaintenanceCreator")
-  adminBookmarks AdminBookmark[]
-  apiKeys        ApiKey[] @relation("ApiKeyCreator")
+  adminBookmarks     AdminBookmark[]
+  apiKeys            ApiKey[]            @relation("ApiKeyCreator")
 
   @@map("platform_admins")
 }
 
 enum PlatformRole {
   SUPER_ADMIN // Mufasa - god mode
-  SUPPORT     // Customer support
-  BILLING     // Billing/finance
+  SUPPORT // Customer support
+  BILLING // Billing/finance
 }
 
 // ============================================================
@@ -54,12 +54,12 @@ enum PlatformRole {
 // ============================================================
 
 model AdminAuditLog {
-  id      String @id @default(cuid())
-  adminId String @map("admin_id")
+  id      String        @id @default(cuid())
+  adminId String        @map("admin_id")
   admin   PlatformAdmin @relation(fields: [adminId], references: [id], onDelete: Cascade)
 
   action     String
-  targetType String @map("target_type")
+  targetType String  @map("target_type")
   targetId   String? @map("target_id")
 
   description String?
@@ -76,9 +76,9 @@ model AdminAuditLog {
 }
 
 model Announcement {
-  id      String @id @default(cuid())
+  id      String           @id @default(cuid())
   title   String
-  content String @db.Text
+  content String           @db.Text
   type    AnnouncementType @default(INFO)
 
   // Targeting
@@ -90,12 +90,12 @@ model Announcement {
   showBanner  Boolean @default(true) @map("show_banner")
 
   // Schedule
-  startsAt DateTime @map("starts_at")
+  startsAt DateTime  @map("starts_at")
   endsAt   DateTime? @map("ends_at")
 
   isActive Boolean @default(true) @map("is_active")
 
-  createdById String @map("created_by_id")
+  createdById String        @map("created_by_id")
   createdBy   PlatformAdmin @relation("AnnouncementCreator", fields: [createdById], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -112,16 +112,16 @@ model Announcement {
 // ============================================================
 
 model ShopTemplate {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  description String?  @db.Text
-  category    String?  // 'starter', 'pro', 'enterprise', 'custom'
-  config      Json     // Full shop config snapshot
-  isDefault   Boolean  @default(false) @map("is_default")
-  createdById String   @map("created_by_id")
+  description String?       @db.Text
+  category    String? // 'starter', 'pro', 'enterprise', 'custom'
+  config      Json // Full shop config snapshot
+  isDefault   Boolean       @default(false) @map("is_default")
+  createdById String        @map("created_by_id")
   createdBy   PlatformAdmin @relation("TemplateCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
 
   @@index([category])
   @@index([isDefault])
@@ -129,15 +129,15 @@ model ShopTemplate {
 }
 
 model CloneHistory {
-  id            String   @id @default(cuid())
-  sourceShopId  String?  @map("source_shop_id")
-  sourceType    String   @map("source_type") // 'shop' | 'template'
-  sourceTemplateId String? @map("source_template_id")
-  targetShopId  String   @map("target_shop_id")
-  clonedFields  String[] @map("cloned_fields") // What was cloned
-  adminId       String   @map("admin_id")
-  admin         PlatformAdmin @relation("CloneHistoryAdmin", fields: [adminId], references: [id])
-  createdAt     DateTime @default(now()) @map("created_at")
+  id               String        @id @default(cuid())
+  sourceShopId     String?       @map("source_shop_id")
+  sourceType       String        @map("source_type") // 'shop' | 'template'
+  sourceTemplateId String?       @map("source_template_id")
+  targetShopId     String        @map("target_shop_id")
+  clonedFields     String[]      @map("cloned_fields") // What was cloned
+  adminId          String        @map("admin_id")
+  admin            PlatformAdmin @relation("CloneHistoryAdmin", fields: [adminId], references: [id])
+  createdAt        DateTime      @default(now()) @map("created_at")
 
   @@index([sourceShopId])
   @@index([targetShopId])
@@ -146,11 +146,11 @@ model CloneHistory {
 }
 
 model ShopTag {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  color     String   @default("#8884d8")
+  id        String              @id @default(cuid())
+  name      String              @unique
+  color     String              @default("#8884d8")
   shops     ShopTagAssignment[]
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime            @default(now()) @map("created_at")
 
   @@map("shop_tags")
 }
@@ -162,7 +162,7 @@ model ShopTagAssignment {
   tag       ShopTag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
   shop      Shop     @relation("ShopTags", fields: [shopId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map("created_at")
-  
+
   @@unique([shopId, tagId])
   @@index([shopId])
   @@index([tagId])
@@ -172,28 +172,32 @@ model ShopTagAssignment {
 model Segment {
   id        String   @id @default(cuid())
   name      String
-  rules     Json     // Array of filter rules
+  rules     Json // Array of filter rules
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  createdById String        @map("created_by_id")
+  createdBy   PlatformAdmin @relation("SegmentCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
   @@map("segments")
 }
 
 model EmailBroadcast {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   subject       String
-  content       String   @db.Text
-  recipientType String   @map("recipient_type") // 'all', 'segment', 'shops', 'plans'
-  recipientIds  String[] @map("recipient_ids")
-  segmentId     String?  @map("segment_id")
-  status        String   @default("draft") // draft, scheduled, sending, sent
-  scheduledAt   DateTime? @map("scheduled_at")
-  sentAt        DateTime? @map("sent_at")
-  stats         Json?    // opens, clicks, bounces
-  createdById   String   @map("created_by_id")
+  content       String        @db.Text
+  recipientType String        @map("recipient_type") // 'all', 'segment', 'shops', 'plans'
+  recipientIds  String[]      @map("recipient_ids")
+  segmentId     String?       @map("segment_id")
+  status        String        @default("draft") // draft, scheduled, sending, sent
+  scheduledAt   DateTime?     @map("scheduled_at")
+  sentAt        DateTime?     @map("sent_at")
+  stats         Json? // opens, clicks, bounces
+  createdById   String        @map("created_by_id")
   createdBy     PlatformAdmin @relation("EmailBroadcastCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
 
   @@index([status])
   @@index([scheduledAt])
@@ -202,36 +206,40 @@ model EmailBroadcast {
 }
 
 model AlertRule {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   name            String
-  condition       Json     // Rule definition
+  condition       Json // Rule definition
   channels        String[] // email, sms, slack
   recipients      String[] // Admin email addresses
-  cooldownMinutes Int      @default(60) @map("cooldown_minutes")
-  isActive        Boolean  @default(true) @map("is_active")
+  cooldownMinutes Int       @default(60) @map("cooldown_minutes")
+  isActive        Boolean   @default(true) @map("is_active")
   lastTriggered   DateTime? @map("last_triggered")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  alerts          Alert[]
+  createdById String        @map("created_by_id")
+  createdBy   PlatformAdmin @relation("AlertRuleCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  alerts Alert[]
 
   @@index([isActive])
+  @@index([createdById])
   @@map("alert_rules")
 }
 
 model Alert {
-  id            String   @id @default(cuid())
-  ruleId       String   @map("rule_id")
-  rule         AlertRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
-  status       String   @default("active") // active, acknowledged, resolved, snoozed
-  message      String   @db.Text
-  data         Json?
-  acknowledgedBy String? @map("acknowledged_by")
+  id             String    @id @default(cuid())
+  ruleId         String    @map("rule_id")
+  rule           AlertRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  status         String    @default("active") // active, acknowledged, resolved, snoozed
+  message        String    @db.Text
+  data           Json?
+  acknowledgedBy String?   @map("acknowledged_by")
   acknowledgedAt DateTime? @map("acknowledged_at")
-  resolvedBy   String?  @map("resolved_by")
-  resolvedAt   DateTime? @map("resolved_at")
-  snoozedUntil DateTime? @map("snoozed_until")
-  createdAt    DateTime @default(now()) @map("created_at")
+  resolvedBy     String?   @map("resolved_by")
+  resolvedAt     DateTime? @map("resolved_at")
+  snoozedUntil   DateTime? @map("snoozed_until")
+  createdAt      DateTime  @default(now()) @map("created_at")
 
   @@index([ruleId])
   @@index([status])
@@ -244,17 +252,17 @@ model Alert {
 // ============================================================
 
 model DiscountCode {
-  id          String       @id @default(cuid())
-  code        String       @unique
-  type        DiscountType @default(PERCENTAGE)
-  amount      Int          // percentage or cents
-  maxUses     Int?         @map("max_uses")
-  usedCount   Int          @default(0) @map("used_count")
-  validPlans  String[]     @default([]) @map("valid_plans")
-  expiresAt   DateTime?    @map("expires_at")
-  isActive    Boolean      @default(true) @map("is_active")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
+  id         String       @id @default(cuid())
+  code       String       @unique
+  type       DiscountType @default(PERCENTAGE)
+  amount     Int // percentage or cents
+  maxUses    Int?         @map("max_uses")
+  usedCount  Int          @default(0) @map("used_count")
+  validPlans String[]     @default([]) @map("valid_plans")
+  expiresAt  DateTime?    @map("expires_at")
+  isActive   Boolean      @default(true) @map("is_active")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
 
   @@index([code])
   @@index([isActive])
@@ -267,14 +275,14 @@ enum DiscountType {
 }
 
 model Webhook {
-  id          String   @id @default(cuid())
-  url         String
-  events      String[] // shop.created, payment.succeeded, etc.
-  secret      String?  // For signature verification
-  isActive    Boolean  @default(true) @map("is_active")
+  id            String    @id @default(cuid())
+  url           String
+  events        String[] // shop.created, payment.succeeded, etc.
+  secret        String? // For signature verification
+  isActive      Boolean   @default(true) @map("is_active")
   lastTriggered DateTime? @map("last_triggered")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
 
   deliveries WebhookDelivery[]
 
@@ -283,17 +291,17 @@ model Webhook {
 }
 
 model WebhookDelivery {
-  id          String   @id @default(cuid())
-  webhookId   String   @map("webhook_id")
-  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  id          String    @id @default(cuid())
+  webhookId   String    @map("webhook_id")
+  webhook     Webhook   @relation(fields: [webhookId], references: [id], onDelete: Cascade)
   event       String
   payload     Json
-  status      String   @default("pending") // pending, success, failed
-  statusCode  Int?     @map("status_code")
-  response    String?  @db.Text
-  attempts    Int      @default(0)
+  status      String    @default("pending") // pending, success, failed
+  statusCode  Int?      @map("status_code")
+  response    String?   @db.Text
+  attempts    Int       @default(0)
   nextRetryAt DateTime? @map("next_retry_at")
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   @@index([webhookId])
   @@index([status])
@@ -302,19 +310,19 @@ model WebhookDelivery {
 }
 
 model ScheduledReport {
-  id          String   @id @default(cuid())
-  name        String
-  type        String   // revenue, signups, churn, etc.
-  schedule    String   // daily, weekly, monthly
-  recipients  String[] // Admin email addresses
-  format      String[] @default(["pdf"]) // pdf, csv, both
-  isActive    Boolean  @default(true) @map("is_active")
-  lastRunAt   DateTime? @map("last_run_at")
-  nextRunAt   DateTime? @map("next_run_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String    @id @default(cuid())
+  name       String
+  type       String // revenue, signups, churn, etc.
+  schedule   String // daily, weekly, monthly
+  recipients String[] // Admin email addresses
+  format     String[]  @default(["pdf"]) // pdf, csv, both
+  isActive   Boolean   @default(true) @map("is_active")
+  lastRunAt  DateTime? @map("last_run_at")
+  nextRunAt  DateTime? @map("next_run_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
-  runs        ReportRun[]
+  runs ReportRun[]
 
   @@index([isActive])
   @@index([nextRunAt])
@@ -322,14 +330,14 @@ model ScheduledReport {
 }
 
 model ReportRun {
-  id          String   @id @default(cuid())
-  reportId    String   @map("report_id")
+  id          String          @id @default(cuid())
+  reportId    String          @map("report_id")
   report      ScheduledReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  status      String   @default("pending") // pending, generating, completed, failed
-  fileUrl     String?  @map("file_url")
-  error       String?  @db.Text
-  startedAt   DateTime @default(now()) @map("started_at")
-  completedAt DateTime? @map("completed_at")
+  status      String          @default("pending") // pending, generating, completed, failed
+  fileUrl     String?         @map("file_url")
+  error       String?         @db.Text
+  startedAt   DateTime        @default(now()) @map("started_at")
+  completedAt DateTime?       @map("completed_at")
 
   @@index([reportId])
   @@index([status])
@@ -337,35 +345,35 @@ model ReportRun {
 }
 
 model Integration {
-  id          String   @id @default(cuid())
-  service     String   @unique // stripe, twilio, sendgrid, etc.
-  config      Json     // API keys, settings
-  isActive    Boolean  @default(true) @map("is_active")
+  id          String    @id @default(cuid())
+  service     String    @unique // stripe, twilio, sendgrid, etc.
+  config      Json // API keys, settings
+  isActive    Boolean   @default(true) @map("is_active")
   lastCheckAt DateTime? @map("last_check_at")
-  status      String   @default("unknown") // healthy, degraded, down
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  status      String    @default("unknown") // healthy, degraded, down
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("integrations")
 }
 
 model Experiment {
-  id            String   @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String
-  hypothesis    String?  @db.Text
-  metric        String   // What we're measuring
-  variants      Json     // Array of variant configs
-  allocation    Json     // Traffic allocation
-  targetSegment String?  @map("target_segment")
-  status        String   @default("draft") // draft, running, paused, completed
-  startedAt     DateTime? @map("started_at")
-  endedAt       DateTime? @map("ended_at")
-  results       Json?    // Statistical results
-  winner        String?  // Winning variant
-  createdById   String   @map("created_by_id")
+  hypothesis    String?       @db.Text
+  metric        String // What we're measuring
+  variants      Json // Array of variant configs
+  allocation    Json // Traffic allocation
+  targetSegment String?       @map("target_segment")
+  status        String        @default("draft") // draft, running, paused, completed
+  startedAt     DateTime?     @map("started_at")
+  endedAt       DateTime?     @map("ended_at")
+  results       Json? // Statistical results
+  winner        String? // Winning variant
+  createdById   String        @map("created_by_id")
   createdBy     PlatformAdmin @relation("ExperimentCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
 
   @@index([status])
   @@index([createdById])
@@ -373,32 +381,32 @@ model Experiment {
 }
 
 model ChangelogEntry {
-  id          String   @id @default(cuid())
-  version     String
-  title       String
-  content     String   @db.Text
-  features    String[] @default([])
-  improvements String[] @default([])
-  fixes       String[] @default([])
-  publishedAt DateTime? @map("published_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  version      String
+  title        String
+  content      String    @db.Text
+  features     String[]  @default([])
+  improvements String[]  @default([])
+  fixes        String[]  @default([])
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@index([publishedAt])
   @@map("changelog_entries")
 }
 
 model MaintenanceWindow {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   title       String
-  message     String?  @db.Text
-  startAt     DateTime @map("start_at")
-  endAt       DateTime? @map("end_at")
-  status      String   @default("scheduled") // scheduled, active, completed
-  allowedIps  String[] @default([]) @map("allowed_ips")
-  createdById String   @map("created_by_id")
+  message     String?       @db.Text
+  startAt     DateTime      @map("start_at")
+  endAt       DateTime?     @map("end_at")
+  status      String        @default("scheduled") // scheduled, active, completed
+  allowedIps  String[]      @default([]) @map("allowed_ips")
+  createdById String        @map("created_by_id")
   createdBy   PlatformAdmin @relation("MaintenanceCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
 
   @@index([status])
   @@index([startAt])
@@ -414,16 +422,16 @@ enum AnnouncementType {
 }
 
 model FeatureFlag {
-  id          String @id @default(cuid())
-  key         String @unique
+  id          String  @id @default(cuid())
+  key         String  @unique
   name        String
   description String?
 
-  enabled        Boolean @default(false)
-  enabledForAll  Boolean @default(false) @map("enabled_for_all")
-  enabledPlans   String[] @default([]) @map("enabled_plans")
-  enabledShops   String[] @default([]) @map("enabled_shops")
-  percentage     Int? @map("percentage")
+  enabled       Boolean  @default(false)
+  enabledForAll Boolean  @default(false) @map("enabled_for_all")
+  enabledPlans  String[] @default([]) @map("enabled_plans")
+  enabledShops  String[] @default([]) @map("enabled_shops")
+  percentage    Int?     @map("percentage")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -432,8 +440,8 @@ model FeatureFlag {
 }
 
 model PlatformSetting {
-  id          String @id @default(cuid())
-  key         String @unique
+  id          String   @id @default(cuid())
+  key         String   @unique
   value       Json
   description String?
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -442,8 +450,8 @@ model PlatformSetting {
 }
 
 model ShopNote {
-  id     String @id @default(cuid())
-  shopId String @map("shop_id")
+  id      String @id @default(cuid())
+  shopId  String @map("shop_id")
   adminId String @map("admin_id")
 
   content String @db.Text
@@ -501,16 +509,16 @@ model Shop {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  users        ShopUser[]
-  timeEntries  TimeEntry[]
-  customers    Customer[]
-  tickets      Ticket[]
-  inventory    InventoryItem[]
-  invoices     Invoice[]
-  messages     Message[]
-  appointments Appointment[]
-  workflows    Workflow[]
-  notes        ShopNote[]
+  users          ShopUser[]
+  timeEntries    TimeEntry[]
+  customers      Customer[]
+  tickets        Ticket[]
+  inventory      InventoryItem[]
+  invoices       Invoice[]
+  messages       Message[]
+  appointments   Appointment[]
+  workflows      Workflow[]
+  notes          ShopNote[]
   tagAssignments ShopTagAssignment[] @relation("ShopTags")
 
   @@map("shops")
@@ -547,9 +555,9 @@ model ShopUser {
   updatedAt    DateTime   @updatedAt @map("updated_at")
 
   // Relations
-  shop           Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  tickets        Ticket[] @relation("AssignedTechnician")
-  createdTickets Ticket[] @relation("TicketCreator")
+  shop           Shop        @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  tickets        Ticket[]    @relation("AssignedTechnician")
+  createdTickets Ticket[]    @relation("TicketCreator")
   timeEntries    TimeEntry[]
 
   @@unique([shopId, email])
@@ -557,8 +565,8 @@ model ShopUser {
 }
 
 enum ShopRole {
-  OWNER      // Full access, billing
-  MANAGER    // Full access except billing
+  OWNER // Full access, billing
+  MANAGER // Full access except billing
   TECHNICIAN // Tickets, inventory, customers
   FRONT_DESK // Intake, customers, basic tickets
 }
@@ -589,10 +597,10 @@ model Customer {
 
   // Metadata
   notes       String?
-  tags        String[]  @default([])
-  isVip       Boolean   @default(false) @map("is_vip")
-  totalSpent  Decimal   @default(0) @map("total_spent") @db.Decimal(10, 2)
-  ticketCount Int       @default(0) @map("ticket_count")
+  tags        String[] @default([])
+  isVip       Boolean  @default(false) @map("is_vip")
+  totalSpent  Decimal  @default(0) @map("total_spent") @db.Decimal(10, 2)
+  ticketCount Int      @default(0) @map("ticket_count")
 
   // Communication preferences
   smsOptIn   Boolean @default(true) @map("sms_opt_in")
@@ -618,7 +626,7 @@ model Ticket {
 
   // Customer & Device
   customerId   String  @map("customer_id")
-  deviceType   String  @map("device_type")  // iPhone 14 Pro
+  deviceType   String  @map("device_type") // iPhone 14 Pro
   deviceBrand  String  @map("device_brand") // Apple
   deviceModel  String? @map("device_model")
   deviceColor  String? @map("device_color")
@@ -725,12 +733,12 @@ model TicketNote {
 }
 
 model TicketPhoto {
-  id         String   @id @default(cuid())
-  ticketId   String   @map("ticket_id")
-  url        String
-  caption    String?
-  type       String   @default("intake") // intake, diagnosis, completion
-  createdAt  DateTime @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  ticketId  String   @map("ticket_id")
+  url       String
+  caption   String?
+  type      String   @default("intake") // intake, diagnosis, completion
+  createdAt DateTime @default(now()) @map("created_at")
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
 
@@ -974,7 +982,7 @@ model TimeEntry {
   userId String @map("user_id")
   shopId String @map("shop_id")
 
-  clockIn      DateTime @map("clock_in")
+  clockIn      DateTime  @map("clock_in")
   clockOut     DateTime? @map("clock_out")
   breakMinutes Int       @default(0) @map("break_minutes")
   notes        String?
@@ -985,7 +993,7 @@ model TimeEntry {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   user ShopUser @relation(fields: [userId], references: [id], onDelete: Cascade)
-  shop Shop @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shop Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
 
   @@map("time_entries")
 }
@@ -1018,13 +1026,13 @@ model Workflow {
 // ============================================================
 
 model AdminBookmark {
-  id         String   @id @default(cuid())
-  adminId    String   @map("admin_id")
+  id         String        @id @default(cuid())
+  adminId    String        @map("admin_id")
   admin      PlatformAdmin @relation(fields: [adminId], references: [id], onDelete: Cascade)
-  targetType String   @map("target_type") // shop, user, ticket
-  targetId   String   @map("target_id")
-  label      String?  // Custom label
-  createdAt  DateTime @default(now()) @map("created_at")
+  targetType String        @map("target_type") // shop, user, ticket
+  targetId   String        @map("target_id")
+  label      String? // Custom label
+  createdAt  DateTime      @default(now()) @map("created_at")
 
   @@unique([adminId, targetType, targetId])
   @@index([adminId])
@@ -1032,19 +1040,19 @@ model AdminBookmark {
 }
 
 model ApiKey {
-  id          String   @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
-  keyHash     String   @unique @map("key_hash") // Hashed API key
-  keyPrefix   String   @map("key_prefix") // First 8 chars for display
-  permissions String[] @default([]) // Scopes: read, write, admin
-  rateLimit   Int?     @map("rate_limit") // Requests per minute
-  lastUsedAt  DateTime? @map("last_used_at")
-  expiresAt   DateTime? @map("expires_at")
-  isActive    Boolean  @default(true) @map("is_active")
-  createdById String   @map("created_by_id")
+  keyHash     String        @unique @map("key_hash") // Hashed API key
+  keyPrefix   String        @map("key_prefix") // First 8 chars for display
+  permissions String[]      @default([]) // Scopes: read, write, admin
+  rateLimit   Int?          @map("rate_limit") // Requests per minute
+  lastUsedAt  DateTime?     @map("last_used_at")
+  expiresAt   DateTime?     @map("expires_at")
+  isActive    Boolean       @default(true) @map("is_active")
+  createdById String        @map("created_by_id")
   createdBy   PlatformAdmin @relation("ApiKeyCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
 
   @@index([createdById])
   @@index([isActive])
@@ -1052,14 +1060,14 @@ model ApiKey {
 }
 
 model NPSSurvey {
-  id          String   @id @default(cuid())
-  shopId      String?  @map("shop_id")
-  userId      String?  @map("user_id")
-  score       Int      // 0-10
-  comment     String?  @db.Text
-  category    String?  // promoter (9-10), passive (7-8), detractor (0-6)
-  metadata    Json?    // Additional context
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  shopId    String?  @map("shop_id")
+  userId    String?  @map("user_id")
+  score     Int // 0-10
+  comment   String?  @db.Text
+  category  String? // promoter (9-10), passive (7-8), detractor (0-6)
+  metadata  Json? // Additional context
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([shopId])
   @@index([score])
@@ -1071,27 +1079,27 @@ model CustomSurvey {
   id          String   @id @default(cuid())
   name        String
   description String?  @db.Text
-  questions   Json     // Array of question objects
+  questions   Json // Array of question objects
   targetType  String   @map("target_type") // all, plan, segment
   targetIds   String[] @default([]) @map("target_ids")
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  responses   SurveyResponse[]
+  responses SurveyResponse[]
 
   @@index([isActive])
   @@map("custom_surveys")
 }
 
 model SurveyResponse {
-  id          String   @id @default(cuid())
-  surveyId    String   @map("survey_id")
-  survey      CustomSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  shopId      String?  @map("shop_id")
-  userId      String?  @map("user_id")
-  answers     Json     // Answers to questions
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String       @id @default(cuid())
+  surveyId  String       @map("survey_id")
+  survey    CustomSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  shopId    String?      @map("shop_id")
+  userId    String?      @map("user_id")
+  answers   Json // Answers to questions
+  createdAt DateTime     @default(now()) @map("created_at")
 
   @@index([surveyId])
   @@index([shopId])
@@ -1099,19 +1107,19 @@ model SurveyResponse {
 }
 
 model Feedback {
-  id          String   @id @default(cuid())
-  shopId      String?  @map("shop_id")
-  userId      String?  @map("user_id")
-  type        String   // bug, feature, question, complaint
-  subject     String
-  content     String   @db.Text
-  category    String?
-  tags        String[] @default([])
-  status      String   @default("new") // new, reviewed, resolved
-  reviewedBy  String?  @map("reviewed_by")
-  reviewedAt  DateTime? @map("reviewed_at")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String    @id @default(cuid())
+  shopId     String?   @map("shop_id")
+  userId     String?   @map("user_id")
+  type       String // bug, feature, question, complaint
+  subject    String
+  content    String    @db.Text
+  category   String?
+  tags       String[]  @default([])
+  status     String    @default("new") // new, reviewed, resolved
+  reviewedBy String?   @map("reviewed_by")
+  reviewedAt DateTime? @map("reviewed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
 
   @@index([shopId])
   @@index([status])
@@ -1120,14 +1128,14 @@ model Feedback {
 }
 
 model Translation {
-  id          String   @id @default(cuid())
-  key         String   // Translation key (e.g., "common.save")
-  language    String   // Language code (e.g., "en", "es", "fr")
-  value       String   @db.Text
-  context     String?  // Where it's used
-  isComplete  Boolean  @default(true) @map("is_complete")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(cuid())
+  key        String // Translation key (e.g., "common.save")
+  language   String // Language code (e.g., "en", "es", "fr")
+  value      String   @db.Text
+  context    String? // Where it's used
+  isComplete Boolean  @default(true) @map("is_complete")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@unique([key, language])
   @@index([language])
@@ -1136,15 +1144,15 @@ model Translation {
 }
 
 model ImportJob {
-  id          String   @id @default(cuid())
-  type        String   // shops, users, tickets
-  status      String   @default("pending") // pending, processing, completed, failed
-  fileUrl     String?  @map("file_url")
-  mapping     Json?    // Field mapping
-  results     Json?    // Success/failure counts
-  error       String?  @db.Text
-  createdById String   @map("created_by_id")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id          String    @id @default(cuid())
+  type        String // shops, users, tickets
+  status      String    @default("pending") // pending, processing, completed, failed
+  fileUrl     String?   @map("file_url")
+  mapping     Json? // Field mapping
+  results     Json? // Success/failure counts
+  error       String?   @db.Text
+  createdById String    @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
   completedAt DateTime? @map("completed_at")
 
   @@index([status])
@@ -1153,15 +1161,15 @@ model ImportJob {
 }
 
 model ExportJob {
-  id          String   @id @default(cuid())
-  type        String   // shops, users, transactions
-  format      String   @default("csv") // csv, json, xlsx
-  filters     Json?    // Export filters
-  status      String   @default("pending") // pending, generating, completed, failed
-  fileUrl     String?  @map("file_url")
+  id          String    @id @default(cuid())
+  type        String // shops, users, transactions
+  format      String    @default("csv") // csv, json, xlsx
+  filters     Json? // Export filters
+  status      String    @default("pending") // pending, generating, completed, failed
+  fileUrl     String?   @map("file_url")
   expiresAt   DateTime? @map("expires_at")
-  createdById String   @map("created_by_id")
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdById String    @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
   completedAt DateTime? @map("completed_at")
 
   @@index([status])
