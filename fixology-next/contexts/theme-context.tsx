@@ -145,10 +145,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 export const themeScript = `
 (function() {
   try {
+    var path = (window.location && window.location.pathname) ? window.location.pathname : '';
+    var forceDarkAuth =
+      path === '/login' ||
+      path === '/signup' ||
+      path === '/forgot-password' ||
+      path === '/reset-password';
+
     var theme = localStorage.getItem('${STORAGE_KEY}');
     var resolved = theme;
     
-    if (theme === 'system' || !theme) {
+    if (forceDarkAuth) {
+      resolved = 'dark';
+    } else if (theme === 'system' || !theme) {
       resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     }
     
