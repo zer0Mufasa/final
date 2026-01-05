@@ -65,14 +65,14 @@ export function AdminAnalyticsClient() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          tone="purple"
+          tone="violet"
           label="Active Users"
           value={stats.users?.total || '0'}
           subValue={`${stats.users?.activeToday || 0} today`}
           icon={<Users className="w-5 h-5" />}
         />
         <StatCard
-          tone="blue"
+          tone="emerald"
           label="Growth Rate"
           value={stats.shops?.newThisMonth ? `+${stats.shops.newThisMonth}` : '—'}
           subValue="This month"
