@@ -58,10 +58,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setThemeState(saved)
       setResolvedTheme(resolveTheme(saved))
     } else {
-      // Default to system preference
-      const systemTheme = getSystemTheme()
-      setThemeState('system')
-      setResolvedTheme(systemTheme)
+      // Default to dark (do NOT auto-switch to light based on OS/browser preference)
+      setThemeState('dark')
+      setResolvedTheme('dark')
     }
     
     setMounted(true)
@@ -158,7 +157,8 @@ export const themeScript = `
     if (forceDarkAuth) {
       resolved = 'dark';
     } else if (theme === 'system' || !theme) {
-      resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      // Default to dark regardless of OS/browser preference
+      resolved = 'dark';
     }
     
     document.documentElement.classList.add(resolved);
