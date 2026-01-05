@@ -26,7 +26,31 @@ export async function GET(
   try {
     const shop = await prisma.shop.findUnique({
       where: { id: shopId },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        email: true,
+        phone: true,
+        address: true,
+        city: true,
+        state: true,
+        zip: true,
+        country: true,
+        timezone: true,
+        currency: true,
+        logoUrl: true,
+        onboardingCompletedAt: true,
+        businessHours: true,
+        repairFocus: true,
+        plan: true,
+        stripeCustomerId: true,
+        stripeSubscriptionId: true,
+        status: true,
+        trialEndsAt: true,
+        features: true,
+        createdAt: true,
+        updatedAt: true,
         users: {
           select: {
             id: true,
