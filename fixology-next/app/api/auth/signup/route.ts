@@ -226,8 +226,22 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Email already registered' }, { status: 400 })
       }
 
+      if (error.code === 'P2022') {
+        const missingColumn = (error.meta as any)?.column as string | undefined
+        return NextResponse.json(
+          {
+            error: 'Database schema is out of date (missing column). Run migrations on the production DB.',
+            detail: missingColumn ? `Missing column: ${missingColumn}` : 'Missing column (P2022)',
+          },
+          { status: 500 }
+        )
+      }
+
       return NextResponse.json(
-        { error: 'Database error while creating account', detail: error.code },
+        {
+          error: 'Database error while creating account',
+          detail: `${error.code}${(error.meta as any)?.column ? ` (${String((error.meta as any).column)})` : ''}`,
+        },
         { status: 500 }
       )
     }
