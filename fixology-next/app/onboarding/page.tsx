@@ -18,11 +18,18 @@ export default async function OnboardingPage({
     return <BillingRequired reason={searchParams.reason} />
   }
 
-  const supabase = createClient()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  let session: any = null
+  try {
+    const supabase = createClient()
+    const {
+      data: { session: s },
+    } = await supabase.auth.getSession()
+    session = s
+  } catch (error) {
+    // If Supabase env vars are misconfigured, don't hard-crash onboarding.
+    console.error('Supabase session error in onboarding:', error)
+    return <BillingRequired reason="database_error" />
+  }
 
   if (!session) {
     redirect('/login?redirect=/onboarding')
