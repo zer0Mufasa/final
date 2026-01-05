@@ -65,7 +65,13 @@ export async function GET(req: NextRequest) {
         : null,
       status: shop.status,
       stripeStatus: subscription.status,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      // Stripe TS typings in this repo's installed version don't expose `current_period_end` on Subscription.
+      // It exists at runtime; we fall back to the first item's period end if needed.
+      currentPeriodEnd: new Date(
+        (((subscription as any).current_period_end as number | undefined) ??
+          subscription.items?.data?.[0]?.current_period_end ??
+          0) * 1000
+      ),
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
     })

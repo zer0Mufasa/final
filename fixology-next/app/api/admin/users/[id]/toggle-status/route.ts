@@ -13,7 +13,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
   const user = await prisma.shopUser.findUnique({ where: { id: params.id } })
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-  const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+  const newStatus = user.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE'
 
   const updated = await prisma.shopUser.update({
     where: { id: params.id },

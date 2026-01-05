@@ -19,7 +19,38 @@ function getIp(request?: Request): string | null {
   return null
 }
 
-export async function logAdminAction(input: AdminAuditInput) {
+export async function logAdminAction(input: AdminAuditInput): Promise<any>
+export async function logAdminAction(
+  admin: { id: string },
+  action: string,
+  targetType: string,
+  targetId?: string | null,
+  description?: string | null,
+  metadata?: any,
+  request?: Request
+): Promise<any>
+export async function logAdminAction(
+  arg1: AdminAuditInput | { id: string },
+  action?: string,
+  targetType?: string,
+  targetId?: string | null,
+  description?: string | null,
+  metadata?: any,
+  request?: Request
+) {
+  const input: AdminAuditInput =
+    'adminId' in arg1
+      ? arg1
+      : {
+          adminId: arg1.id,
+          action: action || 'unknown',
+          targetType: targetType || 'unknown',
+          targetId: targetId ?? null,
+          description: description ?? null,
+          metadata,
+          request,
+        }
+
   const ipAddress = getIp(input.request)
   const userAgent = input.request?.headers.get('user-agent') || null
 

@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     data: {
       name,
       rules,
+      createdById: admin.id,
     },
   })
 

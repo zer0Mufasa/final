@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const pageSize = Math.max(10, Math.min(100, Number(searchParams.get('pageSize') || 50)))
 
   const where: any = {}
-  if (isActive !== null) where.isActive = isActive === 'true'
+  if (isActive !== null) where.enabled = isActive === 'true'
 
   const [flags, totalCount] = await prisma.$transaction([
     prisma.featureFlag.findMany({
@@ -25,7 +25,19 @@ export async function GET(request: Request) {
     prisma.featureFlag.count({ where }),
   ])
 
-  return NextResponse.json({ flags, totalCount })
+  // Backward-compat: admin UI expects isActive + metadata
+  const formattedFlags = flags.map((f) => ({
+    ...f,
+    isActive: f.enabled,
+    metadata: {
+      enabledForAll: f.enabledForAll,
+      enabledPlans: f.enabledPlans,
+      enabledShops: f.enabledShops,
+      percentage: f.percentage,
+    },
+  }))
+
+  return NextResponse.json({ flags: formattedFlags, totalCount })
 }
 
 export async function POST(request: Request) {
@@ -52,8 +64,11 @@ export async function POST(request: Request) {
       key,
       name,
       description: description || null,
-      isActive: isActive !== undefined ? isActive : false,
-      metadata: metadata || {},
+      enabled: isActive !== undefined ? Boolean(isActive) : false,
+      enabledForAll: Boolean(metadata?.enabledForAll ?? false),
+      enabledPlans: Array.isArray(metadata?.enabledPlans) ? metadata.enabledPlans : [],
+      enabledShops: Array.isArray(metadata?.enabledShops) ? metadata.enabledShops : [],
+      percentage: typeof metadata?.percentage === 'number' ? metadata.percentage : null,
     },
   })
 
@@ -63,9 +78,23 @@ export async function POST(request: Request) {
     'feature_flag',
     flag.id,
     `Created feature flag: ${flag.name} (${flag.key})`,
-    { key, name, isActive: flag.isActive },
+    { key, name, isActive: flag.enabled },
     request
   )
 
-  return NextResponse.json({ flag }, { status: 201 })
+  return NextResponse.json(
+    {
+      flag: {
+        ...flag,
+        isActive: flag.enabled,
+        metadata: {
+          enabledForAll: flag.enabledForAll,
+          enabledPlans: flag.enabledPlans,
+          enabledShops: flag.enabledShops,
+          percentage: flag.percentage,
+        },
+      },
+    },
+    { status: 201 }
+  )
 }

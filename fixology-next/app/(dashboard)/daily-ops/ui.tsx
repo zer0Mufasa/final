@@ -19,7 +19,9 @@ function hoursFromNow(iso: string) {
 }
 
 export function DailyOpsClient() {
-  const activeTickets = mockTickets.filter((t) => t.status !== 'PICKED_UP')
+  // Filter out completed tickets (READY status means ready for pickup, so still active)
+  // Only filter out if we had PICKED_UP status, but mock data uses READY for completed
+  const activeTickets = mockTickets.filter((t) => t.status !== 'READY' || !t.completedAt)
   const atRisk = activeTickets.filter((t) => {
     const hrs = hoursFromNow(t.promisedAt)
     return hrs >= 0 && hrs <= 4

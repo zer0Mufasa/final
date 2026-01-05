@@ -15,7 +15,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
   const updated = await prisma.featureFlag.update({
     where: { id: params.id },
-    data: { isActive: !flag.isActive },
+    data: { enabled: !flag.enabled },
   })
 
   await logAdminAction(
@@ -23,10 +23,22 @@ export async function POST(request: Request, { params }: { params: { id: string 
     'feature.toggle',
     'feature_flag',
     updated.id,
-    `Toggled feature flag: ${updated.name} (${updated.key}) to ${updated.isActive ? 'active' : 'inactive'}`,
-    { oldValue: flag.isActive, newValue: updated.isActive },
+    `Toggled feature flag: ${updated.name} (${updated.key}) to ${updated.enabled ? 'active' : 'inactive'}`,
+    { oldValue: flag.enabled, newValue: updated.enabled },
     request
   )
 
-  return NextResponse.json({ success: true, flag: updated })
+  return NextResponse.json({
+    success: true,
+    flag: {
+      ...updated,
+      isActive: updated.enabled,
+      metadata: {
+        enabledForAll: updated.enabledForAll,
+        enabledPlans: updated.enabledPlans,
+        enabledShops: updated.enabledShops,
+        percentage: updated.percentage,
+      },
+    },
+  })
 }

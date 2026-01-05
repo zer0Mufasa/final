@@ -36,6 +36,7 @@ export async function POST(request: Request) {
       channels,
       recipients,
       cooldownMinutes: cooldownMinutes || 60,
+      createdById: admin.id,
     },
   })
 

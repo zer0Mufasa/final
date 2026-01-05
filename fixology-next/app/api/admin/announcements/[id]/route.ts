@@ -13,7 +13,19 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
   if (!announcement) return NextResponse.json({ error: 'Announcement not found' }, { status: 404 })
 
-  return NextResponse.json({ announcement })
+  return NextResponse.json({
+    announcement: {
+      id: announcement.id,
+      title: announcement.title,
+      content: announcement.content,
+      type: announcement.type,
+      isActive: announcement.isActive,
+      targetAudience: 'ALL',
+      expiresAt: announcement.endsAt ? announcement.endsAt.toISOString() : null,
+      createdAt: announcement.createdAt.toISOString(),
+      updatedAt: announcement.updatedAt.toISOString(),
+    },
+  })
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
@@ -29,8 +41,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   if (typeof body?.content === 'string') data.content = body.content.trim()
   if (typeof body?.type === 'string') data.type = body.type
   if (typeof body?.isActive === 'boolean') data.isActive = body.isActive
-  if (typeof body?.targetAudience === 'string') data.targetAudience = body.targetAudience
-  if (body?.expiresAt !== undefined) data.expiresAt = body.expiresAt ? new Date(body.expiresAt) : null
+  // Backward-compat: admin UI sends expiresAt; schema uses endsAt
+  if (body?.expiresAt !== undefined) data.endsAt = body.expiresAt ? new Date(body.expiresAt) : null
 
   const oldAnnouncement = await prisma.announcement.findUnique({ where: { id: params.id } })
   if (!oldAnnouncement) return NextResponse.json({ error: 'Announcement not found' }, { status: 404 })

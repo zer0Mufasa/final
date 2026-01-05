@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import { getAdminFromRequest } from '@/lib/admin/auth'
 import { logAdminAction } from '@/lib/admin/audit'
+import type { Prisma, TicketStatus } from '@prisma/client'
 
 export async function POST(request: Request) {
   const admin = getAdminFromRequest(request)
@@ -23,7 +24,19 @@ export async function POST(request: Request) {
       features: {
         isTestShop: true,
         max_tickets: preset === 'full' ? 1000 : preset === 'basic' ? 100 : 25,
-      },
+      } as Prisma.InputJsonValue,
+    },
+  })
+
+  // Create a shop owner user so tickets can reference createdById
+  const owner = await prisma.shopUser.create({
+    data: {
+      shopId: shop.id,
+      email: `owner-${Math.random().toString(36).substring(7)}@test.fixology.io`,
+      passwordHash: 'test-only',
+      name: 'Test Owner',
+      role: 'OWNER',
+      permissions: {} as Prisma.InputJsonValue,
     },
   })
 
@@ -38,7 +51,8 @@ export async function POST(request: Request) {
         prisma.customer.create({
           data: {
             shopId: shop.id,
-            name: `Test Customer ${i + 1}`,
+            firstName: 'Test',
+            lastName: `Customer ${i + 1}`,
             email: `customer${i + 1}@test.com`,
             phone: `555-000-${String(i + 1).padStart(4, '0')}`,
           },
@@ -52,11 +66,14 @@ export async function POST(request: Request) {
         prisma.ticket.create({
           data: {
             shopId: shop.id,
+            ticketNumber: `FIX-${String(i + 1).padStart(4, '0')}`,
             customerId: customers[i % customerCount].id,
-            status: ['INTAKE', 'DIAGNOSED', 'WAITING', 'IN_PROGRESS', 'READY'][i % 5] as any,
-            deviceType: ['iPhone', 'Samsung', 'iPad', 'MacBook'][i % 4],
+            status: ['INTAKE', 'DIAGNOSED', 'WAITING_PARTS', 'IN_PROGRESS', 'READY'][i % 5] as TicketStatus,
+            deviceType: ['iPhone', 'Android Phone', 'iPad', 'MacBook'][i % 4],
+            deviceBrand: ['Apple', 'Samsung', 'Apple', 'Apple'][i % 4],
             deviceModel: `Model ${i + 1}`,
-            issue: `Test issue ${i + 1}`,
+            issueDescription: `Test issue ${i + 1}`,
+            createdById: owner.id,
           },
         })
       )
@@ -72,7 +89,10 @@ export async function POST(request: Request) {
               name: `Test Part ${i + 1}`,
               sku: `TEST-${i + 1}`,
               quantity: Math.floor(Math.random() * 100),
-              cost: Math.floor(Math.random() * 10000) / 100,
+              category: 'PARTS',
+              sellPrice: String(Math.floor(Math.random() * 10000) / 100),
+              costPrice: String(Math.floor(Math.random() * 5000) / 100),
+              minStock: 0,
             },
           })
         )

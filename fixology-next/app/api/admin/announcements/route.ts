@@ -29,11 +29,17 @@ export async function GET(request: Request) {
     ])
 
     // Format dates for JSON serialization
+    // Keep backward-compatible fields for the admin UI (targetAudience, expiresAt)
     const formattedAnnouncements = announcements.map((ann) => ({
-      ...ann,
+      id: ann.id,
+      title: ann.title,
+      content: ann.content,
+      type: ann.type,
+      isActive: ann.isActive,
+      targetAudience: 'ALL',
+      expiresAt: ann.endsAt ? ann.endsAt.toISOString() : null,
       createdAt: ann.createdAt.toISOString(),
       updatedAt: ann.updatedAt.toISOString(),
-      expiresAt: ann.expiresAt?.toISOString() || null,
     }))
 
     return NextResponse.json({ announcements: formattedAnnouncements, totalCount })
@@ -54,7 +60,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null)
-  const { title, content, type, isActive, targetAudience, expiresAt } = body || {}
+  const { title, content, type, isActive, expiresAt } = body || {}
 
   if (!title || !content) {
     return NextResponse.json({ error: 'title and content are required' }, { status: 400 })
@@ -66,8 +72,14 @@ export async function POST(request: Request) {
       content,
       type: type || 'INFO',
       isActive: isActive !== undefined ? isActive : false,
-      targetAudience: targetAudience || 'ALL',
-      expiresAt: expiresAt ? new Date(expiresAt) : null,
+      // Schema-required fields + sensible defaults
+      startsAt: new Date(),
+      endsAt: expiresAt ? new Date(expiresAt) : null,
+      dismissible: true,
+      showBanner: true,
+      targetPlans: [],
+      targetShops: [],
+      createdById: admin.id,
     },
   })
 

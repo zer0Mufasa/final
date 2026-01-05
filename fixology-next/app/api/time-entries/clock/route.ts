@@ -193,9 +193,11 @@ export async function POST(request: NextRequest) {
       },
     })
     // Log activity
+    let shopFeatures: any = {}
     try {
       const shop = await prisma.shop.findUnique({ where: { id: context.shopId }, select: { features: true } })
-      await appendActivity(context.shopId, (shop?.features as any) || {}, {
+      shopFeatures = (shop?.features as any) || {}
+      await appendActivity(context.shopId, shopFeatures, {
         type: 'clock_in',
         userId: context.user.id,
         userName: displayName,
@@ -208,7 +210,7 @@ export async function POST(request: NextRequest) {
 
     if (isOpener) {
       try {
-        await appendActivity(context.shopId, (shop?.features as any) || {}, {
+        await appendActivity(context.shopId, shopFeatures, {
           type: 'shop_open',
           userId: context.user.id,
           userName: displayName,

@@ -23,14 +23,11 @@ export async function GET(request: NextRequest) {
   else if (period === 'quarter') startDate.setMonth(startDate.getMonth() - 3)
 
   try {
-    // Tickets + payments
+    // Tickets
     const tickets = await prisma.ticket.findMany({
       where: {
         shopId: context.shopId,
         createdAt: { gte: startDate },
-      },
-      include: {
-        payments: true,
       },
     })
 
@@ -58,11 +55,11 @@ export async function GET(request: NextRequest) {
     })
 
     // Revenue totals/by day
-    const revenueTotal = payments.reduce((sum, p) => sum + Number(p.totalAmount || p.amount || 0), 0)
+    const revenueTotal = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0)
     const revenueByDayMap: Record<string, number> = {}
     payments.forEach((p) => {
       const day = new Date(p.createdAt).toLocaleDateString('en-US', { weekday: 'short' })
-      const amt = Number(p.totalAmount || p.amount || 0)
+      const amt = Number(p.amount || 0)
       revenueByDayMap[day] = (revenueByDayMap[day] || 0) + amt
     })
     const revenueByDay = Object.entries(revenueByDayMap).map(([day, amount]) => ({ day, amount }))
@@ -94,14 +91,14 @@ export async function GET(request: NextRequest) {
     const distinctDays = new Set(timeEntries.map((e) => e.clockIn.toISOString().slice(0, 10))).size
     const avgPerDay = distinctDays > 0 ? hoursTotal / distinctDays : 0
 
-    // Top repairs from ticket repairType
-    const repairTypes: Record<string, number> = {}
+    // Top work types (simple heuristic based on deviceType)
+    const deviceTypes: Record<string, number> = {}
     tickets.forEach((t) => {
-      const type = (t.repairType as string) || 'Other'
-      repairTypes[type] = (repairTypes[type] || 0) + 1
+      const type = t.deviceType || 'Other'
+      deviceTypes[type] = (deviceTypes[type] || 0) + 1
     })
     const totalRepairs = tickets.length
-    const topRepairs = Object.entries(repairTypes)
+    const topRepairs = Object.entries(deviceTypes)
       .map(([name, count]) => ({
         name,
         count,

@@ -8,6 +8,7 @@ const PLAN_DISPLAY = {
   STARTER: {
     name: 'Starter',
     description: 'Perfect for small repair shops',
+    popular: false,
     features: [
       'POS Dashboard',
       'Ticket Management',

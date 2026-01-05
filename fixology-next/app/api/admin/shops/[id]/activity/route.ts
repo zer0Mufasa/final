@@ -17,7 +17,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
       where: { shopId: params.id },
       orderBy: { updatedAt: 'desc' },
       take: 50,
-      select: { id: true, title: true, status: true, createdAt: true, updatedAt: true },
+      select: { id: true, ticketNumber: true, issueDescription: true, status: true, createdAt: true, updatedAt: true },
     }),
     prisma.invoice.findMany({
       where: { shopId: params.id },
@@ -47,7 +47,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     events.push({
       id: `ticket:${t.id}`,
       type: 'ticket',
-      title: `Ticket ${t.status}: ${t.title}`,
+      title: `${t.ticketNumber} • ${t.status} • ${t.issueDescription}`,
       timestamp: t.updatedAt.toISOString(),
       meta: { ticketId: t.id, status: t.status, createdAt: t.createdAt.toISOString() },
     })

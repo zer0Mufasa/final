@@ -59,16 +59,21 @@ function Section({
   title,
   subtitle,
   right,
+  className,
   children,
 }: {
   title: string
   subtitle?: string
   right?: React.ReactNode
+  className?: string
   children: React.ReactNode
 }) {
   return (
     <section
-      className="rounded-2xl p-4 transition-all duration-150 bg-[var(--bg-card)] border border-[var(--border-default)] shadow-[var(--shadow-sm)] backdrop-blur-md"
+      className={cn(
+        "rounded-2xl p-4 transition-all duration-150 bg-[var(--bg-card)] border border-[var(--border-default)] shadow-[var(--shadow-sm)] backdrop-blur-md",
+        className
+      )}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -119,7 +124,7 @@ function MethodButton({
 }
 
 export default function TicketSimple({ id }: { id: string }) {
-  const role = useRole()
+  const { isTechnician } = useRole()
   const ticket = useMemo(() => mockTickets.find((t) => t.id === id) || mockTickets[0], [id])
 
   // UI-only state
@@ -128,12 +133,12 @@ export default function TicketSimple({ id }: { id: string }) {
   const [amount, setAmount] = useState<string>('')
   const [deviceQuery, setDeviceQuery] = useState('')
   const [selectedDevices, setSelectedDevices] = useState<
-    { id: string; name: string; imei: string; passcode: string }
+    { id: string; name: string; imei: string; passcode: string }[]
   >(() => [
     { id: 'primary', name: ticket.device, imei: '', passcode: '' },
   ])
 
-  const canTakePayment = role !== 'TECH' // front desk + owner
+  const canTakePayment = !isTechnician // front desk + owner
   const lineItems = [
     { name: 'Screen replacement', cat: 'Repair', sku: 'SCR-14PRO', qty: 1, price: 219, tax: 0 },
     { name: 'Adhesive kit', cat: 'Part', sku: 'ADH-001', qty: 1, price: 9, tax: 0 },

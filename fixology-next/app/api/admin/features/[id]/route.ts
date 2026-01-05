@@ -13,7 +13,18 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
   if (!flag) return NextResponse.json({ error: 'Feature flag not found' }, { status: 404 })
 
-  return NextResponse.json({ flag })
+  return NextResponse.json({
+    flag: {
+      ...flag,
+      isActive: flag.enabled,
+      metadata: {
+        enabledForAll: flag.enabledForAll,
+        enabledPlans: flag.enabledPlans,
+        enabledShops: flag.enabledShops,
+        percentage: flag.percentage,
+      },
+    },
+  })
 }
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
@@ -27,8 +38,13 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   const data: any = {}
   if (typeof body?.name === 'string') data.name = body.name.trim()
   if (typeof body?.description === 'string') data.description = body.description.trim()
-  if (typeof body?.isActive === 'boolean') data.isActive = body.isActive
-  if (body?.metadata && typeof body.metadata === 'object') data.metadata = body.metadata
+  if (typeof body?.isActive === 'boolean') data.enabled = body.isActive
+  if (body?.metadata && typeof body.metadata === 'object') {
+    if (typeof body.metadata.enabledForAll === 'boolean') data.enabledForAll = body.metadata.enabledForAll
+    if (Array.isArray(body.metadata.enabledPlans)) data.enabledPlans = body.metadata.enabledPlans
+    if (Array.isArray(body.metadata.enabledShops)) data.enabledShops = body.metadata.enabledShops
+    if (typeof body.metadata.percentage === 'number') data.percentage = body.metadata.percentage
+  }
 
   const oldFlag = await prisma.featureFlag.findUnique({ where: { id: params.id } })
   if (!oldFlag) return NextResponse.json({ error: 'Feature flag not found' }, { status: 404 })
@@ -48,7 +64,18 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     request
   )
 
-  return NextResponse.json({ flag })
+  return NextResponse.json({
+    flag: {
+      ...flag,
+      isActive: flag.enabled,
+      metadata: {
+        enabledForAll: flag.enabledForAll,
+        enabledPlans: flag.enabledPlans,
+        enabledShops: flag.enabledShops,
+        percentage: flag.percentage,
+      },
+    },
+  })
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {

@@ -4,6 +4,8 @@ export type TicketStatus =
   | 'WAITING_PARTS'
   | 'IN_REPAIR'
   | 'READY'
+  | 'PICKED_UP'
+  | 'CANCELLED'
 
 export type RiskFlag = 'none' | 'low' | 'medium' | 'high'
 

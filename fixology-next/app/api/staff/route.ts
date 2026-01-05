@@ -48,8 +48,7 @@ export async function GET(request: NextRequest) {
           name: s.name,
           email: s.email,
           role: s.role.toLowerCase(),
-          pin: s.pin,
-          isActive: s.isActive,
+          isActive: s.status === 'ACTIVE',
           createdAt: s.createdAt.toISOString(),
           stats: {
             ticketsCompleted,
@@ -74,7 +73,6 @@ const CreateStaffSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Valid email required'),
   role: z.enum(['OWNER', 'MANAGER', 'TECHNICIAN', 'FRONT_DESK']),
-  pin: z.string().length(4, 'PIN must be 4 digits').optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -114,8 +112,9 @@ export async function POST(request: NextRequest) {
         name: data.name,
         email: data.email,
         role: data.role as any,
-        pin: data.pin,
-        isActive: true,
+        // Minimal placeholder for invited accounts (set real password during invite flow)
+        passwordHash: 'invited',
+        status: 'INVITED',
       },
     })
 

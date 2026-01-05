@@ -219,7 +219,9 @@ export function AdminFeaturesClient() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
           [...Array(6)].map((_, i) => (
-            <GlassCard key={i} className="h-32 animate-pulse" />
+            <GlassCard key={i} className="h-32 animate-pulse">
+              <div className="h-full" />
+            </GlassCard>
           ))
         ) : error ? (
           <div className="col-span-full text-rose-400">Failed to load feature flags.</div>

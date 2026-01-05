@@ -135,9 +135,9 @@ export function SupportClient() {
   const canSubmit = Boolean(name.trim() && email.trim() && title.trim() && trimmedLen >= minChars)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles((prev) => [...prev, ...Array.from(e.target.files)])
-    }
+    const selected = e.currentTarget.files
+    if (!selected) return
+    setFiles((prev) => [...prev, ...Array.from(selected)])
   }
 
   const removeFile = (index: number) => {

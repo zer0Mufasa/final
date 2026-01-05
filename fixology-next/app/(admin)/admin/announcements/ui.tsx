@@ -293,7 +293,9 @@ export function AdminAnnouncementsClient() {
       <div className="space-y-4">
         {isLoading ? (
           [...Array(3)].map((_, i) => (
-            <GlassCard key={i} className="h-32 animate-pulse" />
+            <GlassCard key={i} className="h-32 animate-pulse">
+              <div className="h-full" />
+            </GlassCard>
           ))
         ) : error ? (
           <div className="text-rose-400">Failed to load announcements.</div>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import { getAdminFromRequest } from '@/lib/admin/auth'
+import type { Prisma } from '@prisma/client'
 
 export async function GET(request: Request) {
   // Get branding settings
@@ -25,7 +26,7 @@ export async function PATCH(request: Request) {
   const admin = getAdminFromRequest(request)
   if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const data = await request.json()
+  const data = (await request.json()) as Record<string, Prisma.InputJsonValue>
 
   // Update each setting
   const updates = Object.entries(data).map(([key, value]) => {

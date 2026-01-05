@@ -708,7 +708,7 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
             height={120}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
-            fetchpriority={priority ? 'high' : 'auto'}
+            fetchPriority={priority ? 'high' : 'auto'}
             style={{ contentVisibility: 'auto', containIntrinsicSize: '100px 100px' }}
             className={cn(
               'object-contain w-full h-full relative z-10 opacity-0 transition-opacity duration-150',

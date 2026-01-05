@@ -31,6 +31,7 @@ const statusMap: Record<TicketStatus, { label: string; tone: StatusTone; icon: R
   IN_REPAIR: { label: 'In Repair', tone: 'info', icon: <HeartHandshake className="w-3 h-3" />, tooltip: 'Bench work in progress' },
   READY: { label: 'Ready', tone: 'success', icon: <CheckCircle className="w-3 h-3" />, tooltip: 'Ready for pickup' },
   PICKED_UP: { label: 'Picked Up', tone: 'neutral', icon: <Truck className="w-3 h-3" />, tooltip: 'Customer collected the device' },
+  CANCELLED: { label: 'Cancelled', tone: 'danger', icon: <AlertCircle className="w-3 h-3" />, tooltip: 'Ticket cancelled' },
 }
 
 export function StatusBadge({ status, className }: { status: TicketStatus; className?: string }) {

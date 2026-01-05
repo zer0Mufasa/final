@@ -10,7 +10,6 @@ const UpdateStaffSchema = z.object({
   name: z.string().min(1).optional(),
   email: z.string().email().optional(),
   role: z.enum(['OWNER', 'MANAGER', 'TECHNICIAN', 'FRONT_DESK']).optional(),
-  pin: z.string().length(4).optional().nullable(),
   isActive: z.boolean().optional(),
 })
 
@@ -50,8 +49,9 @@ export async function PATCH(
         name: data.name,
         email: data.email,
         role: data.role as any,
-        pin: data.pin,
-        isActive: data.isActive,
+        ...(data.isActive !== undefined
+          ? { status: data.isActive ? 'ACTIVE' : 'DISABLED' }
+          : {}),
       },
     })
 
@@ -100,7 +100,7 @@ export async function DELETE(
     // Don't delete, just deactivate
     await prisma.shopUser.update({
       where: { id: params.id },
-      data: { isActive: false },
+      data: { status: 'DISABLED' },
     })
 
     return NextResponse.json({ success: true }, { status: 200 })

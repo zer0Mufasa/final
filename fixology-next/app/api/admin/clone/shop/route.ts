@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import { canPerformAction, getAdminFromRequest } from '@/lib/admin/auth'
 import { logAdminAction } from '@/lib/admin/audit'
+import type { Prisma } from '@prisma/client'
 
 export async function POST(request: Request) {
   const admin = getAdminFromRequest(request)
@@ -31,7 +32,9 @@ export async function POST(request: Request) {
         email: `clone-${Date.now()}@example.com`, // Admin should update this
         plan: sourceShop.plan,
         status: 'TRIAL',
-        features: clonedFields.includes('settings') ? sourceShop.features : {},
+        features: clonedFields.includes('settings')
+          ? (sourceShop.features as Prisma.InputJsonValue)
+          : ({} as Prisma.InputJsonValue),
         // Copy other basic fields if settings is selected
         ...(clonedFields.includes('settings') && {
           phone: sourceShop.phone,
@@ -43,7 +46,7 @@ export async function POST(request: Request) {
           timezone: sourceShop.timezone,
           currency: sourceShop.currency,
           logoUrl: sourceShop.logoUrl,
-          businessHours: sourceShop.businessHours,
+          businessHours: (sourceShop.businessHours ?? {}) as Prisma.InputJsonValue,
           repairFocus: sourceShop.repairFocus,
         }),
       },
@@ -56,7 +59,7 @@ export async function POST(request: Request) {
 
     const updateData: any = {}
     if (clonedFields.includes('settings')) {
-      updateData.features = sourceShop.features
+      updateData.features = sourceShop.features as Prisma.InputJsonValue
       updateData.phone = sourceShop.phone
       updateData.address = sourceShop.address
       updateData.city = sourceShop.city
@@ -65,7 +68,7 @@ export async function POST(request: Request) {
       updateData.country = sourceShop.country
       updateData.timezone = sourceShop.timezone
       updateData.currency = sourceShop.currency
-      updateData.businessHours = sourceShop.businessHours
+      updateData.businessHours = (sourceShop.businessHours ?? {}) as Prisma.InputJsonValue
       updateData.repairFocus = sourceShop.repairFocus
     }
     if (clonedFields.includes('branding')) {
@@ -93,8 +96,8 @@ export async function POST(request: Request) {
           name: workflow.name,
           description: workflow.description,
           isActive: workflow.isActive,
-          trigger: workflow.trigger,
-          actions: workflow.actions,
+          trigger: (workflow.trigger ?? {}) as Prisma.InputJsonValue,
+          actions: (workflow.actions ?? {}) as Prisma.InputJsonValue,
         },
       })
     }

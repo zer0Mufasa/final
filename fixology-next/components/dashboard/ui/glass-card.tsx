@@ -10,6 +10,7 @@ interface GlassCardProps {
   glowColor?: 'purple' | 'blue' | 'emerald' | 'amber' | 'rose'
   hover?: boolean
   onClick?: () => void
+  style?: React.CSSProperties
 }
 
 export function GlassCard({
@@ -19,6 +20,7 @@ export function GlassCard({
   glowColor = 'purple',
   hover = true,
   onClick,
+  style,
 }: GlassCardProps) {
   const [isHovered, setIsHovered] = useState(false)
 
@@ -109,7 +111,7 @@ export function GlassCard({
         'relative p-6 overflow-hidden transition-all duration-300 ease-out',
         className
       )}
-      style={getStyles()}
+      style={{ ...getStyles(), ...style }}
       onMouseEnter={() => hover && setIsHovered(true)}
       onMouseLeave={() => hover && setIsHovered(false)}
       onClick={onClick}

@@ -35,7 +35,8 @@ export async function GET(request: Request) {
         customer: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
             phone: true,
           },
@@ -73,7 +74,12 @@ export async function GET(request: Request) {
     id: ticket.id,
     ticketNumber: ticket.ticketNumber,
     shop: ticket.shop,
-    customer: ticket.customer,
+    customer: ticket.customer
+      ? {
+          ...ticket.customer,
+          name: `${ticket.customer.firstName} ${ticket.customer.lastName}`.trim(),
+        }
+      : null,
     deviceType: ticket.deviceType,
     deviceBrand: ticket.deviceBrand,
     deviceModel: ticket.deviceModel,
@@ -187,7 +193,7 @@ export async function PATCH(request: Request) {
         fromStatus: ticket.status,
         toStatus: status,
         changedById: admin.id, // Using admin ID, but this should ideally be a ShopUser ID
-        note: note || `Status changed by admin ${admin.name}`,
+        note: note || `Status changed by admin ${admin.email || admin.id}`,
       },
     })
   }

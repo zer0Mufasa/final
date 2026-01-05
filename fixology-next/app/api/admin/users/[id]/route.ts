@@ -80,7 +80,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
   await prisma.shopUser.update({
     where: { id: params.id },
-    data: { status: 'INACTIVE' }, // Soft delete
+    data: { status: 'DISABLED' }, // Soft delete
   })
 
   await logAdminAction(

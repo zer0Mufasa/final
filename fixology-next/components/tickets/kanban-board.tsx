@@ -91,6 +91,8 @@ export function KanbanBoard({
     WAITING_PARTS: [],
     IN_REPAIR: [],
     READY: [],
+    PICKED_UP: [],
+    CANCELLED: [],
   }
   for (const t of tickets) grouped[t.status].push(t)
 
