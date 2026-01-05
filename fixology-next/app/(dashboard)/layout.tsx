@@ -12,6 +12,7 @@ import { ActorProvider } from '@/contexts/actor-context'
 import { OnboardingOverlay } from '@/components/dashboard/onboarding-overlay'
 import { FixoLayout } from '@/components/fixo/fixo-layout'
 import { ThemeProvider } from '@/contexts/theme-context'
+import { Prisma } from '@prisma/client'
 
 const dashboardStyles = `
 html{scroll-behavior:smooth}
@@ -368,11 +369,19 @@ export default async function DashboardLayout({
 
   if (isDemo) return renderDemo()
 
-  const supabase = createClient()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  let session: any = null
+  try {
+    const supabase = createClient()
+    const {
+      data: { session: s },
+    } = await supabase.auth.getSession()
+    session = s
+  } catch (e) {
+    // If Supabase env vars are missing/misconfigured, don't hard-crash the dashboard.
+    // Let the user go to login (or keep using demo mode in dev).
+    console.error('Supabase session error in dashboard:', e)
+    redirect('/login')
+  }
 
   // Dev UX: if you aren't logged in, still show the UI in demo mode (fast iteration).
   // Production still requires a real session.
@@ -409,8 +418,63 @@ export default async function DashboardLayout({
       return renderDemo()
     }
 
-    // Database connection error - show helpful message
+    // Database/schema error - show helpful message (avoid blank 500 page)
     console.error('Database connection error:', dbError)
+
+    // Prisma "missing column" (schema out of date)
+    if (dbError instanceof Prisma.PrismaClientKnownRequestError && dbError.code === 'P2022') {
+      const missingColumn = (dbError.meta as any)?.column as string | undefined
+      return (
+        <div className="min-h-screen bg-[#07070a] flex items-center justify-center px-6">
+          <div className="glass-card" style={{ maxWidth: 760, width: '100%', padding: 28 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'rgba(196,181,253,.9)' }}>Fixology</div>
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: '#fff', marginTop: 10, marginBottom: 10 }}>
+              Database needs an update
+            </h1>
+            <p style={{ color: 'rgba(196,181,253,.75)', lineHeight: 1.7, marginBottom: 14 }}>
+              Your Supabase database is missing a column the app expects.
+            </p>
+            <div
+              style={{
+                padding: 12,
+                borderRadius: 14,
+                border: '1px solid rgba(167,139,250,.18)',
+                background: 'rgba(15,10,26,.45)',
+                color: 'rgba(196,181,253,.75)',
+                fontSize: 12,
+                lineHeight: 1.6,
+                marginBottom: 14,
+              }}
+            >
+              <div style={{ color: 'rgba(196,181,253,.9)', fontWeight: 900, marginBottom: 6 }}>Missing column</div>
+              <div>{missingColumn || 'P2022 (unknown column)'}</div>
+            </div>
+            <p style={{ color: 'rgba(196,181,253,.75)', lineHeight: 1.7, marginBottom: 10 }}>
+              Fix: apply the latest Prisma migrations (recommended), or run the one-time SQL:
+            </p>
+            <pre
+              style={{
+                padding: 12,
+                borderRadius: 14,
+                border: '1px solid rgba(255,255,255,.10)',
+                background: 'rgba(0,0,0,.35)',
+                color: 'rgba(196,181,253,.9)',
+                fontSize: 12,
+                overflowX: 'auto',
+                marginBottom: 14,
+              }}
+            >
+{`ALTER TABLE "shops"
+  ADD COLUMN IF NOT EXISTS "imei_credits" INTEGER NOT NULL DEFAULT 0;`}
+            </pre>
+            <a className="glow-button" href="/login" style={{ display: 'inline-block', padding: '12px 16px' }}>
+              Back to login
+            </a>
+          </div>
+        </div>
+      )
+    }
+
     const errorMessage = dbError.message || 'Unknown database error'
     const isAuthError = errorMessage.includes('Authentication failed') || errorMessage.includes('credentials') || errorMessage.includes('P1000')
     const isTimeout = errorMessage.includes('timeout')
