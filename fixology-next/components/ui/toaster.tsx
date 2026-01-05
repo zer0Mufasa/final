@@ -52,10 +52,10 @@ const icons: Record<ToastType, React.ReactNode> = {
 }
 
 const styles: Record<ToastType, string> = {
-  success: 'border-l-green-500 bg-green-500/10',
-  error: 'border-l-red-500 bg-red-500/10',
-  warning: 'border-l-yellow-500 bg-yellow-500/10',
-  info: 'border-l-blue-500 bg-blue-500/10',
+  success: 'border-l-green-400 bg-neutral-900/90',
+  error: 'border-l-red-400 bg-neutral-900/90',
+  warning: 'border-l-yellow-400 bg-neutral-900/90',
+  info: 'border-l-blue-400 bg-neutral-900/90',
 }
 
 const iconStyles: Record<ToastType, string> = {
@@ -94,19 +94,19 @@ export function Toaster() {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-3 max-w-md">
+    <div className="fixed top-16 right-6 z-[100] flex flex-col gap-3 max-w-md">
       {toasts.map((t) => (
         <div
           key={t.id}
           className={cn(
             'flex items-center gap-3 px-4 py-3 rounded-xl border-l-4',
-            'bg-[rgb(var(--bg-card))] border border-[rgb(var(--border-subtle))]',
-            'shadow-lg animate-slide-in-right',
+            'border border-white/10 backdrop-blur-md',
+            'shadow-xl animate-slide-in-right',
             styles[t.type]
           )}
         >
           <span className={iconStyles[t.type]}>{icons[t.type]}</span>
-          <span className="flex-1 text-sm text-[rgb(var(--text-primary))]">
+          <span className="flex-1 text-sm font-semibold text-white">
             {t.message}
           </span>
           <button

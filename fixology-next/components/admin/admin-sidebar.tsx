@@ -17,6 +17,11 @@ import {
   Shield,
   Activity,
   LogOut,
+  MessageSquare,
+  Flag,
+  Bell,
+  ScrollText,
+  Server,
 } from 'lucide-react'
 
 interface NavItem {
@@ -30,7 +35,12 @@ const navItems: NavItem[] = [
   { label: 'Shops', href: '/admin/shops', icon: <Store className="w-5 h-5" /> },
   { label: 'Users', href: '/admin/users', icon: <Users className="w-5 h-5" /> },
   { label: 'Billing', href: '/admin/billing', icon: <CreditCard className="w-5 h-5" /> },
+  { label: 'Support', href: '/admin/support', icon: <MessageSquare className="w-5 h-5" /> },
   { label: 'Analytics', href: '/admin/analytics', icon: <BarChart3 className="w-5 h-5" /> },
+  { label: 'System', href: '/admin/system', icon: <Server className="w-5 h-5" /> },
+  { label: 'Features', href: '/admin/features', icon: <Flag className="w-5 h-5" /> },
+  { label: 'Announcements', href: '/admin/announcements', icon: <Bell className="w-5 h-5" /> },
+  { label: 'Audit Log', href: '/admin/audit', icon: <ScrollText className="w-5 h-5" /> },
   { label: 'Activity', href: '/admin/activity', icon: <Activity className="w-5 h-5" /> },
   { label: 'Settings', href: '/admin/settings', icon: <Settings className="w-5 h-5" /> },
 ]
@@ -45,6 +55,14 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ admin }: AdminSidebarProps) {
   const pathname = usePathname()
+
+  const onLogout = async () => {
+    try {
+      await fetch('/api/admin/auth/logout', { method: 'POST' })
+    } finally {
+      window.location.href = '/admin/login'
+    }
+  }
 
   return (
     <aside className="fixed left-0 top-0 w-64 h-screen bg-[rgb(var(--bg-secondary))] border-r border-[rgb(var(--border-subtle))] flex flex-col z-40">
@@ -106,7 +124,7 @@ export function AdminSidebar({ admin }: AdminSidebarProps) {
               {admin.email}
             </p>
           </div>
-          <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
+          <button onClick={onLogout} className="p-2 hover:bg-white/5 rounded-lg transition-colors">
             <LogOut className="w-4 h-4 text-[rgb(var(--text-muted))]" />
           </button>
         </div>

@@ -2,6 +2,8 @@
 // IMEI Lookup API (imeicheck.net) with mock fallback for dev/demo
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/prisma/client'
 
 const IMEICHECK_API_URL = 'https://api.imeicheck.net/v1/check'
 
@@ -32,11 +34,44 @@ interface IMEICheckResponse {
 
 export async function POST(request: NextRequest) {
   try {
-    const { imei } = (await request.json()) as { imei?: string }
+    const { imei, mode } = (await request.json()) as { imei?: string; mode?: 'basic' | 'deep' }
 
     if (!imei) return NextResponse.json({ error: 'IMEI is required' }, { status: 400 })
 
     const cleanIMEI = imei.replace(/[\s-]/g, '')
+    const isDeepScan = mode === 'deep'
+
+    // Check credits for deep scan
+    if (isDeepScan) {
+      const supabase = await createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
+        const shopUser = await prisma.shopUser.findFirst({
+          where: { email: user.email },
+          include: { shop: true },
+        })
+
+        if (shopUser && shopUser.shop) {
+          const credits = shopUser.shop.imeiCredits || 0
+          if (credits < 1) {
+            return NextResponse.json(
+              { error: 'Insufficient credits. Deep scan requires 1 credit.' },
+              { status: 402 }
+            )
+          }
+
+          // Deduct credit
+          await prisma.shop.update({
+            where: { id: shopUser.shop.id },
+            data: { imeiCredits: credits - 1 },
+          })
+        }
+      }
+    }
+
     const apiKey = process.env.IMEICHECK_API_KEY
     if (!apiKey) {
       // Demo/dev mode: allow 14- or 15-digit input (legacy IMEI flows sometimes use 14-digit TAC+SNR).

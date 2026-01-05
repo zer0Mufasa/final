@@ -73,7 +73,7 @@ export async function POST(req: Request) {
   }
 
   const siteUrl = getSiteUrl(req)
-  const trialDays = getTrialDays()
+  const trialDays = getTrialDays(plan)
   const priceId = getPriceIdForPlan(plan)
 
   const checkoutSession = await stripe.checkout.sessions.create({

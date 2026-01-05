@@ -116,9 +116,12 @@ const REVENUE_DATA = [420, 580, 340, 720, 650, 890, 847]
 export default function DashboardPage() {
   const router = useRouter()
   const { actor } = useActor()
-  const [clockedIn, setClockedIn] = useState(false)
+  const [clockedIn, setClockedIn] = useState<boolean | null>(null)
   const [clockTime, setClockTime] = useState<string>('')
-  const [shopOpen, setShopOpen] = useState(false)
+  const [shopOpen, setShopOpen] = useState<boolean | null>(null)
+  const SHOP_OPEN_KEY = 'dash_shop_open'
+  const CLOCKED_IN_KEY = 'dash_clocked_in'
+  const CLOCK_TIME_KEY = 'dash_clock_time'
   const [selectedUpdate, setSelectedUpdate] = useState<number | null>(1)
   const [intakeText, setIntakeText] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -150,6 +153,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setMounted(true)
+    // hydrate quick state from sessionStorage to avoid flicker
+    if (typeof window !== 'undefined') {
+      const cachedShopOpen = window.sessionStorage.getItem(SHOP_OPEN_KEY)
+      if (cachedShopOpen !== null) setShopOpen(cachedShopOpen === 'true')
+      else setShopOpen(false)
+      const cachedClocked = window.sessionStorage.getItem(CLOCKED_IN_KEY)
+      if (cachedClocked !== null) setClockedIn(cachedClocked === 'true')
+      else setClockedIn(false)
+      const cachedClockTime = window.sessionStorage.getItem(CLOCK_TIME_KEY)
+      if (cachedClockTime) setClockTime(cachedClockTime)
+    }
     // Stagger animation start
     const timer = setTimeout(() => setAnimationReady(true), 100)
     return () => clearTimeout(timer)
@@ -162,10 +176,15 @@ export default function DashboardPage() {
       try {
         const prefs = await apiJson<{ preferences: any }>('/api/me/preferences')
         if (cancelled) return
-        const nextShopOpen = !!prefs?.preferences?.shopOpen
-        setShopOpen(nextShopOpen)
+        if (typeof prefs?.preferences?.shopOpen === 'boolean') {
+          setShopOpen(prefs.preferences.shopOpen)
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem(SHOP_OPEN_KEY, String(prefs.preferences.shopOpen))
+          }
+        }
       } catch {
-        // silent; demo/unauth will still render
+        // demo/unauth fallback: don't leave UI stuck "Syncing…"
+        setShopOpen((prev) => (prev === null ? false : prev))
       }
 
       try {
@@ -174,11 +193,17 @@ export default function DashboardPage() {
         )
         if (cancelled) return
         setClockedIn(!!clock.clockedIn)
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(CLOCKED_IN_KEY, String(!!clock.clockedIn))
+        }
         if (clock.clockedIn && clock.entry?.clockIn) {
           const d = new Date(clock.entry.clockIn)
           setClockTime(
             d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
           )
+          if (typeof window !== 'undefined') {
+            window.sessionStorage.setItem(CLOCK_TIME_KEY, d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }))
+          }
         }
       } catch {
         // silent
@@ -279,35 +304,76 @@ export default function DashboardPage() {
   }
 
   const handleToggleShop = async () => {
-    const next = !shopOpen
+    const next = !(shopOpen ?? false)
+    // optimistic update + immediate toast for visibility
     setShopOpen(next)
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(SHOP_OPEN_KEY, String(next))
+    }
+    toast.success(next ? 'Shop marked as open' : 'Shop marked as closed')
     try {
       await apiJson('/api/me/preferences', {
         method: 'PATCH',
         body: JSON.stringify({ shopOpen: next }),
       })
-      toast.success(next ? 'Shop marked as open' : 'Shop marked as closed')
     } catch (e: any) {
       setShopOpen(!next)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(SHOP_OPEN_KEY, String(!next))
+      }
       toast.error(e?.message || 'Failed to update shop status')
     }
   }
 
   const handleToggleClock = async () => {
+    const optimisticNext = !(clockedIn ?? false)
+    setClockedIn(optimisticNext)
+    if (optimisticNext) {
+      const now = new Date()
+      setClockTime(now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }))
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(CLOCK_TIME_KEY, now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }))
+      }
+      toast.success('Clocked in')
+    } else {
+      setClockTime('')
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(CLOCK_TIME_KEY, '')
+      }
+      toast.success('Clocked out')
+    }
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem(CLOCKED_IN_KEY, String(optimisticNext))
+    }
+
     try {
       const result = await apiJson<{ clockedIn: boolean; entry?: { clockIn?: string; clockOut?: string } }>(
         '/api/time-entries/clock',
         { method: 'POST', body: JSON.stringify({ intent: 'toggle' }) }
       )
       setClockedIn(!!result.clockedIn)
+       if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(CLOCKED_IN_KEY, String(!!result.clockedIn))
+      }
       if (result.clockedIn && result.entry?.clockIn) {
         const d = new Date(result.entry.clockIn)
         setClockTime(d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }))
-        toast.success('Clocked in')
-      } else {
-        toast.success('Clocked out')
+        if (typeof window !== 'undefined') {
+          window.sessionStorage.setItem(CLOCK_TIME_KEY, d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }))
+        }
       }
     } catch (e: any) {
+      // revert on failure
+      setClockedIn(!optimisticNext)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.setItem(CLOCKED_IN_KEY, String(!optimisticNext))
+      }
+      if (!optimisticNext) {
+        // we attempted clock out but failed - restore clock time from cache
+        const cachedClockTime =
+          typeof window !== 'undefined' ? window.sessionStorage.getItem(CLOCK_TIME_KEY) : null
+        if (cachedClockTime) setClockTime(cachedClockTime)
+      }
       toast.error(e?.message || 'Failed to clock in/out')
     }
   }
@@ -489,13 +555,19 @@ export default function DashboardPage() {
                   "transition-all duration-300"
                 )}
                 style={{
-                  background: shopOpen
+                  background: shopOpen === null
+                    ? 'rgba(255, 255, 255, 0.05)'
+                    : shopOpen
                     ? 'linear-gradient(135deg, rgba(52, 211, 153, 0.2) 0%, rgba(52, 211, 153, 0.1) 100%)'
                     : 'rgba(255, 255, 255, 0.05)',
                   border: shopOpen
                     ? '1px solid rgba(52, 211, 153, 0.3)'
                     : '1px solid rgba(255, 255, 255, 0.1)',
-                  color: shopOpen ? '#4ade80' : 'rgba(255, 255, 255, 0.5)',
+                  color: shopOpen === null
+                    ? 'rgba(255, 255, 255, 0.5)'
+                    : shopOpen
+                    ? '1px solid rgba(52, 211, 153, 0.3)'
+                    : 'rgba(255, 255, 255, 0.5)',
                   boxShadow: shopOpen ? '0 0 15px rgba(52, 211, 153, 0.2)' : 'none',
                 }}
               >
@@ -507,17 +579,18 @@ export default function DashboardPage() {
                     animation: shopOpen ? 'pulseGlow 2s ease-in-out infinite' : 'none',
                   }}
                 />
-                {shopOpen ? 'Open' : 'Closed'}
+                {shopOpen === null ? 'Loading…' : shopOpen ? 'Open' : 'Closed'}
               </div>
             </div>
 
             {/* Open/Close Shop */}
             <button
               onClick={handleToggleShop}
+              disabled={shopOpen === null}
               className={cn(
                 "relative w-full py-4 rounded-xl font-semibold text-sm overflow-hidden",
                 "transition-all duration-300 flex items-center justify-center gap-2",
-                "hover:-translate-y-0.5 active:translate-y-0"
+                shopOpen === null ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 active:translate-y-0"
               )}
               style={{
                 background: shopOpen
@@ -532,7 +605,12 @@ export default function DashboardPage() {
                   : '0 8px 20px rgba(52, 211, 153, 0.1)',
               }}
             >
-              {shopOpen ? (
+              {shopOpen === null ? (
+                <>
+                  <Clock className="w-4 h-4" />
+                  Syncing…
+                </>
+              ) : shopOpen ? (
                 <>
                   <Square className="w-4 h-4" />
                   Close Shop
@@ -573,10 +651,11 @@ export default function DashboardPage() {
 
               <button
                 onClick={handleToggleClock}
+                disabled={clockedIn === null}
                 className={cn(
                   "w-full py-4 rounded-xl font-semibold text-sm",
                   "transition-all duration-300 flex items-center justify-center gap-2",
-                  "hover:-translate-y-0.5 active:translate-y-0"
+                  clockedIn === null ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-0.5 active:translate-y-0"
                 )}
                 style={{
                   background: clockedIn
@@ -589,7 +668,12 @@ export default function DashboardPage() {
                   boxShadow: clockedIn ? 'none' : '0 8px 20px rgba(139, 92, 246, 0.15)',
                 }}
               >
-                {clockedIn ? (
+                {clockedIn === null ? (
+                  <>
+                    <Clock className="w-4 h-4" />
+                    Syncing…
+                  </>
+                ) : clockedIn ? (
                   <>
                     <LogOut className="w-4 h-4" />
                     Clock Out

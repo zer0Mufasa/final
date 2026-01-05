@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     // Get all shop user IDs first
     const shopUsers = await prisma.shopUser.findMany({
       where: { shopId: context.shopId },
-      select: { id: true, name: true },
+      select: { id: true, name: true, email: true },
     })
 
     const shopUserIds = shopUsers.map((u) => u.id)
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        user: { select: { id: true, name: true } },
+        user: { select: { id: true, name: true, email: true } },
       },
       orderBy: { clockIn: 'desc' },
       take: 500,
@@ -65,12 +65,14 @@ export async function GET(request: NextRequest) {
         ? Math.round((e.clockOut.getTime() - e.clockIn.getTime()) / 1000 / 60)
         : null
 
+      const fullName = (e.user.name && e.user.name.trim()) || ''
+
       return {
         id: e.id,
         userId: e.userId,
         odisId: e.userId,
-        userName: e.user.name,
-        staffName: e.user.name,
+        userName: fullName || e.user.email || 'Staff',
+        staffName: fullName || e.user.email || 'Staff',
         clockIn: e.clockIn.toISOString(),
         clockOut: e.clockOut?.toISOString() || null,
         durationMinutes: duration,

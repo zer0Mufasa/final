@@ -69,8 +69,26 @@ export default function IMEILookupPage() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [animationReady, setAnimationReady] = useState(false)
+  const [credits, setCredits] = useState<number | null>(null)
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false)
 
   const [recentLookups, setRecentLookups] = useState<string[]>([])
+
+  // Load credits
+  useEffect(() => {
+    const loadCredits = async () => {
+      try {
+        const res = await fetch('/api/imei/credits')
+        if (res.ok) {
+          const data = await res.json()
+          setCredits(data.credits || 0)
+        }
+      } catch {
+        setCredits(0)
+      }
+    }
+    loadCredits()
+  }, [])
 
   // Avoid hydration mismatch: localStorage should be read only on the client after mount.
   useEffect(() => {
@@ -111,6 +129,13 @@ export default function IMEILookupPage() {
       return
     }
 
+    // Check credits for deep scan
+    if (selectedMode === 'deep' && (credits === null || credits < 1)) {
+      setError('Insufficient credits. Deep scan requires 1 credit.')
+      setShowPurchaseModal(true)
+      return
+    }
+
     setLoading(true)
     setError(null)
     setResult(null)
@@ -127,12 +152,25 @@ export default function IMEILookupPage() {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}))
+        if (response.status === 402) {
+          // Payment required (insufficient credits)
+          setShowPurchaseModal(true)
+        }
         throw new Error(err.error || 'Lookup failed')
       }
 
       const data = await response.json()
       if (!data?.valid) throw new Error(data?.error || 'IMEI check failed')
       setResult(transformApiResponse(data))
+
+      // Refresh credits after successful deep scan
+      if (selectedMode === 'deep') {
+        const creditsRes = await fetch('/api/imei/credits')
+        if (creditsRes.ok) {
+          const creditsData = await creditsRes.json()
+          setCredits(creditsData.credits || 0)
+        }
+      }
 
       const newRecent = [cleanIMEI, ...recentLookups.filter((i) => i !== cleanIMEI)].slice(0, 10)
       setRecentLookups(newRecent)
@@ -141,6 +179,27 @@ export default function IMEILookupPage() {
       setError(err.message || 'Failed to lookup IMEI')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handlePurchaseCredits = async (amount: number) => {
+    try {
+      const response = await fetch('/api/imei/credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', amount }),
+      })
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.error || 'Failed to purchase credits')
+      }
+
+      const data = await response.json()
+      setCredits(data.credits || 0)
+      setShowPurchaseModal(false)
+    } catch (err: any) {
+      setError(err.message || 'Failed to purchase credits')
     }
   }
 
@@ -161,13 +220,35 @@ export default function IMEILookupPage() {
         "mb-8 transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )}>
-        <h1 className="text-2xl font-bold text-white/95 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <Search className="w-5 h-5 text-white" />
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-white/95 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
+                <Search className="w-5 h-5 text-white" />
+              </div>
+              IMEI Lookup
+            </h1>
+            <p className="text-sm text-white/50 mt-2">Check device status, blacklist, carrier lock, and warranty information</p>
           </div>
-          IMEI Lookup
-        </h1>
-        <p className="text-sm text-white/50 mt-2">Check device status, blacklist, carrier lock, and warranty information</p>
+          
+          {/* Credits Display */}
+          <div className="flex items-center gap-3">
+            {credits !== null && (
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08]">
+                <span className="text-sm text-white/60">Deep Scan:</span>
+                <span className="text-sm font-semibold text-violet-300">
+                  ({credits} {credits === 1 ? 'Credit' : 'Credits'} Remaining)
+                </span>
+              </div>
+            )}
+            <button
+              onClick={() => setShowPurchaseModal(true)}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white text-sm font-medium hover:shadow-lg hover:shadow-violet-500/25 transition-all"
+            >
+              Buy Credits
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className={cn(
@@ -230,8 +311,8 @@ export default function IMEILookupPage() {
 
             <p className="text-xs text-white/40 mt-2">
               {mode === 'basic'
-                ? 'Quick check: Device info, blacklist status, carrier lock'
-                : 'Full scan: Includes warranty, iCloud status, purchase date'}
+                ? 'Quick check: Device info, blacklist status, carrier lock (Free)'
+                : `Full scan: Includes warranty, iCloud status, purchase date (1 Credit${credits !== null && credits < 1 ? ' - Insufficient' : ''})`}
             </p>
           </div>
           <div className="flex items-end">
@@ -456,6 +537,75 @@ export default function IMEILookupPage() {
             <FeatureBadge icon="📱" label="Carrier Lock" />
             <FeatureBadge icon="☁️" label="iCloud Status" />
             <FeatureBadge icon="🛡️" label="Warranty Info" />
+          </div>
+        </div>
+      )}
+
+      {/* Purchase Credits Modal */}
+      {showPurchaseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white/[0.08] border border-white/[0.12] p-6 backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-white">Purchase Deep Scan Credits</h2>
+              <button
+                onClick={() => setShowPurchaseModal(false)}
+                className="p-2 rounded-lg hover:bg-white/[0.1] transition-colors text-white/60 hover:text-white"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <p className="text-sm text-white/60 mb-6">
+              Deep scans provide comprehensive device information including warranty status, iCloud lock, and purchase date.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => handlePurchaseCredits(5)}
+                className="w-full p-4 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-violet-500/30 transition-all text-left"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-white">5 Credits</div>
+                    <div className="text-xs text-white/50">$9.99</div>
+                  </div>
+                  <div className="text-lg font-bold text-violet-300">$1.99/credit</div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => handlePurchaseCredits(10)}
+                className="w-full p-4 rounded-xl bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 hover:from-violet-500/30 hover:to-fuchsia-500/30 transition-all text-left"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-white">10 Credits</div>
+                    <div className="text-xs text-white/50">$17.99</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full">Best Value</span>
+                    <div className="text-lg font-bold text-violet-300">$1.79/credit</div>
+                  </div>
+                </div>
+              </button>
+              
+              <button
+                onClick={() => handlePurchaseCredits(25)}
+                className="w-full p-4 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:bg-white/[0.08] hover:border-violet-500/30 transition-all text-left"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-semibold text-white">25 Credits</div>
+                    <div className="text-xs text-white/50">$39.99</div>
+                  </div>
+                  <div className="text-lg font-bold text-violet-300">$1.60/credit</div>
+                </div>
+              </button>
+            </div>
+
+            <div className="text-xs text-white/40 text-center">
+              Credits never expire. Use them anytime for deep scans.
+            </div>
           </div>
         </div>
       )}

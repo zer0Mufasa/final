@@ -1,22 +1,52 @@
 export type StripeCheckoutPlan = 'starter' | 'professional' | 'enterprise'
 
-export function getTrialDays() {
-  const raw = process.env.STRIPE_TRIAL_DAYS?.trim()
-  const n = raw ? Number(raw) : 14
-  // Requirement: 7–14 days configured in code
-  if (!Number.isFinite(n) || n < 7 || n > 14) return 14
-  return Math.floor(n)
+export const PLANS = {
+  STARTER: {
+    id: 'STARTER',
+    name: 'Fixology Starter',
+    price: 99,
+    productId: 'prod_TgN0Dbs0jwWFod',
+    priceId: process.env.STRIPE_PRICE_STARTER || 'price_1Sj0GWI3u6N6tWwNh2W1G8ay', // $99/month
+    trialDays: 14,
+    features: [
+      'POS Dashboard',
+      'Ticket Management',
+      'Customer Database',
+      '1 Team Member',
+      'Email Support',
+      'Basic Reports',
+    ],
+  },
+  PROFESSIONAL: {
+    id: 'PROFESSIONAL',
+    name: 'Fixology Professional',
+    price: 249,
+    productId: 'prod_TgN1qedQzMnGHn',
+    priceId: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_1Sj0HCI3u6N6tWwNG0Ctitq7', // $249/month
+    trialDays: 30,
+    features: [
+      'Everything in Starter',
+      'AI Diagnostics (GPT)',
+      'Inventory Management',
+      'Advanced Reports & Analytics',
+      'Autopilot SMS/Email',
+      '5 Team Members',
+      'Priority Support',
+      'Custom Branding',
+    ],
+  },
+} as const
+
+export function getTrialDays(plan: 'starter' | 'professional' = 'starter') {
+  if (plan === 'starter') return PLANS.STARTER.trialDays
+  return PLANS.PROFESSIONAL.trialDays
 }
 
 export function getPriceIdForPlan(plan: Exclude<StripeCheckoutPlan, 'enterprise'>) {
   if (plan === 'starter') {
-    const id = process.env.STRIPE_PRICE_STARTER
-    if (!id) throw new Error('Missing STRIPE_PRICE_STARTER')
-    return id
+    return PLANS.STARTER.priceId
   }
-  const id = process.env.STRIPE_PRICE_PROFESSIONAL
-  if (!id) throw new Error('Missing STRIPE_PRICE_PROFESSIONAL')
-  return id
+  return PLANS.PROFESSIONAL.priceId
 }
 
 export function mapPlanToDbPlan(plan: Exclude<StripeCheckoutPlan, 'enterprise'>) {

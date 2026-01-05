@@ -1,10 +1,8 @@
 // app/api/ai/quick-intake/route.ts
-// Claude-powered natural language → structured ticket draft
+// Novita AI-powered natural language → structured ticket draft
 
-import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
-
-const MODEL = 'claude-3-haiku-20240307'
+import { createChatCompletion } from '@/lib/ai/novita-client'
 
 const SYSTEM_PROMPT = `You are a ticket parser for Fixology, a repair shop management system.
 
@@ -55,42 +53,39 @@ function extractJson(text: string) {
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: 'ANTHROPIC_API_KEY is not set. Add it to .env.local and restart the server.' },
-        { status: 500 }
-      )
-    }
-
     const { input } = (await request.json()) as { input?: string }
     if (!input?.trim()) {
       return NextResponse.json({ error: 'Input is required' }, { status: 400 })
     }
 
-    const anthropic = new Anthropic({ apiKey })
-    const resp = await anthropic.messages.create({
-      model: MODEL,
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+    const result = await createChatCompletion({
+      systemPrompt: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: input }],
+      maxTokens: 1000,
+      temperature: 0.7,
+      responseFormat: 'json_object',
     })
 
-    const textPart = resp.content.find((c) => c.type === 'text')
-    const raw = textPart?.type === 'text' ? textPart.text : '{}'
-    const parsed = extractJson(raw)
+    const parsed = extractJson(result.content) || JSON.parse(result.content)
 
     return NextResponse.json({
       result: parsed ?? null,
-      raw,
-      usage: resp.usage,
+      raw: result.content,
+      usage: result.usage,
     })
   } catch (error: any) {
     console.error('Quick Intake AI Error:', error)
+    
+    if (error?.message?.includes('NOVITA_API_KEY')) {
+      return NextResponse.json(
+        { error: 'API key not configured. Please add NOVITA_API_KEY to your .env.local file and restart the server.' },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
       { error: error?.message || 'Failed to generate quick intake' },
       { status: 500 }
     )
   }
 }
-

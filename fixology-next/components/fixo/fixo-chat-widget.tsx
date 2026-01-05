@@ -76,7 +76,7 @@ export function FixoProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isTyping, setIsTyping] = useState(false)
 
-  // Load from localStorage
+  // Load from localStorage and add initial greeting if new conversation
   useEffect(() => {
     const saved = localStorage.getItem('fixo-chat-history-v2')
     if (saved) {
@@ -89,6 +89,15 @@ export function FixoProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         console.error('Failed to load chat history')
       }
+    } else {
+      // First time opening chat - add welcome message
+      const welcomeMessage: Message = {
+        id: 'welcome-fixo',
+        role: 'assistant',
+        content: "Hi! My name is Fixo 👋 I'm your AI assistant for Fixology. I can help you with repair diagnostics, platform questions, ticket management, and anything else related to your repair shop. What can I help you with today?",
+        timestamp: new Date()
+      }
+      setMessages([welcomeMessage])
     }
   }, [])
 
@@ -182,8 +191,15 @@ export function FixoProvider({ children }: { children: ReactNode }) {
   }, [messages, sendMessage])
 
   const clearHistory = useCallback(() => {
-    setMessages([])
-    localStorage.removeItem('fixo-chat-history-v2')
+    // Add welcome message when clearing history
+    const welcomeMessage: Message = {
+      id: 'welcome-fixo',
+      role: 'assistant',
+      content: "Hi! My name is Fixo 👋 I'm your AI assistant for Fixology. I can help you with repair diagnostics, platform questions, ticket management, and anything else related to your repair shop. What can I help you with today?",
+      timestamp: new Date()
+    }
+    setMessages([welcomeMessage])
+    localStorage.setItem('fixo-chat-history-v2', JSON.stringify([welcomeMessage]))
   }, [])
 
   const setFeedback = useCallback((messageId: string, feedback: 'up' | 'down') => {
@@ -305,7 +321,7 @@ function FixoChatPanel() {
             </div>
             <div className="text-xs text-emerald-400 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              Powered by Claude
+              Powered by Llama 3.3
             </div>
           </div>
         </div>
@@ -335,8 +351,23 @@ function FixoChatPanel() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
-          <WelcomeScreen onSuggest={sendMessage} suggestions={suggestions} />
+        {messages.length === 0 || (messages.length === 1 && messages[0].id === 'welcome-fixo' && messages[0].role === 'assistant') ? (
+          messages.length === 0 ? (
+            <WelcomeScreen onSuggest={sendMessage} suggestions={suggestions} />
+          ) : (
+            <>
+              {messages.map((message) => (
+                <ChatMessage 
+                  key={message.id} 
+                  message={message} 
+                  onFeedback={setFeedback}
+                  onRetry={message.error ? retryLastMessage : undefined}
+                />
+              ))}
+              {isTyping && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </>
+          )
         ) : (
           <>
             {messages.map((message) => (
@@ -415,7 +446,7 @@ function WelcomeScreen({ onSuggest, suggestions }: { onSuggest: (q: string) => v
         Hey! I'm Fixo 👋
       </h2>
       <p className="text-sm text-white/60 mb-6 max-w-xs">
-        Your AI assistant for Fixology. I'm powered by Claude and can help with anything about your repair shop!
+        Your AI assistant for Fixology. I'm powered by Llama 3.3 and can help with anything about your repair shop!
       </p>
 
       <div className="w-full space-y-2">
