@@ -4,6 +4,10 @@ import { prisma } from '@/lib/prisma/client'
 import { OnboardingWizard } from './wizard'
 import { BillingRequired } from './billing-required'
 
+// Prisma is not supported in the Edge runtime. Force Node.js for onboarding.
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export const metadata = {
   title: 'Onboarding',
 }

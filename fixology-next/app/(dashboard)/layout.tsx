@@ -14,6 +14,10 @@ import { FixoLayout } from '@/components/fixo/fixo-layout'
 import { ThemeProvider } from '@/contexts/theme-context'
 import { Prisma } from '@prisma/client'
 
+// Prisma is not supported in the Edge runtime. Force Node.js for all dashboard routes.
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const dashboardStyles = `
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion: reduce) {
