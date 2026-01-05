@@ -109,9 +109,29 @@ export default function SignupPage() {
         return
       }
       
-      toast.success('Account created! Welcome to Fixology!')
-      router.push('/onboarding')
-      router.refresh()
+      toast.success('Account created! Redirecting to checkout...')
+      
+      // Redirect to Stripe checkout (default to starter plan)
+      try {
+        const checkoutRes = await fetch('/api/stripe/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: 'starter' }),
+        })
+        
+        const checkoutData = await checkoutRes.json()
+        
+        if (checkoutRes.ok && checkoutData.url) {
+          window.location.href = checkoutData.url
+        } else {
+          toast.error(checkoutData.error || 'Failed to start checkout')
+          router.push('/onboarding')
+        }
+      } catch (checkoutError) {
+        console.error('Checkout error:', checkoutError)
+        toast.error('Failed to start checkout. Redirecting to onboarding...')
+        router.push('/onboarding')
+      }
     } catch (error) {
       console.error('Signup error:', error)
       toast.error('Something went wrong. Please try again.')

@@ -97,8 +97,10 @@ export async function POST(req: Request) {
     client_reference_id: shopUser.shop.id,
     line_items: [{ price: priceId, quantity: 1 }],
     allow_promotion_codes: true,
+    // Only redirect to onboarding on SUCCESS (payment completed)
     success_url: `${siteUrl}/onboarding?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl}/onboarding?checkout=cancelled`,
+    // On cancel/fail, redirect to login (not onboarding)
+    cancel_url: `${siteUrl}/login?checkout=cancelled`,
     subscription_data: {
       trial_period_days: trialDays,
       metadata: {

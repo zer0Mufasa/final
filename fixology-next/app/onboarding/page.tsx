@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { toast } from '@/components/ui/toaster'
 import { BillingRequired } from './billing-required'
 import { OnboardingWizard } from './wizard'
 
@@ -32,10 +33,20 @@ export default function OnboardingPage() {
 
   const billing = params.get('billing')
   const reason = params.get('reason') || undefined
+  const checkout = params.get('checkout')
 
   const [loading, setLoading] = useState(true)
   const [initial, setInitial] = useState<any>(null)
   const [hardError, setHardError] = useState<'database_error' | null>(null)
+
+  // Show success message if coming from Stripe checkout
+  useEffect(() => {
+    if (checkout === 'success') {
+      toast.success('Payment successful! Complete your setup below.')
+    } else if (checkout === 'cancelled') {
+      toast.error('Checkout was cancelled. Please complete payment to continue.')
+    }
+  }, [checkout])
 
   // Billing-required pages are fully client-safe.
   if (billing === 'required') {
