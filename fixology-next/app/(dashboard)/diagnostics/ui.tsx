@@ -53,6 +53,7 @@ export function DiagnosticsClient() {
       const res = await fetch('/api/ai/diagnostics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           deviceType: 'Smartphone',
           brand: 'Unknown',
