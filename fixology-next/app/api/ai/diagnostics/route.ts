@@ -5,6 +5,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-context'
 import { prisma } from '@/lib/prisma/client'
 import { z } from 'zod'
+import { createChatCompletion } from '@/lib/ai/novita-client'
+import {
+  getRepairKnowledge,
+  extractSearchTerms,
+  detectRepairQuestion,
+} from '@/lib/repair-wiki'
 
 const DiagnosticsInputSchema = z.object({
   ticketId: z.string().optional(),
@@ -168,19 +174,127 @@ export async function POST(request: NextRequest) {
       estimatedTime: '45-60 minutes',
     }))
 
+    // Check if this is a repair-related question and get repair.wiki knowledge
+    const isRepairRelated = detectRepairQuestion(input.issueDescription)
+    let repairKnowledge = ''
+    let sources: string[] = []
+
+    if (isRepairRelated) {
+      const searchTerms = extractSearchTerms(input.issueDescription)
+      const wikiData = await getRepairKnowledge(searchTerms)
+      repairKnowledge = wikiData.knowledge
+      sources = wikiData.sources
+    }
+
+    // Use AI to enhance diagnostics if repair.wiki knowledge is available or if no pattern matches
+    let aiEnhancedResult = null
+    if (repairKnowledge || matches.length === 0) {
+      try {
+        const systemPrompt = `You are Fixology AI, an expert repair technician assistant for device repair shop owners and technicians.
+
+Your expertise:
+- iPhone/Android phone repair diagnostics
+- Panic log and error code analysis
+- Component-level troubleshooting (screens, batteries, charging ports, motherboards)
+- Repair time and difficulty estimates
+- Parts identification and compatibility
+- Micro-soldering guidance
+
+When helping:
+- Be technical and precise - you're talking to repair professionals
+- Reference specific components, tools, and techniques
+- If you identify a panic code or error, explain what it means
+- Suggest diagnostic steps in order of likelihood
+- Mention if something requires micro-soldering vs standard repair
+- If repair.wiki knowledge is provided, use it to give accurate answers
+- Always cite repair.wiki as a source when using its information
+
+${repairKnowledge ? `\n${repairKnowledge}` : ''}
+
+Analyze the following device issue and provide:
+1. Primary cause (most likely issue)
+2. Confidence level (0-100)
+3. Recommended diagnostic tests/steps
+4. Parts that may need replacement
+5. Any warnings or risk flags
+
+Device: ${input.deviceType} ${input.brand} ${input.model || ''}
+Issue: ${input.issueDescription}
+Symptoms: ${symptoms.join(', ') || 'None specified'}
+
+Respond in JSON format:
+{
+  "primaryCause": "description",
+  "confidence": 85,
+  "recommendedTests": ["test1", "test2"],
+  "partsSuggestions": ["part1", "part2"],
+  "warnings": ["warning1"],
+  "steps": ["step1", "step2"]
+}`
+
+        const aiResponse = await createChatCompletion({
+          systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: `Analyze this repair issue: ${input.issueDescription}`,
+            },
+          ],
+          maxTokens: 2000,
+          temperature: 0.5,
+        })
+
+        const aiResponseText = aiResponse.content
+
+        // Try to parse AI response as JSON, fallback to text extraction
+        try {
+          const jsonMatch = aiResponseText.match(/\{[\s\S]*\}/)
+          if (jsonMatch) {
+            aiEnhancedResult = JSON.parse(jsonMatch[0])
+          }
+        } catch {
+          // If JSON parsing fails, extract structured info from text
+          const lines = aiResponseText.split('\n').filter((line: string) => line.trim())
+          aiEnhancedResult = {
+            primaryCause: lines[0] || likelyCause,
+            confidence: confidence || 70,
+            recommendedTests: recommendedTests.length > 0 ? recommendedTests : ['Visual inspection', 'Functional test'],
+            partsSuggestions: partsSuggestions.length > 0 ? partsSuggestions : [],
+            warnings: warnings.length > 0 ? warnings : [],
+            steps: lines.filter((line: string) => line.trim().startsWith('-') || line.trim().startsWith('•')).slice(0, 5),
+          }
+        }
+      } catch (aiError) {
+        console.error('AI enhancement error:', aiError)
+        // Fall back to pattern matching
+      }
+    }
+
+    // Merge AI results with pattern matching results
+    const finalPrimaryCause = aiEnhancedResult?.primaryCause || likelyCause
+    const finalConfidence = aiEnhancedResult?.confidence || confidence
+    const finalRecommendedTests = aiEnhancedResult?.recommendedTests || recommendedTests
+    const finalPartsSuggestions = aiEnhancedResult?.partsSuggestions || partsSuggestions
+    const finalWarnings = aiEnhancedResult?.warnings || warnings
+    const finalSteps = aiEnhancedResult?.steps || recommendedTests
+
     const result = {
       likelyCauses: matches.slice(0, 3).map(m => ({
         cause: m.cause,
         confidence: m.confidence,
       })),
-      overallConfidence: confidence,
-      primaryCause: likelyCause,
-      recommendedTests,
-      partsSuggestions,
+      overallConfidence: finalConfidence,
+      confidence: finalConfidence,
+      primaryCause: finalPrimaryCause,
+      recommendedTests: finalRecommendedTests,
+      steps: finalSteps,
+      partsSuggestions: finalPartsSuggestions,
       repairPaths,
-      warnings,
+      warnings: finalWarnings,
       timeEstimate: '45-90 minutes',
-      riskFlags: warnings.length > 0 ? warnings : [],
+      riskFlags: finalWarnings.length > 0 ? finalWarnings : [],
+      sources: sources.length > 0 ? sources : undefined,
+      usedRepairWiki: sources.length > 0,
     }
 
     // Save to ticket if ticketId provided

@@ -14,6 +14,7 @@ import {
   Sparkles,
   Printer,
   Save,
+  ExternalLink,
 } from 'lucide-react'
 
 interface DiagResult {
@@ -21,6 +22,8 @@ interface DiagResult {
   confidence: number
   nextSteps: string[]
   warnings: string[]
+  sources?: string[]
+  usedRepairWiki?: boolean
 }
 
 export function DiagnosticsClient() {
@@ -71,6 +74,8 @@ export function DiagnosticsClient() {
         confidence: Math.max(0, Math.min(1, Number(data?.overallConfidence ?? data?.confidence ?? 0) / 100)),
         nextSteps: Array.isArray(data?.recommendedTests) ? data.recommendedTests : Array.isArray(data?.steps) ? data.steps : [],
         warnings: Array.isArray(data?.warnings) ? data.warnings : Array.isArray(data?.riskFlags) ? data.riskFlags : [],
+        sources: Array.isArray(data?.sources) ? data.sources : undefined,
+        usedRepairWiki: data?.usedRepairWiki || false,
       }
 
       setResult(mapped)
@@ -183,7 +188,7 @@ export function DiagnosticsClient() {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-[var(--text-primary)]">AI Analysis Results</div>
-                <div className="text-xs text-[var(--text-muted)] mt-0.5">Powered by Fixology AI</div>
+                <div className="text-xs text-[var(--text-muted)] mt-0.5">Powered by Fixology AI • repair.wiki knowledge base</div>
               </div>
             </div>
 
@@ -230,6 +235,35 @@ export function DiagnosticsClient() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Sources */}
+                  {result.sources && result.sources.length > 0 && (
+                    <div className="rounded-2xl bg-white/[0.03] border border-[var(--border-default)] p-4">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-[var(--text-primary)]">
+                        <ExternalLink className="w-4 h-4 text-purple-300" />
+                        Knowledge Sources
+                      </div>
+                      <div className="mt-2 space-y-1.5">
+                        {result.sources.map((source, i) => (
+                          <a
+                            key={i}
+                            href={source}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            <span className="truncate">{source.replace('https://repair.wiki/w/', 'repair.wiki/')}</span>
+                          </a>
+                        ))}
+                      </div>
+                      {result.usedRepairWiki && (
+                        <div className="mt-2 text-xs text-[var(--text-muted)]">
+                          Information sourced from repair.wiki knowledge base
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="rounded-3xl bg-white/[0.03] border border-[var(--border-default)] p-6 text-sm text-[var(--text-primary)]/60 leading-relaxed text-center">
