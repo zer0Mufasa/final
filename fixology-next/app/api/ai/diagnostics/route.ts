@@ -83,7 +83,7 @@ const SYMPTOM_PATTERNS: Record<string, { cause: string; confidence: number; test
 }
 
 export async function POST(request: NextRequest) {
-  const context = await getShopContext()
+  const context = await getShopContext(request)
 
   if (isContextError(context)) {
     return NextResponse.json({ error: context.error }, { status: context.status })

@@ -1,7 +1,8 @@
 // lib/auth/get-shop-context.ts
 // Get the current user's shop context for API routes
 
-import { createClient } from '@/lib/supabase/server'
+import { NextRequest } from 'next/server'
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { prisma } from '@/lib/prisma/client'
 
 export type ShopContext =
@@ -40,8 +41,55 @@ export type ShopContext =
       status: number
     }
 
-export async function getShopContext(): Promise<ShopContext> {
-  const supabase = createClient()
+export async function getShopContext(request?: NextRequest): Promise<ShopContext> {
+  // Create Supabase client with proper cookie handling
+  // If request is provided (API route), use request cookies; otherwise use next/headers cookies
+  const supabase = request
+    ? createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return request.cookies.get(name)?.value
+            },
+            set(name: string, value: string, options: CookieOptions) {
+              // In API routes, we can't set cookies directly
+            },
+            remove(name: string, options: CookieOptions) {
+              // In API routes, we can't remove cookies directly
+            },
+          },
+        }
+      )
+    : createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              const { cookies } = require('next/headers')
+              return cookies().get(name)?.value
+            },
+            set(name: string, value: string, options: CookieOptions) {
+              try {
+                const { cookies } = require('next/headers')
+                cookies().set({ name, value, ...options })
+              } catch (error) {
+                // Ignore if called from Server Component
+              }
+            },
+            remove(name: string, options: CookieOptions) {
+              try {
+                const { cookies } = require('next/headers')
+                cookies().set({ name, value: '', ...options })
+              } catch (error) {
+                // Ignore if called from Server Component
+              }
+            },
+          },
+        }
+      )
 
   const {
     data: { session },
