@@ -12,6 +12,9 @@ import {
   detectRepairQuestion,
 } from '@/lib/repair-wiki'
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 const DiagnosticsInputSchema = z.object({
   ticketId: z.string().optional(),
   deviceType: z.string(),
@@ -82,18 +85,16 @@ const SYMPTOM_PATTERNS: Record<string, { cause: string; confidence: number; test
   },
 }
 
-export const runtime = 'nodejs'
-export const dynamic = 'force-dynamic'
-
 export async function POST(request: NextRequest) {
+  const isDemoMode = request.cookies.get('fx_demo')?.value === '1'
   const context = await getShopContext(request)
+  const shopId = !isContextError(context) && isShopUser(context) ? context.shopId : undefined
 
-  if (isContextError(context)) {
-    return NextResponse.json({ error: context.error }, { status: context.status })
-  }
-
-  if (!isShopUser(context)) {
-    return NextResponse.json({ error: 'Shop user required' }, { status: 403 })
+  // Demo mode is UI-only (no Supabase session), so allow diagnostics without auth.
+  if ((isContextError(context) || !isShopUser(context)) && !isDemoMode) {
+    const status = isContextError(context) ? context.status : 403
+    const error = isContextError(context) ? context.error : 'Shop user required'
+    return NextResponse.json({ error }, { status })
   }
 
   try {
@@ -101,11 +102,11 @@ export async function POST(request: NextRequest) {
 
     // Get historical ticket data if ticketId provided
     let historicalData: any[] = []
-    if (input.ticketId) {
+    if (shopId && input.ticketId) {
       const ticket = await prisma.ticket.findFirst({
         where: {
           id: input.ticketId,
-          shopId: context.shopId,
+          shopId,
         },
         include: {
           parts: true,
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
         // Get similar completed tickets
         historicalData = await prisma.ticket.findMany({
           where: {
-            shopId: context.shopId,
+            shopId,
             deviceBrand: ticket.deviceBrand,
             deviceType: ticket.deviceType,
             status: { in: ['READY', 'PICKED_UP'] },
@@ -298,10 +299,11 @@ Respond in JSON format:
       riskFlags: finalWarnings.length > 0 ? finalWarnings : [],
       sources: sources.length > 0 ? sources : undefined,
       usedRepairWiki: sources.length > 0,
+      demoMode: isDemoMode,
     }
 
     // Save to ticket if ticketId provided
-    if (input.ticketId) {
+    if (shopId && input.ticketId) {
       await prisma.ticket.update({
         where: { id: input.ticketId },
         data: {
