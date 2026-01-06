@@ -86,7 +86,11 @@ const SYMPTOM_PATTERNS: Record<string, { cause: string; confidence: number; test
 }
 
 export async function POST(request: NextRequest) {
-  const isDemoMode = request.cookies.get('fx_demo')?.value === '1'
+  const url = new URL(request.url)
+  const isDemoMode =
+    request.cookies.get('fx_demo')?.value === '1' ||
+    request.headers.get('x-fx-demo') === '1' ||
+    url.searchParams.get('demo') === '1'
   const context = await getShopContext(request)
   const shopId = !isContextError(context) && isShopUser(context) ? context.shopId : undefined
 
