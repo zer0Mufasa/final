@@ -17,7 +17,7 @@ export const dynamic = 'force-dynamic'
 
 type CacheEntry<T> = { value: T; expiresAt: number }
 
-const DIAGNOSTICS_API_VERSION = '2026-01-06-fast-timeouts-v1'
+const DIAGNOSTICS_API_VERSION = '2026-01-06-normal-v2'
 
 // Module-level caches (persist across requests on warm serverless instances)
 const wikiCache = new Map<string, CacheEntry<{ knowledge: string; sources: string[] }>>()
@@ -280,7 +280,6 @@ export async function POST(request: NextRequest) {
 
     // Call AI with structured JSON output
     let aiResponse: any
-    let timedOut = false
     try {
       const completion = await withTimeout(
         createChatCompletion({
@@ -292,7 +291,7 @@ export async function POST(request: NextRequest) {
           responseFormat: 'json_object',
           model: 'meta-llama/llama-3.3-70b-instruct',
         }),
-        8000,
+        30000,
         'AI'
       )
 
@@ -317,7 +316,15 @@ export async function POST(request: NextRequest) {
       }
     } catch (aiError: any) {
       console.error('AI enhancement error:', aiError)
-      timedOut = Boolean(aiError?.message?.includes('AI_TIMEOUT'))
+
+      // If the model is slow, don't return a "quick mode" response (it feels broken).
+      // Instead, surface a retryable error and let the UI keep the previous result.
+      if (aiError?.message?.includes('AI_TIMEOUT')) {
+        return NextResponse.json(
+          { error: 'AI analysis timed out. Please retry.' },
+          { status: 504 }
+        )
+      }
       
       // If NOVITA_API_KEY is missing, provide helpful error
       if (aiError?.message?.includes('NOVITA_API_KEY')) {
@@ -331,68 +338,10 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Fallback response
+      // Fallback response (non-timeout)
       aiResponse = {
-        message: timedOut
-            ? 'This diagnosis is taking longer than expected. I returned a quick preliminary checklist—try again for a deeper analysis.'
-            : 'I encountered an error analyzing your issue. Please try again or rephrase your question.',
-        diagnosis: timedOut
-          ? {
-              summary: 'Preliminary diagnostic checklist (quick mode)',
-              confidence: 60,
-              possibleCauses: [
-                { cause: 'Software/firmware issue', likelihood: 'high', explanation: 'Common cause of intermittent behavior and restarts.' },
-                { cause: 'Battery/power instability', likelihood: 'medium', explanation: 'Loose connector, weak battery, or power IC instability.' },
-                { cause: 'Board-level fault', likelihood: 'low', explanation: 'Less common, but possible if symptoms persist with known-good parts.' },
-              ],
-              diagnosticSteps: [
-                { step: 1, title: 'Reproduce + log', description: 'Note exact trigger (idle/charging/app). Check for crash/panic logs if iOS.', expectedResult: 'Clear pattern or log entry identified.', tools: ['Settings', 'panic log viewer (optional)'] },
-                { step: 2, title: 'Isolate peripherals', description: 'Disconnect nonessential flexes (if opened) or remove accessories/case.', expectedResult: 'Symptom changes when a peripheral is removed.', tools: ['Basic tools (if opened)'] },
-                { step: 3, title: 'Known-good power path', description: 'Test with known-good battery/cable/charger. Inspect battery connector seating.', expectedResult: 'Stable operation with known-good power path.', tools: ['Known-good charger', 'Known-good battery (optional)'] },
-                { step: 4, title: 'Software sanity check', description: 'Update iOS / restore via Finder/iTunes (if applicable).', expectedResult: 'If software was the cause, issue is gone post-restore.', tools: ['Computer', 'Finder/iTunes'] },
-                { step: 5, title: 'Escalate', description: 'If persists after restore + known-good battery, treat as board-level and proceed to board diagnostics.', expectedResult: 'Decision made: board-level vs parts-level.', tools: ['Multimeter', 'Microscope (optional)'] },
-              ],
-              repairGuide: {
-                difficulty: 'medium',
-                estimatedTime: '30-60 minutes',
-                steps: [
-                  { step: 1, title: 'Confirm reproducibility', description: 'Verify symptom is consistent and not app-specific.', tip: 'Record a short video for customer documentation.' },
-                  { step: 2, title: 'Update/restore', description: 'Update iOS; if needed restore the device.', warning: 'Backup data first.' },
-                  { step: 3, title: 'Inspect connectors', description: 'If opened, inspect battery/display flexes for damage/corrosion.', tip: 'Look for lifted pins or debris.' },
-                  { step: 4, title: 'Swap known-good battery', description: 'Test with a known-good battery to rule out brownouts.' },
-                  { step: 5, title: 'Check for liquid indicators', description: 'Inspect LCI and corrosion hotspots.', warning: 'Corrosion can worsen quickly—clean promptly.' },
-                  { step: 6, title: 'Stabilize power path', description: 'Reseat connectors; replace damaged flex/connector if found.' },
-                  { step: 7, title: 'Re-test under load', description: 'Run stress test / charging test and observe stability.' },
-                  { step: 8, title: 'Escalate to board work', description: 'If still failing, proceed with board-level diagnostics.' },
-                ],
-              },
-              partsNeeded: [
-                { part: 'Known-good battery', compatibility: 'Device-specific', estimatedCost: '$15-$60', supplier: 'iFixit / wholesale supplier' },
-                { part: 'Charging cable + adapter', compatibility: 'Device-specific', estimatedCost: '$10-$40', supplier: 'OEM/quality aftermarket' },
-                { part: 'Basic tool kit', compatibility: 'Universal', estimatedCost: '$10-$30', supplier: 'iFixit / Amazon' },
-              ],
-              suggestedPrice: { min: 49, max: 129, laborTime: '30-60 min' },
-              commonMistakes: [
-                'Skipping a restore/update and guessing hardware first',
-                'Testing with unknown chargers/cables',
-                'Not reseating/inspecting connectors after opening',
-                'Not checking for liquid/corrosion early',
-                'Not confirming with known-good parts before board work',
-              ],
-              proTips: [
-                'Log when restarts occur (charging, idle, app open) to narrow root cause',
-                'Use known-good power accessories for all power-related symptoms',
-                'Photograph corrosion and connector damage for customer notes',
-                'If panic logs point to a specific sensor/flex, isolate that flex early',
-                'After any repair, run a 10–15 min stability test (charge + load)',
-              ],
-              warnings: [
-                'Lithium batteries can be hazardous—avoid puncture/bending',
-                'Corrosion can spread—clean and dry ASAP',
-                'Board-level repair requires advanced tools and experience',
-              ],
-            }
-          : null,
+        message: 'I encountered an error analyzing your issue. Please try again or rephrase your question.',
+        diagnosis: null,
       }
     }
 
@@ -460,13 +409,14 @@ export async function POST(request: NextRequest) {
       usedRepairWiki: repairKnowledge.length > 0,
       meta: {
         version: DIAGNOSTICS_API_VERSION,
-        timedOut,
         usedWiki: shouldUseWiki,
       },
     }
 
-    // Cache final payload for short period to make repeats instant.
-    setCache(responseCache, responseCacheKey, payload, 10 * 60 * 1000)
+    // Cache only successful diagnoses (never cache errors/timeouts).
+    if (payload.diagnosis) {
+      setCache(responseCache, responseCacheKey, payload, 10 * 60 * 1000)
+    }
 
     return NextResponse.json(payload, { status: 200 })
   } catch (error: any) {
