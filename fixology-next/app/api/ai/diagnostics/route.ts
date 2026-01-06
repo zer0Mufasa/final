@@ -15,6 +15,42 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+type CacheEntry<T> = { value: T; expiresAt: number }
+
+// Module-level caches (persist across requests on warm serverless instances)
+const wikiCache = new Map<string, CacheEntry<{ knowledge: string; sources: string[] }>>()
+const responseCache = new Map<string, CacheEntry<any>>()
+
+function nowMs() {
+  return Date.now()
+}
+
+function getFromCache<T>(cache: Map<string, CacheEntry<T>>, key: string): T | undefined {
+  const entry = cache.get(key)
+  if (!entry) return undefined
+  if (entry.expiresAt <= nowMs()) {
+    cache.delete(key)
+    return undefined
+  }
+  return entry.value
+}
+
+function setCache<T>(cache: Map<string, CacheEntry<T>>, key: string, value: T, ttlMs: number) {
+  cache.set(key, { value, expiresAt: nowMs() + ttlMs })
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  let timeoutId: NodeJS.Timeout | undefined
+  const timeout = new Promise<T>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label}_TIMEOUT`)), ms)
+  })
+  try {
+    return await Promise.race([promise, timeout])
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId)
+  }
+}
+
 const DiagnosticsInputSchema = z.object({
   message: z.string().optional(),
   conversationHistory: z.array(z.object({
@@ -88,6 +124,7 @@ IMPORTANT: You must respond with a JSON object in this exact format. Do NOT incl
 }
 
 GUIDELINES:
+0. SPEED: Keep text concise. 1-2 sentences per step max. No long essays.
 1. Be SPECIFIC - don't say "check the screen", say "disconnect the display flex cable at connector J4501 and inspect for corrosion or damage"
 2. Be PRACTICAL - give steps a real tech can follow right now
 3. Include TOOLS needed for each diagnostic step
@@ -100,6 +137,15 @@ GUIDELINES:
 6. Always include common mistakes technicians make
 7. Include pro tips that save time or improve quality
 8. If the issue is unclear, ask a clarifying question in the "message" field instead of guessing
+
+OUTPUT COUNTS (to keep responses fast + scannable):
+- possibleCauses: exactly 3 items
+- diagnosticSteps: exactly 5 steps (1..5)
+- repairGuide.steps: exactly 8 steps (1..8)
+- partsNeeded: 3–6 items (include compatibility + cost range)
+- commonMistakes: 5 bullets
+- proTips: 5 bullets
+- warnings: 3 bullets
 
 For panic codes and error codes, reference specific meanings and solutions.
 For water damage, always warn about corrosion timeline.
@@ -145,6 +191,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Response cache: identical message + recent context should return instantly.
+    const historyKey =
+      input.conversationHistory?.slice(-2).map((m) => `${m.role}:${m.content}`).join('|') || ''
+    const responseCacheKey = `${userMessage}||${historyKey}`
+    const cachedResponse = getFromCache(responseCache, responseCacheKey)
+    if (cachedResponse) {
+      return NextResponse.json(cachedResponse, { status: 200 })
+    }
+
     // Check if this is a repair-related question and get repair.wiki knowledge
     const isRepairRelated = detectRepairQuestion(userMessage)
     let repairKnowledge = ''
@@ -153,11 +208,28 @@ export async function POST(request: NextRequest) {
     if (isRepairRelated) {
       try {
         const searchTerms = extractSearchTerms(userMessage)
-        const wikiData = await getRepairKnowledge(searchTerms)
-        repairKnowledge = wikiData.knowledge
-        sources = wikiData.sources
+
+        // Repair.wiki can be slow; cap it hard and use cache.
+        const wikiCacheKey = searchTerms.toLowerCase().trim()
+        const cachedWiki = getFromCache(wikiCache, wikiCacheKey)
+        const wikiData =
+          cachedWiki ||
+          (await withTimeout(getRepairKnowledge(searchTerms), 1500, 'REPAIR_WIKI'))
+
+        if (!cachedWiki) {
+          // Cache wiki knowledge for 6 hours
+          setCache(wikiCache, wikiCacheKey, wikiData, 6 * 60 * 60 * 1000)
+        }
+
+        // Truncate knowledge aggressively to keep LLM fast.
+        repairKnowledge = (wikiData.knowledge || '').slice(0, 1200)
+        sources = Array.isArray(wikiData.sources) ? wikiData.sources.slice(0, 3) : []
       } catch (e) {
-        console.error('Repair wiki search failed:', e)
+        // Don't block the response if wiki is slow/down.
+        const msg = e instanceof Error ? e.message : String(e)
+        if (!msg.includes('REPAIR_WIKI_TIMEOUT')) {
+          console.error('Repair wiki search failed:', e)
+        }
       }
     }
 
@@ -171,8 +243,8 @@ export async function POST(request: NextRequest) {
 
     // Add conversation history if provided (for chat interface)
     if (input.conversationHistory && input.conversationHistory.length > 0) {
-      // Keep last 6 messages to stay within context limits
-      const recentHistory = input.conversationHistory.slice(-6)
+      // Keep last 4 messages to stay fast
+      const recentHistory = input.conversationHistory.slice(-4)
       for (const msg of recentHistory) {
         messages.push({
           role: msg.role === 'user' ? 'user' : 'assistant',
@@ -193,8 +265,9 @@ export async function POST(request: NextRequest) {
       const completion = await createChatCompletion({
         systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
         messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
-        maxTokens: 4000,
-        temperature: 0.3, // Lower for more consistent structured output
+        // Token + temperature tuning for speed
+        maxTokens: 1600,
+        temperature: 0.2,
         responseFormat: 'json_object',
       })
 
@@ -296,12 +369,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({
+    const payload = {
       message: aiResponse.message || '',
       diagnosis: aiResponse.diagnosis || null,
       sources: sources.length > 0 ? sources : undefined,
       usedRepairWiki: repairKnowledge.length > 0,
-    })
+    }
+
+    // Cache final payload for short period to make repeats instant.
+    setCache(responseCache, responseCacheKey, payload, 10 * 60 * 1000)
+
+    return NextResponse.json(payload, { status: 200 })
   } catch (error: any) {
     console.error('Diagnostics error:', error)
     
