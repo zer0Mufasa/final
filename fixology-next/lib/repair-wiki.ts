@@ -1,5 +1,6 @@
 const REPAIR_WIKI_BASE = 'https://repair.wiki'
-const REPAIR_WIKI_API = 'https://repair.wiki/w/api.php'
+// repair.wiki uses a root api.php (not /w/api.php)
+const REPAIR_WIKI_API = 'https://repair.wiki/api.php'
 
 interface WikiSearchResult {
   title: string
