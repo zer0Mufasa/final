@@ -1,8 +1,7 @@
 // lib/auth/get-shop-context.ts
 // Get the current user's shop context for API routes
 
-import { cookies } from 'next/headers'
-import { createServerClient } from '@supabase/ssr'
+import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 
 export type ShopContext =
@@ -42,19 +41,7 @@ export type ShopContext =
     }
 
 export async function getShopContext(): Promise<ShopContext> {
-  const cookieStore = cookies()
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-      },
-    }
-  )
+  const supabase = createClient()
 
   const {
     data: { session },
