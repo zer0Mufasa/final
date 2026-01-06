@@ -12,6 +12,15 @@ NOVITA_API_KEY=your_novita_api_key_here
 
 Get your API key from: https://novita.ai/
 
+### Vercel (Production) Setup
+
+To enable Llama 3.3 in production, you must also add `NOVITA_API_KEY` in **Vercel → Project → Settings → Environment Variables**.
+
+- Add `NOVITA_API_KEY` for **Production** (and Preview if you want)
+- Redeploy after saving
+
+If this is missing, `/api/ai/diagnostics` will still work (demo mode + rules + Repair.Wiki), but it will fall back to a baseline response and log: `NOVITA_API_KEY is not set`.
+
 ## Updated Features
 
 All chat-related features now use Novita AI (Llama 3.3 70B):
@@ -27,8 +36,8 @@ All chat-related features now use Novita AI (Llama 3.3 70B):
    - Returns JSON with customer, device, repair details
 
 3. **AI Diagnostics** (`/api/ai/diagnostics`)
-   - Currently uses rule-based pattern matching (not AI-powered)
-   - Can be enhanced with AI in the future
+   - Uses rule-based pattern matching + optional Llama 3.3 enhancement
+   - Injects Repair.Wiki knowledge when the issue looks repair-related and includes source links when available
 
 ## Implementation Details
 
