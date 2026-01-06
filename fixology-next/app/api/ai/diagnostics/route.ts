@@ -281,19 +281,15 @@ export async function POST(request: NextRequest) {
     // Call AI with structured JSON output
     let aiResponse: any
     try {
-      const completion = await withTimeout(
-        createChatCompletion({
-          systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
-          messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
-          // Force smaller output for speed; 70B stays reliable for JSON structure.
-          maxTokens: 900,
-          temperature: 0.15,
-          responseFormat: 'json_object',
-          model: 'meta-llama/llama-3.3-70b-instruct',
-        }),
-        30000,
-        'AI'
-      )
+      const completion = await createChatCompletion({
+        systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
+        messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
+        // Keep output smaller than the earliest version, but do NOT time out.
+        maxTokens: 1200,
+        temperature: 0.2,
+        responseFormat: 'json_object',
+        model: 'meta-llama/llama-3.3-70b-instruct',
+      })
 
       const aiContent = completion.content || ''
 
@@ -317,15 +313,6 @@ export async function POST(request: NextRequest) {
     } catch (aiError: any) {
       console.error('AI enhancement error:', aiError)
 
-      // If the model is slow, don't return a "quick mode" response (it feels broken).
-      // Instead, surface a retryable error and let the UI keep the previous result.
-      if (aiError?.message?.includes('AI_TIMEOUT')) {
-        return NextResponse.json(
-          { error: 'AI analysis timed out. Please retry.' },
-          { status: 504 }
-        )
-      }
-      
       // If NOVITA_API_KEY is missing, provide helpful error
       if (aiError?.message?.includes('NOVITA_API_KEY')) {
         return NextResponse.json(
