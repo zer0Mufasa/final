@@ -3,7 +3,7 @@
 
 import OpenAI from 'openai'
 
-const MODEL = 'meta-llama/llama-3.3-70b-instruct'
+const DEFAULT_MODEL = 'meta-llama/llama-3.3-70b-instruct'
 const BASE_URL = 'https://api.novita.ai/openai'
 
 export function createNovitaClient() {
@@ -30,12 +30,20 @@ export interface ChatCompletionOptions {
   maxTokens?: number
   temperature?: number
   responseFormat?: 'text' | 'json_object'
+  model?: string
 }
 
 export async function createChatCompletion(options: ChatCompletionOptions) {
   const client = createNovitaClient()
 
-  const { systemPrompt, messages, maxTokens = 2000, temperature = 0.5, responseFormat = 'text' } = options
+  const {
+    systemPrompt,
+    messages,
+    maxTokens = 2000,
+    temperature = 0.5,
+    responseFormat = 'text',
+    model = DEFAULT_MODEL,
+  } = options
 
   // Build messages array with system prompt
   const apiMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
@@ -46,7 +54,7 @@ export async function createChatCompletion(options: ChatCompletionOptions) {
   // Novita supports a few extra sampling params that aren't in the OpenAI TS types.
   // We pass them through with a loose cast.
   const response = await (client.chat.completions as any).create({
-    model: MODEL,
+    model,
     messages: apiMessages,
     max_tokens: maxTokens,
     temperature,
@@ -65,6 +73,6 @@ export async function createChatCompletion(options: ChatCompletionOptions) {
   return {
     content,
     usage,
-    model: MODEL,
+    model,
   }
 }
