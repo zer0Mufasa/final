@@ -51,19 +51,6 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
   }
 }
 
-function pickModel(message: string): { model: string; maxTokens: number } {
-  const lower = message.toLowerCase()
-  const needsDeep =
-    /\b(error|panic|kernel|0x[0-9a-f]{4,}|4013|micro[-\s]?solder|bga|baseband|nand|pmic|tristar|tigris)\b/.test(lower) ||
-    lower.includes('logic board') ||
-    lower.includes('motherboard')
-
-  // Fast default model for most queries; fall back to 70B for deep/board-level cases.
-  return needsDeep
-    ? { model: 'meta-llama/llama-3.3-70b-instruct', maxTokens: 1700 }
-    : { model: 'meta-llama/llama-3.1-8b-instruct', maxTokens: 1200 }
-}
-
 const DiagnosticsInputSchema = z.object({
   message: z.string().optional(),
   conversationHistory: z.array(z.object({
@@ -137,7 +124,12 @@ IMPORTANT: You must respond with a JSON object in this exact format. Do NOT incl
 }
 
 GUIDELINES:
-0. SPEED: Keep text concise. 1-2 sentences per step max. No long essays.
+0. SPEED: Keep text ultra-concise. Each field should be short and scannable.
+   - possibleCauses.explanation <= 120 chars
+   - diagnosticSteps.description <= 160 chars
+   - diagnosticSteps.expectedResult <= 120 chars
+   - repairGuide.steps.description <= 160 chars
+   - repairGuide.steps.tip/warning <= 120 chars
 1. Be SPECIFIC - don't say "check the screen", say "disconnect the display flex cable at connector J4501 and inspect for corrosion or damage"
 2. Be PRACTICAL - give steps a real tech can follow right now
 3. Include TOOLS needed for each diagnostic step
@@ -275,18 +267,17 @@ export async function POST(request: NextRequest) {
     // Call AI with structured JSON output
     let aiResponse: any
     try {
-      const { model, maxTokens } = pickModel(userMessage)
-
       const completion = await withTimeout(
         createChatCompletion({
           systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
           messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
-          maxTokens,
-          temperature: 0.2,
+          // Force smaller output for speed; 70B stays reliable for JSON structure.
+          maxTokens: 900,
+          temperature: 0.15,
           responseFormat: 'json_object',
-          model,
+          model: 'meta-llama/llama-3.3-70b-instruct',
         }),
-        18000,
+        15000,
         'AI'
       )
 
