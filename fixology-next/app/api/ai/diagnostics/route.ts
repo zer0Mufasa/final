@@ -194,6 +194,31 @@ export async function POST(request: NextRequest) {
     let aiEnhancedResult = null
     if (repairKnowledge || matches.length === 0) {
       try {
+        const baselineForUnknown = {
+          primaryCause: likelyCause || 'Unknown issue - requires diagnostic',
+          confidence: confidence || 65,
+          recommendedTests:
+            recommendedTests.length > 0
+              ? recommendedTests
+              : [
+                  'Pull and review panic logs / analytics',
+                  'Inspect for liquid damage indicators and corrosion',
+                  'Check battery health + current draw (USB ammeter / DCPS)',
+                  'Verify storage is not near full; check for thermal throttling',
+                  'Run functional test: cameras, Face ID, charging, speakers, touch',
+                ],
+          partsSuggestions: partsSuggestions.length > 0 ? partsSuggestions : [],
+          warnings: warnings.length > 0 ? warnings : ['May require board-level diagnosis depending on panic code'],
+          steps:
+            recommendedTests.length > 0
+              ? recommendedTests
+              : [
+                  'Start with panic log signature (e.g., 0x... or 200000/210 codes)',
+                  'Correlate with common culprits (power/thermal/sensors/baseband)',
+                  'Confirm with targeted isolation tests before swapping parts',
+                ],
+        }
+
         const systemPrompt = `You are Fixology AI, an expert repair technician assistant for device repair shop owners and technicians.
 
 Your expertise:
@@ -241,42 +266,59 @@ Respond in JSON format:
           messages: [
             {
               role: 'user',
-              content: `Analyze this repair issue: ${input.issueDescription}`,
+              content: `Return ONLY valid JSON. Issue: ${input.issueDescription}`,
             },
           ],
           maxTokens: 2000,
           temperature: 0.5,
+          responseFormat: 'json_object',
         })
 
-        const aiResponseText = aiResponse.content
-
-        // Try to parse AI response as JSON, fallback to text extraction
         try {
-          const jsonMatch = aiResponseText.match(/\{[\s\S]*\}/)
-          if (jsonMatch) {
-            aiEnhancedResult = JSON.parse(jsonMatch[0])
-          }
+          aiEnhancedResult = JSON.parse(aiResponse.content || '{}')
         } catch {
-          // If JSON parsing fails, extract structured info from text
-          const lines = aiResponseText.split('\n').filter((line: string) => line.trim())
-          aiEnhancedResult = {
-            primaryCause: lines[0] || likelyCause,
-            confidence: confidence || 70,
-            recommendedTests: recommendedTests.length > 0 ? recommendedTests : ['Visual inspection', 'Functional test'],
-            partsSuggestions: partsSuggestions.length > 0 ? partsSuggestions : [],
-            warnings: warnings.length > 0 ? warnings : [],
-            steps: lines.filter((line: string) => line.trim().startsWith('-') || line.trim().startsWith('•')).slice(0, 5),
-          }
+          aiEnhancedResult = baselineForUnknown
         }
+
+        // If Novita returns empty/partial JSON, fill with sensible defaults
+        if (!aiEnhancedResult?.primaryCause) aiEnhancedResult.primaryCause = baselineForUnknown.primaryCause
+        if (!aiEnhancedResult?.confidence) aiEnhancedResult.confidence = baselineForUnknown.confidence
+        if (!Array.isArray(aiEnhancedResult?.recommendedTests) || aiEnhancedResult.recommendedTests.length === 0) {
+          aiEnhancedResult.recommendedTests = baselineForUnknown.recommendedTests
+        }
+        if (!Array.isArray(aiEnhancedResult?.steps) || aiEnhancedResult.steps.length === 0) {
+          aiEnhancedResult.steps = baselineForUnknown.steps
+        }
+        if (!Array.isArray(aiEnhancedResult?.warnings)) aiEnhancedResult.warnings = baselineForUnknown.warnings
+        if (!Array.isArray(aiEnhancedResult?.partsSuggestions)) aiEnhancedResult.partsSuggestions = baselineForUnknown.partsSuggestions
       } catch (aiError) {
         console.error('AI enhancement error:', aiError)
-        // Fall back to pattern matching
+        // Fall back to a non-empty baseline so the UI isn't blank (common if NOVITA_API_KEY is missing)
+        if (matches.length === 0) {
+          aiEnhancedResult = {
+            primaryCause: 'Unknown issue - requires diagnostic',
+            confidence: 65,
+            recommendedTests: [
+              'Pull and review panic logs / analytics',
+              'Inspect for liquid damage indicators and corrosion',
+              'Check battery health + current draw (USB ammeter / DCPS)',
+              'Run functional test: cameras, Face ID, charging, speakers, touch',
+            ],
+            partsSuggestions: [],
+            warnings: ['AI enhancement unavailable; verify NOVITA_API_KEY in Vercel env'],
+            steps: [
+              'Start with panic log signature and isolate likely subsystem',
+              'Confirm with targeted tests before replacing parts',
+            ],
+          }
+        }
       }
     }
 
     // Merge AI results with pattern matching results
     const finalPrimaryCause = aiEnhancedResult?.primaryCause || likelyCause
-    const finalConfidence = aiEnhancedResult?.confidence || confidence
+    const finalConfidenceRaw = aiEnhancedResult?.confidence ?? confidence
+    const finalConfidence = Math.max(0, Math.min(100, Number(finalConfidenceRaw) || 0))
     const finalRecommendedTests = aiEnhancedResult?.recommendedTests || recommendedTests
     const finalPartsSuggestions = aiEnhancedResult?.partsSuggestions || partsSuggestions
     const finalWarnings = aiEnhancedResult?.warnings || warnings

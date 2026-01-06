@@ -225,6 +225,25 @@ export function extractSearchTerms(query: string): string {
   const lowerQuery = query.toLowerCase()
   const keywords: string[] = []
 
+  // Capture panic/error codes (e.g., "panic 210", "panic log 200,000x", "0x1234abcd", "error 4013")
+  const codes: string[] = []
+  const codeMatches = lowerQuery.match(/\b0x[0-9a-f]{4,}\b/g) || []
+  codes.push(...codeMatches)
+
+  // Numeric codes often show up with panic/error/log keywords
+  const numericWithContext =
+    lowerQuery.match(/\b(?:panic|kernel|error|code|log)\b[^0-9a-z]*([0-9]{3,6}(?:,[0-9]{3})?x?)/g) || []
+  for (const m of numericWithContext) {
+    const n = m.replace(/.*\b(?:panic|kernel|error|code|log)\b[^0-9a-z]*/g, '').trim()
+    if (n) codes.push(n.replace(/,/g, ''))
+  }
+
+  // Capture device model phrases like "iphone 15", "iphone 12 pro", "macbook air m1"
+  const modelMatch = lowerQuery.match(/\b(iphone|ipad|macbook|samsung|galaxy|pixel)\s+([a-z0-9]+(?:\s+[a-z0-9]+){0,2})/)
+  if (modelMatch) {
+    keywords.push(`${modelMatch[1]} ${modelMatch[2]}`.trim())
+  }
+
   // Extract device mentions
   deviceTerms.forEach((term) => {
     if (lowerQuery.includes(term)) keywords.push(term)
@@ -235,9 +254,19 @@ export function extractSearchTerms(query: string): string {
     if (lowerQuery.includes(term)) keywords.push(term)
   })
 
+  // Add high-signal issue words
+  ;['panic', 'kernel', 'boot loop', 'restarting', 'overheating', '4013', 'tristar', 'baseband'].forEach((t) => {
+    if (lowerQuery.includes(t)) keywords.push(t)
+  })
+
+  // If we have any codes, include them (they dramatically improve search accuracy)
+  for (const c of Array.from(new Set(codes)).slice(0, 3)) {
+    keywords.push(c)
+  }
+
   // If we have keywords, use them; otherwise use the original query
   if (keywords.length > 0) {
-    return keywords.join(' ')
+    return Array.from(new Set(keywords)).slice(0, 10).join(' ')
   }
 
   // Clean up the query for search
