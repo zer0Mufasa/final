@@ -1,5 +1,5 @@
 // app/api/ai/diagnostics/route.ts
-// AI Diagnostic Engine - analyzes device issues and provides actionable insights
+// AI Diagnostic Engine - Chat-based with detailed structured output
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-context'
@@ -16,81 +16,101 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const DiagnosticsInputSchema = z.object({
+  message: z.string().optional(),
+  conversationHistory: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string(),
+  })).optional(),
+  // Legacy fields for backward compatibility
   ticketId: z.string().optional(),
-  deviceType: z.string(),
-  brand: z.string(),
+  deviceType: z.string().optional(),
+  brand: z.string().optional(),
   model: z.string().optional(),
   symptoms: z.array(z.string()).optional(),
-  issueDescription: z.string(),
+  issueDescription: z.string().optional(),
 })
 
-// Symptom to cause mapping (learned patterns)
-const SYMPTOM_PATTERNS: Record<string, { cause: string; confidence: number; tests: string[]; parts: string[]; warnings?: string[] }> = {
-  'black screen': {
-    cause: 'OLED/LCD display failure',
-    confidence: 85,
-    tests: ['External display test', 'Backlight test', 'Power button response'],
-    parts: ['LCD Screen', 'Display Assembly'],
-    warnings: ['Face ID may fail after screen replacement'],
-  },
-  'no image': {
-    cause: 'Display panel failure',
-    confidence: 80,
-    tests: ['External display test', 'Backlight test'],
-    parts: ['LCD Screen', 'Display Assembly'],
-  },
-  'cracked screen': {
-    cause: 'Physical damage to display',
-    confidence: 95,
-    tests: ['Touch response test', 'Display functionality'],
-    parts: ['LCD Screen', 'Digitizer', 'Frame'],
-  },
-  'battery drain': {
-    cause: 'Battery degradation or power management issue',
-    confidence: 75,
-    tests: ['Battery health check', 'Power consumption test', 'Charging port test'],
-    parts: ['Battery', 'Charging Port'],
-  },
-  'won\'t charge': {
-    cause: 'Charging port failure or battery issue',
-    confidence: 80,
-    tests: ['Charging port inspection', 'Battery test', 'Cable test'],
-    parts: ['Charging Port', 'Battery'],
-  },
-  'camera blur': {
-    cause: 'Camera module failure or lens damage',
-    confidence: 85,
-    tests: ['Camera focus test', 'Lens inspection', 'Camera app test'],
-    parts: ['Camera Module', 'Rear Camera'],
-  },
-  'no sound': {
-    cause: 'Speaker failure or audio IC issue',
-    confidence: 70,
-    tests: ['Speaker test', 'Audio output test', 'Headphone jack test'],
-    parts: ['Speaker', 'Audio IC'],
-  },
-  'water damage': {
-    cause: 'Liquid exposure causing component failure',
-    confidence: 90,
-    tests: ['Liquid damage indicator check', 'Component corrosion inspection', 'Power test'],
-    parts: ['Multiple components may be affected'],
-    warnings: ['Delayed failure possible', 'Warranty may be void'],
-  },
-  'face id not working': {
-    cause: 'Face ID sensor failure or calibration issue',
-    confidence: 75,
-    tests: ['Face ID calibration', 'Front camera test', 'Proximity sensor test'],
-    parts: ['Face ID Module', 'Front Camera'],
-    warnings: ['Common after screen replacement', 'May require calibration'],
-  },
+const SYSTEM_PROMPT = `You are Fixology AI, an expert repair technician assistant. You help repair shop technicians diagnose and fix devices.
+
+IMPORTANT: You must respond with a JSON object in this exact format. Do NOT include any text before or after the JSON.
+
+{
+  "message": "A brief, friendly summary in plain English (2-3 sentences max)",
+  "diagnosis": {
+    "summary": "One-line diagnosis (e.g., 'Damaged LCD assembly with possible backlight failure')",
+    "confidence": 85,
+    "possibleCauses": [
+      {
+        "cause": "Name of cause",
+        "likelihood": "high|medium|low",
+        "explanation": "Why this might be the cause, in simple terms"
+      }
+    ],
+    "diagnosticSteps": [
+      {
+        "step": 1,
+        "title": "Short title",
+        "description": "Detailed instructions on what to do",
+        "expectedResult": "What you should see if this is/isn't the problem",
+        "tools": ["tool1", "tool2"]
+      }
+    ],
+    "repairGuide": {
+      "difficulty": "easy|medium|hard|expert",
+      "estimatedTime": "30-45 minutes",
+      "steps": [
+        {
+          "step": 1,
+          "title": "Step title",
+          "description": "Detailed repair instructions",
+          "tip": "Optional helpful tip",
+          "warning": "Optional warning about something dangerous"
+        }
+      ]
+    },
+    "partsNeeded": [
+      {
+        "part": "Part name",
+        "compatibility": "Compatible models/versions",
+        "estimatedCost": "$XX-$XX",
+        "supplier": "Where to get it"
+      }
+    ],
+    "suggestedPrice": {
+      "min": 79,
+      "max": 129,
+      "laborTime": "45 min"
+    },
+    "commonMistakes": ["Mistake 1", "Mistake 2"],
+    "proTips": ["Tip 1", "Tip 2"],
+    "warnings": ["Warning 1", "Warning 2"]
+  }
 }
 
+GUIDELINES:
+1. Be SPECIFIC - don't say "check the screen", say "disconnect the display flex cable at connector J4501 and inspect for corrosion or damage"
+2. Be PRACTICAL - give steps a real tech can follow right now
+3. Include TOOLS needed for each diagnostic step
+4. Give REALISTIC price estimates based on typical repair shop rates
+5. Difficulty levels:
+   - easy: Screen protector, battery replacement, basic cleaning
+   - medium: Screen replacement, charging port, speakers
+   - hard: Motherboard connectors, water damage, complex disassembly
+   - expert: Micro-soldering, BGA work, chip-level repair
+6. Always include common mistakes technicians make
+7. Include pro tips that save time or improve quality
+8. If the issue is unclear, ask a clarifying question in the "message" field instead of guessing
+
+For panic codes and error codes, reference specific meanings and solutions.
+For water damage, always warn about corrosion timeline.
+For screen issues, differentiate between LCD, digitizer, and backlight problems.`
+
 export async function POST(request: NextRequest) {
-  const url = new URL(request.url)
   const isDemoMode =
     request.cookies.get('fx_demo')?.value === '1' ||
     request.headers.get('x-fx-demo') === '1' ||
-    url.searchParams.get('demo') === '1'
+    request.nextUrl.searchParams.get('demo') === '1'
+
   const context = await getShopContext(request)
   const shopId = !isContextError(context) && isShopUser(context) ? context.shopId : undefined
 
@@ -116,261 +136,172 @@ export async function POST(request: NextRequest) {
 
     const input = DiagnosticsInputSchema.parse(body)
 
-    // Get historical ticket data if ticketId provided
-    let historicalData: any[] = []
-    if (shopId && input.ticketId) {
-      const ticket = await prisma.ticket.findFirst({
-        where: {
-          id: input.ticketId,
-          shopId,
-        },
-        include: {
-          parts: true,
-          notes: true,
-        },
-      })
-      
-      if (ticket) {
-        // Get similar completed tickets
-        historicalData = await prisma.ticket.findMany({
-          where: {
-            shopId,
-            deviceBrand: ticket.deviceBrand,
-            deviceType: ticket.deviceType,
-            status: { in: ['READY', 'PICKED_UP'] },
-          },
-          take: 10,
-          include: {
-            parts: true,
-          },
-        })
-      }
+    // Support both new chat format and legacy format
+    const userMessage = input.message || input.issueDescription || ''
+    if (!userMessage.trim()) {
+      return NextResponse.json(
+        { error: 'Message or issueDescription is required' },
+        { status: 400 }
+      )
     }
-
-    // Analyze symptoms
-    const lowerIssue = input.issueDescription.toLowerCase()
-    const symptoms = input.symptoms || []
-    const allSymptoms = [...symptoms.map(s => s.toLowerCase()), lowerIssue]
-
-    // Find matching patterns
-    const matches: Array<{ cause: string; confidence: number; tests: string[]; parts: string[]; warnings?: string[] }> = []
-    
-    for (const [pattern, data] of Object.entries(SYMPTOM_PATTERNS)) {
-      if (allSymptoms.some(s => s.includes(pattern))) {
-        matches.push(data)
-      }
-    }
-
-    // Calculate most likely cause
-    let likelyCause = 'Unknown issue - requires diagnostic'
-    let confidence = 0
-    let recommendedTests: string[] = []
-    let partsSuggestions: string[] = []
-    let warnings: string[] = []
-
-    if (matches.length > 0) {
-      // Sort by confidence
-      matches.sort((a, b) => b.confidence - a.confidence)
-      const topMatch = matches[0]
-      
-      likelyCause = topMatch.cause
-      confidence = topMatch.confidence
-      recommendedTests = Array.from(new Set(matches.flatMap(m => m.tests)))
-      partsSuggestions = Array.from(new Set(matches.flatMap(m => m.parts)))
-      warnings = Array.from(new Set(matches.flatMap(m => m.warnings || [])))
-    }
-
-    // Adjust confidence based on historical data
-    if (historicalData.length > 0) {
-      const successRate = historicalData.filter(t => t.status === 'PICKED_UP').length / historicalData.length
-      confidence = Math.min(95, confidence + (successRate * 10))
-    }
-
-    // Generate repair paths
-    const repairPaths = matches.map(match => ({
-      approach: match.cause,
-      successRate: Math.min(95, match.confidence + 5),
-      parts: match.parts,
-      estimatedTime: '45-60 minutes',
-    }))
 
     // Check if this is a repair-related question and get repair.wiki knowledge
-    const isRepairRelated = detectRepairQuestion(input.issueDescription)
+    const isRepairRelated = detectRepairQuestion(userMessage)
     let repairKnowledge = ''
     let sources: string[] = []
 
     if (isRepairRelated) {
-      const searchTerms = extractSearchTerms(input.issueDescription)
-      const wikiData = await getRepairKnowledge(searchTerms)
-      repairKnowledge = wikiData.knowledge
-      sources = wikiData.sources
-    }
-
-    // Use AI to enhance diagnostics if repair.wiki knowledge is available or if no pattern matches
-    let aiEnhancedResult = null
-    if (repairKnowledge || matches.length === 0) {
       try {
-        const baselineForUnknown = {
-          primaryCause: likelyCause || 'Unknown issue - requires diagnostic',
-          confidence: confidence || 65,
-          recommendedTests:
-            recommendedTests.length > 0
-              ? recommendedTests
-              : [
-                  'Pull and review panic logs / analytics',
-                  'Inspect for liquid damage indicators and corrosion',
-                  'Check battery health + current draw (USB ammeter / DCPS)',
-                  'Verify storage is not near full; check for thermal throttling',
-                  'Run functional test: cameras, Face ID, charging, speakers, touch',
-                ],
-          partsSuggestions: partsSuggestions.length > 0 ? partsSuggestions : [],
-          warnings: warnings.length > 0 ? warnings : ['May require board-level diagnosis depending on panic code'],
-          steps:
-            recommendedTests.length > 0
-              ? recommendedTests
-              : [
-                  'Start with panic log signature (e.g., 0x... or 200000/210 codes)',
-                  'Correlate with common culprits (power/thermal/sensors/baseband)',
-                  'Confirm with targeted isolation tests before swapping parts',
-                ],
-        }
-
-        const systemPrompt = `You are Fixology AI, an expert repair technician assistant for device repair shop owners and technicians.
-
-Your expertise:
-- iPhone/Android phone repair diagnostics
-- Panic log and error code analysis
-- Component-level troubleshooting (screens, batteries, charging ports, motherboards)
-- Repair time and difficulty estimates
-- Parts identification and compatibility
-- Micro-soldering guidance
-
-When helping:
-- Be technical and precise - you're talking to repair professionals
-- Reference specific components, tools, and techniques
-- If you identify a panic code or error, explain what it means
-- Suggest diagnostic steps in order of likelihood
-- Mention if something requires micro-soldering vs standard repair
-- If repair.wiki knowledge is provided, use it to give accurate answers
-- Always cite repair.wiki as a source when using its information
-
-${repairKnowledge ? `\n${repairKnowledge}` : ''}
-
-Analyze the following device issue and provide:
-1. Primary cause (most likely issue)
-2. Confidence level (0-100)
-3. Recommended diagnostic tests/steps
-4. Parts that may need replacement
-5. Any warnings or risk flags
-
-Device: ${input.deviceType} ${input.brand} ${input.model || ''}
-Issue: ${input.issueDescription}
-Symptoms: ${symptoms.join(', ') || 'None specified'}
-
-Respond in JSON format:
-{
-  "primaryCause": "description",
-  "confidence": 85,
-  "recommendedTests": ["test1", "test2"],
-  "partsSuggestions": ["part1", "part2"],
-  "warnings": ["warning1"],
-  "steps": ["step1", "step2"]
-}`
-
-        const aiResponse = await createChatCompletion({
-          systemPrompt,
-          messages: [
-            {
-              role: 'user',
-              content: `Return ONLY valid JSON. Issue: ${input.issueDescription}`,
-            },
-          ],
-          maxTokens: 2000,
-          temperature: 0.5,
-          responseFormat: 'json_object',
-        })
-
-        try {
-          aiEnhancedResult = JSON.parse(aiResponse.content || '{}')
-        } catch {
-          aiEnhancedResult = baselineForUnknown
-        }
-
-        // If Novita returns empty/partial JSON, fill with sensible defaults
-        if (!aiEnhancedResult?.primaryCause) aiEnhancedResult.primaryCause = baselineForUnknown.primaryCause
-        if (!aiEnhancedResult?.confidence) aiEnhancedResult.confidence = baselineForUnknown.confidence
-        if (!Array.isArray(aiEnhancedResult?.recommendedTests) || aiEnhancedResult.recommendedTests.length === 0) {
-          aiEnhancedResult.recommendedTests = baselineForUnknown.recommendedTests
-        }
-        if (!Array.isArray(aiEnhancedResult?.steps) || aiEnhancedResult.steps.length === 0) {
-          aiEnhancedResult.steps = baselineForUnknown.steps
-        }
-        if (!Array.isArray(aiEnhancedResult?.warnings)) aiEnhancedResult.warnings = baselineForUnknown.warnings
-        if (!Array.isArray(aiEnhancedResult?.partsSuggestions)) aiEnhancedResult.partsSuggestions = baselineForUnknown.partsSuggestions
-      } catch (aiError) {
-        console.error('AI enhancement error:', aiError)
-        // Fall back to a non-empty baseline so the UI isn't blank (common if NOVITA_API_KEY is missing)
-        if (matches.length === 0) {
-          aiEnhancedResult = {
-            primaryCause: 'Unknown issue - requires diagnostic',
-            confidence: 65,
-            recommendedTests: [
-              'Pull and review panic logs / analytics',
-              'Inspect for liquid damage indicators and corrosion',
-              'Check battery health + current draw (USB ammeter / DCPS)',
-              'Run functional test: cameras, Face ID, charging, speakers, touch',
-            ],
-            partsSuggestions: [],
-            warnings: ['AI enhancement unavailable; verify NOVITA_API_KEY in Vercel env'],
-            steps: [
-              'Start with panic log signature and isolate likely subsystem',
-              'Confirm with targeted tests before replacing parts',
-            ],
-          }
-        }
+        const searchTerms = extractSearchTerms(userMessage)
+        const wikiData = await getRepairKnowledge(searchTerms)
+        repairKnowledge = wikiData.knowledge
+        sources = wikiData.sources
+      } catch (e) {
+        console.error('Repair wiki search failed:', e)
       }
     }
 
-    // Merge AI results with pattern matching results
-    const finalPrimaryCause = aiEnhancedResult?.primaryCause || likelyCause
-    const finalConfidenceRaw = aiEnhancedResult?.confidence ?? confidence
-    const finalConfidence = Math.max(0, Math.min(100, Number(finalConfidenceRaw) || 0))
-    const finalRecommendedTests = aiEnhancedResult?.recommendedTests || recommendedTests
-    const finalPartsSuggestions = aiEnhancedResult?.partsSuggestions || partsSuggestions
-    const finalWarnings = aiEnhancedResult?.warnings || warnings
-    const finalSteps = aiEnhancedResult?.steps || recommendedTests
+    // Build messages array for AI
+    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+      {
+        role: 'system',
+        content: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
+      },
+    ]
 
-    const result = {
-      likelyCauses: matches.slice(0, 3).map(m => ({
-        cause: m.cause,
-        confidence: m.confidence,
-      })),
-      overallConfidence: finalConfidence,
-      confidence: finalConfidence,
-      primaryCause: finalPrimaryCause,
-      recommendedTests: finalRecommendedTests,
-      steps: finalSteps,
-      partsSuggestions: finalPartsSuggestions,
-      repairPaths,
-      warnings: finalWarnings,
-      timeEstimate: '45-90 minutes',
-      riskFlags: finalWarnings.length > 0 ? finalWarnings : [],
-      sources: sources.length > 0 ? sources : undefined,
-      usedRepairWiki: sources.length > 0,
-      demoMode: isDemoMode,
+    // Add conversation history if provided (for chat interface)
+    if (input.conversationHistory && input.conversationHistory.length > 0) {
+      // Keep last 6 messages to stay within context limits
+      const recentHistory = input.conversationHistory.slice(-6)
+      for (const msg of recentHistory) {
+        messages.push({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content,
+        })
+      }
     }
 
-    // Save to ticket if ticketId provided
-    if (shopId && input.ticketId) {
-      await prisma.ticket.update({
-        where: { id: input.ticketId },
-        data: {
-          diagnosis: JSON.stringify(result),
-        },
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: userMessage,
+    })
+
+    // Call AI with structured JSON output
+    let aiResponse: any
+    try {
+      const completion = await createChatCompletion({
+        systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
+        messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
+        maxTokens: 4000,
+        temperature: 0.3, // Lower for more consistent structured output
+        responseFormat: 'json_object',
       })
+
+      const aiContent = completion.content || ''
+
+      // Parse JSON response
+      try {
+        // Try to extract JSON from response (in case AI adds extra text)
+        const jsonMatch = aiContent.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          aiResponse = JSON.parse(jsonMatch[0])
+        } else {
+          throw new Error('No JSON found in AI response')
+        }
+      } catch (parseError) {
+        console.error('Failed to parse AI JSON response:', parseError)
+        // Fallback: return a basic response
+        aiResponse = {
+          message: aiContent || 'I analyzed your issue, but had trouble formatting the response. Please try rephrasing your question.',
+          diagnosis: null,
+        }
+      }
+    } catch (aiError: any) {
+      console.error('AI enhancement error:', aiError)
+      
+      // If NOVITA_API_KEY is missing, provide helpful error
+      if (aiError?.message?.includes('NOVITA_API_KEY')) {
+        return NextResponse.json(
+          {
+            message: 'AI diagnostics unavailable. Please configure NOVITA_API_KEY in Vercel environment variables.',
+            diagnosis: null,
+            error: 'API key not configured',
+          },
+          { status: 500 }
+        )
+      }
+
+      // Fallback response
+      aiResponse = {
+        message: 'I encountered an error analyzing your issue. Please try again or rephrase your question.',
+        diagnosis: null,
+      }
     }
 
-    return NextResponse.json(result, { status: 200 })
+    // Add sources to diagnosis if available
+    if (aiResponse.diagnosis && sources.length > 0) {
+      aiResponse.diagnosis.sources = sources
+    }
+
+    // Ensure all required fields exist with defaults
+    if (aiResponse.diagnosis) {
+      const diag = aiResponse.diagnosis
+      
+      // Ensure arrays exist
+      if (!Array.isArray(diag.possibleCauses)) diag.possibleCauses = []
+      if (!Array.isArray(diag.diagnosticSteps)) diag.diagnosticSteps = []
+      if (!Array.isArray(diag.repairGuide?.steps)) diag.repairGuide = { ...diag.repairGuide, steps: [] }
+      if (!Array.isArray(diag.partsNeeded)) diag.partsNeeded = []
+      if (!Array.isArray(diag.commonMistakes)) diag.commonMistakes = []
+      if (!Array.isArray(diag.proTips)) diag.proTips = []
+      if (!Array.isArray(diag.warnings)) diag.warnings = []
+      
+      // Ensure repairGuide exists
+      if (!diag.repairGuide) {
+        diag.repairGuide = {
+          difficulty: 'medium',
+          estimatedTime: '45-90 minutes',
+          steps: [],
+        }
+      }
+      
+      // Ensure suggestedPrice exists
+      if (!diag.suggestedPrice) {
+        diag.suggestedPrice = {
+          min: 50,
+          max: 150,
+          laborTime: '45 min',
+        }
+      }
+      
+      // Ensure confidence is a number
+      if (typeof diag.confidence !== 'number') {
+        diag.confidence = 75
+      }
+    }
+
+    // Save to ticket if ticketId provided (legacy support)
+    if (shopId && input.ticketId) {
+      try {
+        await prisma.ticket.update({
+          where: { id: input.ticketId },
+          data: {
+            diagnosis: JSON.stringify(aiResponse),
+          },
+        })
+      } catch (dbError) {
+        console.error('Failed to save diagnosis to ticket:', dbError)
+        // Don't fail the request if DB save fails
+      }
+    }
+
+    return NextResponse.json({
+      message: aiResponse.message || '',
+      diagnosis: aiResponse.diagnosis || null,
+      sources: sources.length > 0 ? sources : undefined,
+      usedRepairWiki: repairKnowledge.length > 0,
+    })
   } catch (error: any) {
     console.error('Diagnostics error:', error)
     
@@ -387,4 +318,3 @@ Respond in JSON format:
     )
   }
 }
-
