@@ -285,8 +285,9 @@ export async function POST(request: NextRequest) {
         systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
         messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
         // Keep output smaller than the earliest version, but do NOT time out.
-        maxTokens: 1200,
-        temperature: 0.2,
+        // Give enough room to finish the full JSON structure (avoid truncation).
+        maxTokens: 2200,
+        temperature: 0.15,
         responseFormat: 'json_object',
         model: 'meta-llama/llama-3.3-70b-instruct',
       })
@@ -304,10 +305,57 @@ export async function POST(request: NextRequest) {
         }
       } catch (parseError) {
         console.error('Failed to parse AI JSON response:', parseError)
-        // Fallback: return a basic response
-        aiResponse = {
-          message: aiContent || 'I analyzed your issue, but had trouble formatting the response. Please try rephrasing your question.',
-          diagnosis: null,
+
+        // Repair pass: ask the model to output VALID JSON only (fast and reliable).
+        const repair = await createChatCompletion({
+          systemPrompt:
+            'You are a JSON repair tool. Convert the provided content into a VALID JSON object that matches the required schema exactly. ' +
+            'Do not include any extra text. If the content is incomplete, infer and fill missing fields with safe defaults.',
+          messages: [
+            {
+              role: 'user',
+              content:
+                `REQUIRED SCHEMA (return exactly this shape):\n` +
+                `{\n` +
+                `  "message": string,\n` +
+                `  "diagnosis": {\n` +
+                `    "summary": string,\n` +
+                `    "confidence": number,\n` +
+                `    "possibleCauses": Array<{cause: string, likelihood: "high"|"medium"|"low", explanation: string}>,\n` +
+                `    "diagnosticSteps": Array<{step: number, title: string, description: string, expectedResult: string, tools?: string[]}>,\n` +
+                `    "repairGuide": { difficulty: "easy"|"medium"|"hard"|"expert", estimatedTime: string, steps: Array<{step: number, title: string, description: string, tip?: string, warning?: string}> },\n` +
+                `    "partsNeeded": Array<{part: string, compatibility: string, estimatedCost: string, supplier?: string}>,\n` +
+                `    "suggestedPrice": { min: number, max: number, laborTime: string },\n` +
+                `    "commonMistakes": string[],\n` +
+                `    "proTips": string[],\n` +
+                `    "warnings": string[]\n` +
+                `  }\n` +
+                `}\n\n` +
+                `CONTENT TO REPAIR:\n${aiContent}`,
+            },
+          ],
+          maxTokens: 1400,
+          temperature: 0,
+          responseFormat: 'json_object',
+          model: 'meta-llama/llama-3.3-70b-instruct',
+        })
+
+        const repaired = repair.content || ''
+        try {
+          const jsonMatch2 = repaired.match(/\{[\s\S]*\}/)
+          if (jsonMatch2) {
+            aiResponse = JSON.parse(jsonMatch2[0])
+          } else {
+            throw new Error('No JSON found in repair response')
+          }
+        } catch (parseError2) {
+          console.error('Failed to parse repaired JSON response:', parseError2)
+          // Final fallback: return a basic response
+          aiResponse = {
+            message:
+              'I analyzed your issue, but had trouble formatting the response. Please try again with a bit more detail (device + symptoms).',
+            diagnosis: null,
+          }
         }
       }
     } catch (aiError: any) {
