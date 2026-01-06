@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { PageHeader } from '@/components/dashboard/ui/page-header'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
 import { Skeleton } from '@/components/dashboard/ui/skeleton'
-import { Tabs } from '@/components/dashboard/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { ReticleIcon, ReticleLoader } from '@/components/shared/reticle-icon'
 import { cn } from '@/lib/utils/cn'
@@ -13,32 +12,9 @@ import {
   ClipboardList,
   ShieldAlert,
   Sparkles,
-  Check,
-  X,
-  AlertTriangle,
-  Smartphone,
-  Battery,
-  Wifi,
-  Volume2,
-  Camera,
-  Fingerprint,
-  Monitor,
-  ChevronDown,
-  ChevronRight,
   Printer,
   Save,
-  RotateCcw,
 } from 'lucide-react'
-
-type TestResult = 'pass' | 'fail' | 'skip' | null
-
-interface DiagnosticTest {
-  id: string
-  name: string
-  description: string
-  category: string
-  result: TestResult
-}
 
 interface DiagResult {
   cause: string
@@ -47,52 +23,12 @@ interface DiagResult {
   warnings: string[]
 }
 
-const defaultTests: DiagnosticTest[] = [
-  { id: 't1', name: 'Display brightness', description: 'Min/max brightness test', category: 'Display', result: null },
-  { id: 't2', name: 'Touch response', description: 'Multi-touch grid test', category: 'Display', result: null },
-  { id: 't3', name: 'Dead pixels', description: 'Full screen color test', category: 'Display', result: null },
-  { id: 't4', name: 'True Tone / Auto-brightness', description: 'Sensor calibration check', category: 'Display', result: null },
-  { id: 't5', name: 'Earpiece speaker', description: 'Call audio test', category: 'Audio', result: null },
-  { id: 't6', name: 'Loudspeaker', description: 'Media playback test', category: 'Audio', result: null },
-  { id: 't7', name: 'Microphones', description: 'Voice recording test', category: 'Audio', result: null },
-  { id: 't8', name: 'Wi-Fi', description: 'Network connection test', category: 'Connectivity', result: null },
-  { id: 't9', name: 'Cellular signal', description: 'SIM detection and signal', category: 'Connectivity', result: null },
-  { id: 't10', name: 'Bluetooth', description: 'Device pairing test', category: 'Connectivity', result: null },
-  { id: 't11', name: 'GPS / Location', description: 'Location accuracy test', category: 'Connectivity', result: null },
-  { id: 't12', name: 'Rear camera', description: 'Photo and video capture', category: 'Camera', result: null },
-  { id: 't13', name: 'Front camera', description: 'Selfie and FaceTime test', category: 'Camera', result: null },
-  { id: 't14', name: 'Flash / Torch', description: 'LED flash test', category: 'Camera', result: null },
-  { id: 't15', name: 'Battery health', description: 'Capacity and cycle count', category: 'Battery', result: null },
-  { id: 't16', name: 'Charging port', description: 'Wired charging test', category: 'Battery', result: null },
-  { id: 't17', name: 'Wireless charging', description: 'Qi charging test', category: 'Battery', result: null },
-  { id: 't18', name: 'Face ID / Touch ID', description: 'Biometric authentication', category: 'Sensors', result: null },
-  { id: 't19', name: 'Accelerometer / Gyro', description: 'Motion sensor test', category: 'Sensors', result: null },
-  { id: 't20', name: 'Volume buttons', description: 'Button response test', category: 'Sensors', result: null },
-  { id: 't21', name: 'Power button', description: 'Button response test', category: 'Sensors', result: null },
-  { id: 't22', name: 'Silent switch', description: 'Mute toggle test', category: 'Sensors', result: null },
-]
-
-function getCategoryIcon(cat: string) {
-  switch (cat) {
-    case 'Display': return Monitor
-    case 'Audio': return Volume2
-    case 'Connectivity': return Wifi
-    case 'Camera': return Camera
-    case 'Battery': return Battery
-    case 'Sensors': return Fingerprint
-    default: return Smartphone
-  }
-}
-
 export function DiagnosticsClient() {
   const [loading, setLoading] = useState(true)
   const [animationReady, setAnimationReady] = useState(false)
-  const [tab, setTab] = useState<'checklist' | 'ai'>('checklist')
   const [prompt, setPrompt] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [result, setResult] = useState<DiagResult | null>(null)
-  const [tests, setTests] = useState<DiagnosticTest[]>(defaultTests)
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Display', 'Audio']))
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -146,37 +82,6 @@ export function DiagnosticsClient() {
     }
   }
 
-  const categories = useMemo(() => {
-    const cats = new Map<string, DiagnosticTest[]>()
-    tests.forEach((t) => {
-      if (!cats.has(t.category)) cats.set(t.category, [])
-      cats.get(t.category)!.push(t)
-    })
-    return Array.from(cats.entries())
-  }, [tests])
-
-  const toggleCategory = (cat: string) => {
-    const next = new Set(expandedCategories)
-    if (next.has(cat)) next.delete(cat)
-    else next.add(cat)
-    setExpandedCategories(next)
-  }
-
-  const setTestResult = (id: string, testResult: TestResult) => {
-    setTests((prev) => prev.map((t) => (t.id === id ? { ...t, result: testResult } : t)))
-  }
-
-  const resetTests = () => {
-    setTests(defaultTests.map((t) => ({ ...t, result: null })))
-  }
-
-  const passCount = tests.filter((t) => t.result === 'pass').length
-  const failCount = tests.filter((t) => t.result === 'fail').length
-  const skipCount = tests.filter((t) => t.result === 'skip').length
-  const completedCount = passCount + failCount + skipCount
-  const totalTests = tests.length
-  const progress = (completedCount / totalTests) * 100
-
   const actionButtons = (
     <div className="flex items-center gap-2">
       <Button
@@ -197,7 +102,6 @@ export function DiagnosticsClient() {
         onClick={() => {
           const payload = {
             createdAt: new Date().toISOString(),
-            checklist: tests,
             aiPrompt: prompt,
             aiResult: result,
           }
@@ -230,7 +134,7 @@ export function DiagnosticsClient() {
       )}>
         <PageHeader
           title="Diagnostics"
-          description="Run structured diagnostic tests and generate AI-powered analysis reports."
+          description="AI-powered diagnostic analysis and recommendations."
           action={actionButtons}
         />
       </div>
@@ -239,128 +143,6 @@ export function DiagnosticsClient() {
         "transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )} style={{ transitionDelay: '100ms' }}>
-        <Tabs
-          value={tab}
-          onValueChange={(v) => setTab(v as 'checklist' | 'ai')}
-          tabs={[
-            { value: 'checklist', label: 'Diagnostic Checklist' },
-            { value: 'ai', label: 'AI Analysis' },
-          ]}
-          className="mb-4"
-        />
-      </div>
-
-      {tab === 'checklist' && (
-        <div className="space-y-4">
-          <GlassCard className="rounded-3xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-sm font-semibold text-[var(--text-primary)]">Testing Progress</div>
-              <div className="flex items-center gap-4 text-xs">
-                <span className="text-emerald-400">✓ {passCount} Pass</span>
-                <span className="text-red-400">✗ {failCount} Fail</span>
-                <span className="text-white/50">○ {skipCount} Skip</span>
-                <span className="text-white/70">{completedCount}/{totalTests}</span>
-              </div>
-            </div>
-            <div className="h-2 rounded-full bg-white/10 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </GlassCard>
-
-          <div className="space-y-2">
-            {categories.map(([category, catTests]) => {
-              const Icon = getCategoryIcon(category)
-              const isExpanded = expandedCategories.has(category)
-              const catPass = catTests.filter((t) => t.result === 'pass').length
-              const catFail = catTests.filter((t) => t.result === 'fail').length
-
-              return (
-                <GlassCard key={category} className="rounded-2xl overflow-hidden p-0">
-                  <button
-                    onClick={() => toggleCategory(category)}
-                    className="w-full flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-purple-300" />
-                      </div>
-                      <div className="text-left">
-                        <div className="text-sm font-semibold text-[var(--text-primary)]">{category}</div>
-                        <div className="text-xs text-[var(--text-muted)]">{catTests.length} tests</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {catPass > 0 && <span className="text-xs text-emerald-400">{catPass} ✓</span>}
-                      {catFail > 0 && <span className="text-xs text-red-400">{catFail} ✗</span>}
-                      {isExpanded ? <ChevronDown className="w-5 h-5 text-white/40" /> : <ChevronRight className="w-5 h-5 text-white/40" />}
-                    </div>
-                  </button>
-
-                  {isExpanded && (
-                    <div className="border-t border-white/10 divide-y divide-white/5">
-                      {catTests.map((test) => (
-                        <div key={test.id} className="px-4 py-3 flex items-center justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="text-sm text-[var(--text-primary)]">{test.name}</div>
-                            <div className="text-xs text-[var(--text-muted)]">{test.description}</div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => setTestResult(test.id, 'pass')}
-                              className={cn(
-                                'p-2 rounded-lg transition-all',
-                                test.result === 'pass'
-                                  ? 'bg-emerald-500/30 text-emerald-400 border border-emerald-500/40'
-                                  : 'bg-white/[0.04] text-white/40 border border-white/10 hover:bg-emerald-500/10 hover:text-emerald-400'
-                              )}
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setTestResult(test.id, 'fail')}
-                              className={cn(
-                                'p-2 rounded-lg transition-all',
-                                test.result === 'fail'
-                                  ? 'bg-red-500/30 text-red-400 border border-red-500/40'
-                                  : 'bg-white/[0.04] text-white/40 border border-white/10 hover:bg-red-500/10 hover:text-red-400'
-                              )}
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setTestResult(test.id, 'skip')}
-                              className={cn(
-                                'p-2 rounded-lg transition-all',
-                                test.result === 'skip'
-                                  ? 'bg-white/20 text-white/70 border border-white/30'
-                                  : 'bg-white/[0.04] text-white/40 border border-white/10 hover:bg-white/10 hover:text-white/60'
-                              )}
-                            >
-                              <AlertTriangle className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </GlassCard>
-              )
-            })}
-          </div>
-
-          <div className="flex justify-end">
-            <button onClick={resetTests} className="btn-secondary px-4 py-2 rounded-xl text-sm inline-flex items-center gap-2">
-              <RotateCcw className="w-4 h-4" />
-              Reset All Tests
-            </button>
-          </div>
-        </div>
-      )}
-
-      {tab === 'ai' && (
         <div className="grid gap-4 lg:grid-cols-2">
           <GlassCard className="rounded-3xl">
             <div className="flex items-center gap-3">
@@ -458,7 +240,7 @@ export function DiagnosticsClient() {
             </div>
           </GlassCard>
         </div>
-      )}
+      </div>
     </div>
   )
 }
