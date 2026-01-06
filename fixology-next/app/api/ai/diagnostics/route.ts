@@ -210,7 +210,19 @@ export async function POST(request: NextRequest) {
     let repairKnowledge = ''
     let sources: string[] = []
 
-    if (isRepairRelated) {
+    // Only fetch repair.wiki when it’s likely to add high-signal value (reduces latency a lot).
+    const lowerMsg = userMessage.toLowerCase()
+    const shouldUseWiki =
+      isRepairRelated &&
+      (/\b(error|panic|kernel|0x[0-9a-f]{4,}|4013|0x[0-9a-f]{4,})\b/.test(lowerMsg) ||
+        lowerMsg.includes('audio ic') ||
+        lowerMsg.includes('tristar') ||
+        lowerMsg.includes('tigris') ||
+        lowerMsg.includes('baseband') ||
+        lowerMsg.includes('repair.wiki') ||
+        lowerMsg.includes('repair wiki'))
+
+    if (shouldUseWiki) {
       try {
         const searchTerms = extractSearchTerms(userMessage)
 
@@ -277,7 +289,7 @@ export async function POST(request: NextRequest) {
           responseFormat: 'json_object',
           model: 'meta-llama/llama-3.3-70b-instruct',
         }),
-        15000,
+        8000,
         'AI'
       )
 
