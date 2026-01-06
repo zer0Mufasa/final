@@ -82,6 +82,9 @@ const SYMPTOM_PATTERNS: Record<string, { cause: string; confidence: number; test
   },
 }
 
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   const context = await getShopContext(request)
 
