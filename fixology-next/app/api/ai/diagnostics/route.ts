@@ -281,16 +281,19 @@ export async function POST(request: NextRequest) {
     // Call AI with structured JSON output
     let aiResponse: any
     try {
-      const completion = await createChatCompletion({
+      const completion = await withTimeout(
+        createChatCompletion({
         systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
         messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
-        // Keep output smaller than the earliest version, but do NOT time out.
-        // Give enough room to finish the full JSON structure (avoid truncation).
-        maxTokens: 2200,
+        // Keep output small (speed), but still enough room for the full structure.
+        maxTokens: 1400,
         temperature: 0.15,
         responseFormat: 'json_object',
         model: 'meta-llama/llama-3.3-70b-instruct',
-      })
+      }),
+        30000,
+        'AI'
+      )
 
       const aiContent = completion.content || ''
 
@@ -360,6 +363,14 @@ export async function POST(request: NextRequest) {
       }
     } catch (aiError: any) {
       console.error('AI enhancement error:', aiError)
+
+      // Don't show "quick mode" content. If the model is slow, return a retryable error instead.
+      if (aiError?.message?.includes('AI_TIMEOUT')) {
+        return NextResponse.json(
+          { error: 'Analysis is taking too long. Please retry with device model + symptoms.' },
+          { status: 504 }
+        )
+      }
 
       // If NOVITA_API_KEY is missing, provide helpful error
       if (aiError?.message?.includes('NOVITA_API_KEY')) {
