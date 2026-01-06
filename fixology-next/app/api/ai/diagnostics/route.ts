@@ -102,7 +102,19 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const input = DiagnosticsInputSchema.parse(await request.json())
+    // Parse body ourselves so malformed JSON returns 400 (not 500) and doesn't spam logs.
+    const rawBody = await request.text()
+    let body: unknown
+    try {
+      body = rawBody ? JSON.parse(rawBody) : {}
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON body' },
+        { status: 400 }
+      )
+    }
+
+    const input = DiagnosticsInputSchema.parse(body)
 
     // Get historical ticket data if ticketId provided
     let historicalData: any[] = []
