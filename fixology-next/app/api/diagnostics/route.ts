@@ -90,7 +90,7 @@ Return ONLY valid JSON matching this schema:
 
     if (error.message?.includes('NOVITA_API_KEY') || error.message?.includes('API key')) {
       return NextResponse.json(
-        { error: 'AI API key not configured' },
+        { error: 'NOVITA_API_KEY is not configured. Add it in Vercel Environment Variables (Production) and redeploy (or set it in .env.local for local dev).' },
         { status: 500 }
       )
     }

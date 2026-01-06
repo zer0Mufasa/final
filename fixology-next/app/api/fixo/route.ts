@@ -402,14 +402,14 @@ export async function POST(request: NextRequest) {
     // Handle specific errors
     if (error?.message?.includes('NOVITA_API_KEY')) {
       return NextResponse.json(
-        { error: 'API key not configured. Please add NOVITA_API_KEY to your .env.local file and restart the server.' },
+        { error: 'NOVITA_API_KEY is not configured. Add it in Vercel Environment Variables (Production) and redeploy (or set it in .env.local for local dev).' },
         { status: 500 }
       )
     }
     
     if (error?.status === 401 || error?.statusCode === 401) {
       return NextResponse.json(
-        { error: 'Invalid API key. Please check your NOVITA_API_KEY in .env.local.' },
+        { error: 'Invalid NOVITA_API_KEY. Verify the key in Vercel Environment Variables (and redeploy) or in .env.local for local dev.' },
         { status: 500 }
       )
     }

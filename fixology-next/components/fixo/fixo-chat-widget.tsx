@@ -18,7 +18,7 @@ import {
 
 // ============================================
 // FIXO AI ASSISTANT - REAL AI VERSION
-// Uses Claude API for intelligent responses
+// Uses Novita AI (Llama 3.3 70B) for intelligent responses
 // ============================================
 
 function cn(...classes: (string | boolean | undefined | null)[]) {
