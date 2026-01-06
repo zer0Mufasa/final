@@ -30,7 +30,6 @@ import {
   RotateCcw,
 } from 'lucide-react'
 
-type ConditionGrade = 'A' | 'B' | 'C' | 'D' | 'F' | null
 type TestResult = 'pass' | 'fail' | 'skip' | null
 
 interface DiagnosticTest {
@@ -46,14 +45,6 @@ interface DiagResult {
   confidence: number
   nextSteps: string[]
   warnings: string[]
-}
-
-const gradeDescriptions: Record<string, { label: string; color: string; description: string }> = {
-  A: { label: 'Excellent', color: 'emerald', description: 'Like new condition, no visible wear' },
-  B: { label: 'Good', color: 'green', description: 'Minor wear, fully functional' },
-  C: { label: 'Fair', color: 'amber', description: 'Visible wear, works with issues' },
-  D: { label: 'Poor', color: 'orange', description: 'Significant damage, limited function' },
-  F: { label: 'Non-Functional', color: 'red', description: 'Major failure, needs repair' },
 }
 
 const defaultTests: DiagnosticTest[] = [
@@ -96,14 +87,12 @@ function getCategoryIcon(cat: string) {
 export function DiagnosticsClient() {
   const [loading, setLoading] = useState(true)
   const [animationReady, setAnimationReady] = useState(false)
-  const [tab, setTab] = useState<'checklist' | 'grading' | 'ai'>('checklist')
+  const [tab, setTab] = useState<'checklist' | 'ai'>('checklist')
   const [prompt, setPrompt] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [result, setResult] = useState<DiagResult | null>(null)
   const [tests, setTests] = useState<DiagnosticTest[]>(defaultTests)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['Display', 'Audio']))
-  const [conditionGrade, setConditionGrade] = useState<ConditionGrade>(null)
-  const [cosmeticNotes, setCosmeticNotes] = useState('')
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -179,8 +168,6 @@ export function DiagnosticsClient() {
 
   const resetTests = () => {
     setTests(defaultTests.map((t) => ({ ...t, result: null })))
-    setConditionGrade(null)
-    setCosmeticNotes('')
   }
 
   const passCount = tests.filter((t) => t.result === 'pass').length
@@ -211,8 +198,6 @@ export function DiagnosticsClient() {
           const payload = {
             createdAt: new Date().toISOString(),
             checklist: tests,
-            conditionGrade,
-            cosmeticNotes,
             aiPrompt: prompt,
             aiResult: result,
           }
@@ -245,7 +230,7 @@ export function DiagnosticsClient() {
       )}>
         <PageHeader
           title="Diagnostics"
-          description="Run structured diagnostic tests, grade device condition, and generate reports."
+          description="Run structured diagnostic tests and generate AI-powered analysis reports."
           action={actionButtons}
         />
       </div>
@@ -256,10 +241,9 @@ export function DiagnosticsClient() {
       )} style={{ transitionDelay: '100ms' }}>
         <Tabs
           value={tab}
-          onValueChange={(v) => setTab(v as 'checklist' | 'grading' | 'ai')}
+          onValueChange={(v) => setTab(v as 'checklist' | 'ai')}
           tabs={[
             { value: 'checklist', label: 'Diagnostic Checklist' },
-            { value: 'grading', label: 'Condition Grading' },
             { value: 'ai', label: 'AI Analysis' },
           ]}
           className="mb-4"
@@ -373,88 +357,6 @@ export function DiagnosticsClient() {
               Reset All Tests
             </button>
           </div>
-        </div>
-      )}
-
-      {tab === 'grading' && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <GlassCard className="rounded-3xl">
-            <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Overall Condition Grade</div>
-            <div className="grid grid-cols-5 gap-2">
-              {(['A', 'B', 'C', 'D', 'F'] as const).map((grade) => {
-                const info = gradeDescriptions[grade]
-                const colorMap: Record<string, { bg: string; border: string }> = {
-                  emerald: { bg: 'rgba(16, 185, 129, 0.2)', border: 'rgba(16, 185, 129, 0.5)' },
-                  green: { bg: 'rgba(34, 197, 94, 0.2)', border: 'rgba(34, 197, 94, 0.5)' },
-                  amber: { bg: 'rgba(245, 158, 11, 0.2)', border: 'rgba(245, 158, 11, 0.5)' },
-                  orange: { bg: 'rgba(249, 115, 22, 0.2)', border: 'rgba(249, 115, 22, 0.5)' },
-                  red: { bg: 'rgba(239, 68, 68, 0.2)', border: 'rgba(239, 68, 68, 0.5)' },
-                }
-                const colors = colorMap[info.color]
-                return (
-                  <button
-                    key={grade}
-                    onClick={() => setConditionGrade(grade)}
-                    className={cn(
-                      'rounded-2xl p-4 text-center transition-all border',
-                      conditionGrade === grade ? '' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06]'
-                    )}
-                    style={conditionGrade === grade ? { backgroundColor: colors.bg, borderColor: colors.border } : undefined}
-                  >
-                    <div className={cn('text-2xl font-bold mb-1', conditionGrade === grade ? 'text-white' : 'text-white/60')}>
-                      {grade}
-                    </div>
-                    <div className="text-xs text-white/60">{info.label}</div>
-                  </button>
-                )
-              })}
-            </div>
-            {conditionGrade && (
-              <div className="mt-4 p-4 rounded-2xl bg-white/[0.03] border border-white/10">
-                <div className="text-sm text-[var(--text-secondary)]">{gradeDescriptions[conditionGrade].description}</div>
-              </div>
-            )}
-          </GlassCard>
-
-          <GlassCard className="rounded-3xl">
-            <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Cosmetic Inspection</div>
-            <div className="space-y-4">
-              {[
-                { area: 'Screen', options: ['Perfect', 'Minor scratches', 'Cracked', 'Shattered'] },
-                { area: 'Frame / Body', options: ['Perfect', 'Minor wear', 'Dents/Bends', 'Significant damage'] },
-                { area: 'Back Glass', options: ['Perfect', 'Minor scratches', 'Cracked', 'Shattered'] },
-                { area: 'Buttons', options: ['Working', 'Sticky', 'Missing', 'Non-functional'] },
-              ].map((item) => (
-                <div key={item.area} className="rounded-2xl bg-white/[0.03] border border-white/10 p-4">
-                  <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">{item.area}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {item.options.map((opt, i) => (
-                      <button
-                        key={opt}
-                        className={cn(
-                          'px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
-                          i === 0
-                            ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300'
-                            : 'bg-white/[0.04] border-white/10 text-white/60 hover:bg-white/[0.08]'
-                        )}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4">
-              <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">Additional Notes</div>
-              <textarea
-                value={cosmeticNotes}
-                onChange={(e) => setCosmeticNotes(e.target.value)}
-                className="w-full rounded-2xl bg-[var(--bg-input)] border border-[var(--border-default)] p-4 text-sm text-[var(--text-primary)]/85 placeholder:text-[var(--text-primary)]/35 focus:outline-none focus:ring-2 focus:ring-purple-500/20 min-h-[100px]"
-                placeholder="Note any additional cosmetic issues..."
-              />
-            </div>
-          </GlassCard>
         </div>
       )}
 
