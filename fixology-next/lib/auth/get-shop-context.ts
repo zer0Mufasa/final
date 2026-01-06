@@ -43,54 +43,34 @@ export type ShopContext =
     }
 
 export async function getShopContext(request?: NextRequest): Promise<ShopContext> {
-  // Create Supabase client with proper cookie handling
-  // If request is provided (API route), use request cookies; otherwise use next/headers cookies
-  const supabase = request
-    ? createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-          cookies: {
-            get(name: string) {
-              return request.cookies.get(name)?.value
-            },
-            set(name: string, value: string, options: CookieOptions) {
-              // In API routes, we can't set cookies directly
-            },
-            remove(name: string, options: CookieOptions) {
-              // In API routes, we can't remove cookies directly
-            },
-          },
-        }
-      )
-    : (() => {
-        const cookieStore = cookies()
-        return createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            cookies: {
-              get(name: string) {
-                return cookieStore.get(name)?.value
-              },
-              set(name: string, value: string, options: CookieOptions) {
-                try {
-                  cookieStore.set({ name, value, ...options })
-                } catch (error) {
-                  // Ignore if called from Server Component
-                }
-              },
-              remove(name: string, options: CookieOptions) {
-                try {
-                  cookieStore.set({ name, value: '', ...options })
-                } catch (error) {
-                  // Ignore if called from Server Component
-                }
-              },
-            },
+  // Always use cookies() from next/headers - it works in both Server Components and API Routes
+  // The request parameter is kept for future use but we use the standard Next.js cookie API
+  const cookieStore = cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch (error) {
+            // Ignore if called from Server Component or API route (cookies are read-only in some contexts)
           }
-        )
-      })()
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options })
+          } catch (error) {
+            // Ignore if called from Server Component or API route
+          }
+        },
+      },
+    }
+  )
 
   const {
     data: { session },
