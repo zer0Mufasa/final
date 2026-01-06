@@ -52,53 +52,45 @@ export async function searchRepairWiki(query: string, limit = 5): Promise<WikiSe
  */
 export async function getRepairWikiArticle(title: string): Promise<WikiArticle | null> {
   try {
-    // Get plain text content (more reliable than HTML parsing)
+    // repair.wiki returns empty `extracts` for many pages; use parse HTML and strip tags instead.
     const params = new URLSearchParams({
-      action: 'query',
-      titles: title,
+      action: 'parse',
+      page: title,
       format: 'json',
-      prop: 'extracts',
-      exintro: 'false',
-      explaintext: 'true',
-      exlimit: '1',
+      prop: 'text|sections',
+      redirects: '1',
       origin: '*',
     })
 
     const response = await fetch(`${REPAIR_WIKI_API}?${params}`)
     const data = await response.json()
 
-    if (!data.query?.pages) {
+    if (!data.parse) {
       return null
     }
 
-    const page = Object.values(data.query.pages)[0] as any
-    if (!page || page.missing) {
-      return null
-    }
+    const html = data.parse.text?.['*'] || ''
+    const text = html
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
 
-    const content = page.extract || ''
-
-    // Get sections info
-    const sectionsParams = new URLSearchParams({
-      action: 'parse',
-      page: title,
-      format: 'json',
-      prop: 'sections',
-      origin: '*',
-    })
-
-    const sectionsResponse = await fetch(`${REPAIR_WIKI_API}?${sectionsParams}`)
-    const sectionsData = await sectionsResponse.json()
+    const content = cleanText(text)
 
     const sections =
-      sectionsData.parse?.sections?.map((section: any) => ({
+      data.parse.sections?.map((section: any) => ({
         title: section.line,
         content: '',
       })) || []
 
     return {
-      title: page.title || title,
-      content: cleanText(content),
+      title: data.parse.title || title,
+      content,
       url: `${REPAIR_WIKI_BASE}/w/${encodeURIComponent(title.replace(/ /g, '_'))}`,
       sections,
     }
