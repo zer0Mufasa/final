@@ -17,6 +17,8 @@ export const dynamic = 'force-dynamic'
 
 type CacheEntry<T> = { value: T; expiresAt: number }
 
+const DIAGNOSTICS_API_VERSION = '2026-01-06-fast-timeouts-v1'
+
 // Module-level caches (persist across requests on warm serverless instances)
 const wikiCache = new Map<string, CacheEntry<{ knowledge: string; sources: string[] }>>()
 const responseCache = new Map<string, CacheEntry<any>>()
@@ -278,6 +280,7 @@ export async function POST(request: NextRequest) {
 
     // Call AI with structured JSON output
     let aiResponse: any
+    let timedOut = false
     try {
       const completion = await withTimeout(
         createChatCompletion({
@@ -314,6 +317,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (aiError: any) {
       console.error('AI enhancement error:', aiError)
+      timedOut = Boolean(aiError?.message?.includes('AI_TIMEOUT'))
       
       // If NOVITA_API_KEY is missing, provide helpful error
       if (aiError?.message?.includes('NOVITA_API_KEY')) {
@@ -329,11 +333,10 @@ export async function POST(request: NextRequest) {
 
       // Fallback response
       aiResponse = {
-        message:
-          aiError?.message?.includes('AI_TIMEOUT')
+        message: timedOut
             ? 'This diagnosis is taking longer than expected. I returned a quick preliminary checklist—try again for a deeper analysis.'
             : 'I encountered an error analyzing your issue. Please try again or rephrase your question.',
-        diagnosis: aiError?.message?.includes('AI_TIMEOUT')
+        diagnosis: timedOut
           ? {
               summary: 'Preliminary diagnostic checklist (quick mode)',
               confidence: 60,
@@ -455,6 +458,11 @@ export async function POST(request: NextRequest) {
       diagnosis: aiResponse.diagnosis || null,
       sources: sources.length > 0 ? sources : undefined,
       usedRepairWiki: repairKnowledge.length > 0,
+      meta: {
+        version: DIAGNOSTICS_API_VERSION,
+        timedOut,
+        usedWiki: shouldUseWiki,
+      },
     }
 
     // Cache final payload for short period to make repeats instant.
