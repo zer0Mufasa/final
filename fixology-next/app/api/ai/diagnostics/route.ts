@@ -19,7 +19,7 @@ export const maxDuration = 60
 
 type CacheEntry<T> = { value: T; expiresAt: number }
 
-const DIAGNOSTICS_API_VERSION = '2026-01-06-normal-v2'
+const DIAGNOSTICS_API_VERSION = '2026-01-07-normal-v3'
 
 // Module-level caches (persist across requests on warm serverless instances)
 const wikiCache = new Map<string, CacheEntry<{ knowledge: string; sources: string[] }>>()
