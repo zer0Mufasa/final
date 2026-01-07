@@ -31,6 +31,7 @@ export interface ChatCompletionOptions {
   temperature?: number
   responseFormat?: 'text' | 'json_object'
   model?: string
+  signal?: AbortSignal
 }
 
 export async function createChatCompletion(options: ChatCompletionOptions) {
@@ -43,6 +44,7 @@ export async function createChatCompletion(options: ChatCompletionOptions) {
     temperature = 0.5,
     responseFormat = 'text',
     model = DEFAULT_MODEL,
+    signal,
   } = options
 
   // Build messages array with system prompt
@@ -53,7 +55,8 @@ export async function createChatCompletion(options: ChatCompletionOptions) {
 
   // Novita supports a few extra sampling params that aren't in the OpenAI TS types.
   // We pass them through with a loose cast.
-  const response = await (client.chat.completions as any).create({
+  const response = await (client.chat.completions as any).create(
+    {
     model,
     messages: apiMessages,
     max_tokens: maxTokens,
@@ -65,7 +68,9 @@ export async function createChatCompletion(options: ChatCompletionOptions) {
     frequency_penalty: 0.1,
     repetition_penalty: 1.1,
     response_format: responseFormat === 'json_object' ? { type: 'json_object' } : { type: 'text' },
-  } as any)
+    } as any,
+    signal ? ({ signal } as any) : undefined
+  )
 
   const content = response.choices[0]?.message?.content || ''
   const usage = response.usage

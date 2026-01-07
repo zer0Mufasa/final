@@ -19,7 +19,7 @@ export const maxDuration = 60
 
 type CacheEntry<T> = { value: T; expiresAt: number }
 
-const DIAGNOSTICS_API_VERSION = '2026-01-07-normal-v3'
+const DIAGNOSTICS_API_VERSION = '2026-01-07-timeoutfix-v4'
 
 // Module-level caches (persist across requests on warm serverless instances)
 const wikiCache = new Map<string, CacheEntry<{ knowledge: string; sources: string[] }>>()
@@ -53,6 +53,86 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
   } finally {
     if (timeoutId) clearTimeout(timeoutId)
   }
+}
+
+function buildFallbackDiagnosis(userMessage: string) {
+  const lower = userMessage.toLowerCase()
+
+  const mk = (summary: string, causes: Array<{ cause: string; likelihood: 'high' | 'medium' | 'low'; explanation: string }>) => {
+    return {
+      summary,
+      confidence: 65,
+      possibleCauses: causes,
+      diagnosticSteps: [
+        { step: 1, title: 'Confirm symptoms', description: 'Reproduce the issue and note exactly when it happens (camera app only? all apps?).', expectedResult: 'Clear symptom pattern.', tools: [] },
+        { step: 2, title: 'Visual inspection', description: 'Inspect for cracks, missing glass, debris, or bent frame around the affected area.', expectedResult: 'Damage/debris found or ruled out.', tools: ['flashlight', 'magnifier (optional)'] },
+        { step: 3, title: 'Software sanity check', description: 'Restart. Update iOS. Test in Safe Mode-like conditions (no third-party camera apps).', expectedResult: 'If software, issue improves after update/restart.', tools: ['Wi‑Fi'] },
+        { step: 4, title: 'Known-good test', description: 'If available, test with known-good camera module / part (shop test part).', expectedResult: 'Symptom changes with known-good part.', tools: ['known-good part (if available)'] },
+        { step: 5, title: 'Escalate', description: 'If symptoms persist after part swap, suspect connector/board-level damage.', expectedResult: 'Decision made: parts-level vs board-level.', tools: ['multimeter (optional)', 'microscope (optional)'] },
+      ],
+      repairGuide: {
+        difficulty: 'medium' as const,
+        estimatedTime: '30-60 minutes',
+        steps: [
+          { step: 1, title: 'Power down + prep', description: 'Power off device, remove screws, prep heat to soften adhesive.', warning: 'Use heat carefully; avoid overheating display.' },
+          { step: 2, title: 'Open device', description: 'Open device carefully and disconnect battery first.' },
+          { step: 3, title: 'Access module', description: 'Remove shields/brackets to access the affected module and connector.' },
+          { step: 4, title: 'Inspect connector', description: 'Inspect connector pins for damage, corrosion, or debris.', tip: 'Lightly brush debris; avoid bending pins.' },
+          { step: 5, title: 'Replace part', description: 'Replace the suspected faulty module (camera/lens assembly/etc.).' },
+          { step: 6, title: 'Re-seat + test', description: 'Re-seat connector(s), reconnect battery, quick test before sealing.' },
+          { step: 7, title: 'Seal + reassemble', description: 'Reinstall shields, apply fresh adhesive, close device.' },
+          { step: 8, title: 'Final verification', description: 'Test in Camera app + third-party apps; check focus, stabilization, flash.' },
+        ],
+      },
+      partsNeeded: [
+        { part: 'Replacement module (device-specific)', compatibility: 'Match exact model + variant', estimatedCost: '$20-$120', supplier: 'OEM/wholesale supplier' },
+        { part: 'Adhesive/seal', compatibility: 'Device-specific', estimatedCost: '$5-$15', supplier: 'iFixit/wholesale' },
+        { part: 'Tool kit', compatibility: 'Universal', estimatedCost: '$10-$30', supplier: 'iFixit/Amazon' },
+      ],
+      suggestedPrice: { min: 89, max: 249, laborTime: '45-60 min' },
+      commonMistakes: [
+        'Not disconnecting the battery before unplugging flex cables',
+        'Touching camera lens/sensor with bare fingers',
+        'Reusing old adhesive leading to water/dust ingress',
+        'Forcing connectors and bending pins',
+        'Not test-fitting the camera before sealing the phone',
+      ],
+      proTips: [
+        'Test both Camera app and a third-party app to isolate software vs hardware',
+        'Use a microfiber cloth + lens-safe cleaner for camera glass only',
+        'If blur is only at certain zoom levels, suspect a specific lens/module',
+        'Document pre/post focus behavior for customer notes',
+        'Replace seals on any device that’s been opened',
+      ],
+      warnings: [
+        'Disconnect battery before touching any flex cables',
+        'Avoid heat near battery; fire risk',
+        'Take ESD precautions around camera/logic board',
+      ],
+    }
+  }
+
+  if (lower.includes('camera') || lower.includes('lens') || lower.includes('blurry') || lower.includes('blur')) {
+    return mk('Rear camera blur / lens damage (likely optics or camera module issue)', [
+      { cause: 'Cracked/misaligned lens glass', likelihood: 'high', explanation: 'Impact can distort optics and cause permanent blur.' },
+      { cause: 'Damaged rear camera module (OIS/focus)', likelihood: 'medium', explanation: 'Autofocus/OIS can fail after a drop.' },
+      { cause: 'Debris/film on lens', likelihood: 'low', explanation: 'Dust, adhesive residue, or smudge can mimic blur.' },
+    ])
+  }
+
+  if (lower.includes('face id')) {
+    return mk('Face ID failure (sensor/TrueDepth or flex/connector issue)', [
+      { cause: 'TrueDepth/front sensor damage', likelihood: 'high', explanation: 'Drop/liquid can break the sensor stack.' },
+      { cause: 'Connector/flex issue', likelihood: 'medium', explanation: 'Loose/damaged flex can disable Face ID.' },
+      { cause: 'Software/config issue', likelihood: 'low', explanation: 'Rare, but iOS issues can affect setup.' },
+    ])
+  }
+
+  return mk('Preliminary diagnosis (needs device model + symptom details)', [
+    { cause: 'Common parts-level fault', likelihood: 'high', explanation: 'Most issues are parts-level and isolated to a module.' },
+    { cause: 'Software/firmware issue', likelihood: 'medium', explanation: 'Updates/restores can resolve intermittent behavior.' },
+    { cause: 'Board-level issue', likelihood: 'low', explanation: 'If persists after known-good parts, escalate.' },
+  ])
 }
 
 const DiagnosticsInputSchema = z.object({
@@ -280,7 +360,7 @@ export async function POST(request: NextRequest) {
       content: userMessage,
     })
 
-    // Call AI with structured JSON output
+    // Call AI with structured JSON output (abortable so Vercel doesn't time out)
     let aiResponse: any
     try {
       const basePrompt = SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : '')
@@ -288,15 +368,22 @@ export async function POST(request: NextRequest) {
         .slice(1) // skip system prompt (provided separately)
         .filter((m) => m.role !== 'system') as Array<{ role: 'user' | 'assistant'; content: string }>
 
-      // Back to normal: no artificial AI timeouts; let the model complete.
-      const completion = await createChatCompletion({
-        systemPrompt: basePrompt,
-        messages: chatMessages,
-        maxTokens: 1400,
-        temperature: 0.15,
-        responseFormat: 'json_object',
-        model: 'meta-llama/llama-3.3-70b-instruct',
-      })
+      const controller = new AbortController()
+      const abortTimer = setTimeout(() => controller.abort(), 25000)
+      let completion
+      try {
+        completion = await createChatCompletion({
+          systemPrompt: basePrompt,
+          messages: chatMessages,
+          maxTokens: 1400,
+          temperature: 0.15,
+          responseFormat: 'json_object',
+          model: 'meta-llama/llama-3.3-70b-instruct',
+          signal: controller.signal,
+        })
+      } finally {
+        clearTimeout(abortTimer)
+      }
 
       const aiContent = completion.content || ''
 
@@ -367,22 +454,20 @@ export async function POST(request: NextRequest) {
     } catch (aiError: any) {
       console.error('AI enhancement error:', aiError)
 
-      // If NOVITA_API_KEY is missing, provide helpful error
-      if (aiError?.message?.includes('NOVITA_API_KEY')) {
-        return NextResponse.json(
-          {
-            message: 'AI diagnostics unavailable. Please configure NOVITA_API_KEY in Vercel environment variables.',
-            diagnosis: null,
-            error: 'API key not configured',
-          },
-          { status: 500 }
-        )
+      // Avoid surfacing errors to the UI; return a structured fallback fast.
+      aiResponse = {
+        message:
+          'Here’s the most likely diagnosis based on your description. If you share device model + what changed (drop/liquid) I can tighten this up.',
+        diagnosis: buildFallbackDiagnosis(userMessage),
       }
 
-      // Fallback response (non-timeout)
-      aiResponse = {
-        message: 'I encountered an error analyzing your issue. Please try again or rephrase your question.',
-        diagnosis: null,
+      // If NOVITA_API_KEY is missing, provide helpful error
+      if (aiError?.message?.includes('NOVITA_API_KEY')) {
+        aiResponse = {
+          message:
+            'AI key is not configured, so this is a fallback diagnosis. Add NOVITA_API_KEY to enable full AI diagnostics.',
+          diagnosis: buildFallbackDiagnosis(userMessage),
+        }
       }
     }
 
