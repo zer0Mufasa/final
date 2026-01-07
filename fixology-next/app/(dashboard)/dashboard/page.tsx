@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from '@/components/ui/toaster'
+import crypto from 'crypto'
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -33,51 +34,32 @@ function cn(...classes: (string | boolean | undefined | null)[]) {
 }
 
 // ============================================
-// MOCK DATA
+// TYPES + DEFAULTS
 // ============================================
 
-const UPDATES = [
-  {
-    id: 1,
-    emoji: '🚀',
-    title: 'AI Diagnostics is Live!',
-    date: 'Dec 30',
-    badge: 'New',
-    badgeColor: 'violet',
-    preview: 'Diagnose device issues 3x faster with AI-powered analysis.',
-    link: '/features/ai-diagnostics',
-  },
-  {
-    id: 2,
-    emoji: '🎁',
-    title: 'Early Adopter Bonus',
-    date: 'Dec 30',
-    badge: 'Limited',
-    badgeColor: 'fuchsia',
-    preview: 'Run 10 diagnostics this week → Get 3 months Pro FREE.',
-  },
-  {
-    id: 3,
-    emoji: '📦',
-    title: 'Smart Inventory Predictions',
-    date: 'Dec 28',
-    preview: 'AI now predicts when you\'ll run low on parts.',
-  },
-  {
-    id: 4,
-    emoji: '🎓',
-    title: 'Live Training: Jan 2nd',
-    date: 'Dec 26',
-    preview: 'Join us at 2PM EST to master AI diagnostics.',
-  },
-  {
-    id: 5,
-    emoji: '💳',
-    title: 'Square Terminal Ready',
-    date: 'Dec 22',
-    preview: 'Accept tap, dip, and swipe payments seamlessly.',
-  },
-]
+type TeamMember = {
+  id: string
+  name: string
+  role: string
+  status: 'working' | 'available' | 'break'
+  currentTask?: string | null
+  taskId?: string | null
+}
+
+type UpcomingRepair = {
+  id: string
+  time: string
+  customer: string
+  device: string
+  issue: string
+  status: 'confirmed' | 'pending' | 'open'
+}
+
+type LowStockAlert = {
+  part: string
+  qty: number
+  reorderPoint: number
+}
 
 const QUICK_ACTIONS = [
   { emoji: '🎫', label: 'New Ticket', shortcut: 'N', href: '/tickets/new' },
@@ -86,28 +68,13 @@ const QUICK_ACTIONS = [
   { emoji: '🔍', label: 'IMEI', shortcut: 'M', href: '/imei' },
 ]
 
-const TEAM_MEMBERS = [
-  { id: 1, name: 'Marcus', role: 'Technician', avatar: '👨‍🔧', status: 'working', currentTask: 'iPhone 14 Pro Screen', taskId: '#1051' },
-  { id: 2, name: 'Sarah', role: 'Front Desk', avatar: '👩‍💼', status: 'available', currentTask: null, taskId: null },
-  { id: 3, name: 'Alex', role: 'Technician', avatar: '🧑‍🔧', status: 'break', currentTask: null, taskId: null },
-  { id: 4, name: 'Jordan', role: 'Technician', avatar: '👨‍💻', status: 'working', currentTask: 'Galaxy S23 Battery', taskId: '#1049' },
+const UPDATES = [
+  { id: 1, emoji: '🚀', title: 'AI Diagnostics is Live!', date: 'Dec 30', badge: 'New', badgeColor: 'violet', preview: 'Diagnose device issues 3x faster with AI-powered analysis.', link: '/features/ai-diagnostics' },
+  { id: 2, emoji: '🎁', title: 'Early Adopter Bonus', date: 'Dec 30', badge: 'Limited', badgeColor: 'fuchsia', preview: 'Run 10 diagnostics this week → Get 3 months Pro FREE.' },
+  { id: 3, emoji: '📦', title: 'Smart Inventory Predictions', date: 'Dec 28', preview: 'AI now predicts when you\'ll run low on parts.' },
+  { id: 4, emoji: '🎓', title: 'Live Training: Jan 2nd', date: 'Dec 26', preview: 'Join us at 2PM EST to master AI diagnostics.' },
+  { id: 5, emoji: '💳', title: 'Square Terminal Ready', date: 'Dec 22', preview: 'Accept tap, dip, and swipe payments seamlessly.' },
 ]
-
-const UPCOMING_REPAIRS = [
-  { id: 1, time: '11:30 AM', customer: 'John D.', device: 'iPhone 14 Pro', issue: 'Screen', status: 'confirmed' },
-  { id: 2, time: '1:00 PM', customer: 'Maria S.', device: 'MacBook Air', issue: 'Battery', status: 'confirmed' },
-  { id: 3, time: '2:30 PM', customer: 'David L.', device: 'iPad Pro', issue: 'Charging', status: 'pending' },
-  { id: 4, time: '4:00 PM', customer: 'Emily R.', device: 'Galaxy S23', issue: 'Screen', status: 'confirmed' },
-]
-
-const LOW_STOCK_ALERTS = [
-  { part: 'iPhone 14 Pro Screen', qty: 2, reorderPoint: 5 },
-  { part: 'Galaxy S23 Battery', qty: 1, reorderPoint: 3 },
-  { part: 'USB-C Charging Port', qty: 3, reorderPoint: 10 },
-]
-
-// Revenue data for mini chart (last 7 days)
-const REVENUE_DATA = [420, 580, 340, 720, 650, 890, 847]
 
 // ============================================
 // MAIN COMPONENT
@@ -126,6 +93,12 @@ export default function DashboardPage() {
   const [intakeText, setIntakeText] = useState('')
   const [currentTime, setCurrentTime] = useState(new Date())
   const [mounted, setMounted] = useState(false)
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [upcomingRepairs, setUpcomingRepairs] = useState<UpcomingRepair[]>([])
+  const [lowStockAlerts, setLowStockAlerts] = useState<LowStockAlert[]>([])
+  const [dashLoading, setDashLoading] = useState(false)
+  const [summary, setSummary] = useState<any>(null)
+  const [activityEvents, setActivityEvents] = useState<any[]>([])
 
   // Animation stagger delay
   const [animationReady, setAnimationReady] = useState(false)
@@ -222,6 +195,137 @@ export default function DashboardPage() {
       setCurrentTime(new Date())
     }, 1000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Load live dashboard signals (team status, upcoming tickets, low stock)
+  useEffect(() => {
+    let cancelled = false
+
+    const load = async () => {
+      setDashLoading(true)
+      try {
+        const [staffRes, timeRes, invRes, ticketsRes, summaryRes, activityRes] = await Promise.allSettled([
+          apiJson<any[]>('/api/staff'),
+          apiJson<any>('/api/time-tracking?range=day'),
+          apiJson<any>('/api/inventory'),
+          apiJson<any>('/api/tickets?limit=12'),
+          apiJson<any>('/api/dashboard/summary'),
+          apiJson<any>('/api/activity'),
+        ])
+
+        // Team status: mark as working if active time entry today
+        if (!cancelled) {
+          const activeIds = new Set(
+            timeRes.status === 'fulfilled'
+              ? (Array.isArray(timeRes.value?.entries) ? timeRes.value.entries : [])
+                  .filter((e: any) => e.status === 'active')
+                  .map((e: any) => e.userId)
+              : []
+          )
+
+          const staff = staffRes.status === 'fulfilled' && Array.isArray(staffRes.value)
+            ? staffRes.value
+            : []
+
+          const mappedStaff: TeamMember[] = staff.map((s: any) => ({
+            id: s.id,
+            name: s.name || s.email || 'Staff',
+            role: (s.role || 'TECHNICIAN').toLowerCase(),
+            status: activeIds.has(s.id) ? 'working' : 'available',
+            currentTask:
+              s?.stats?.ticketsAssigned > 0
+                ? `${s.stats.ticketsAssigned} open`
+                : null,
+            taskId:
+              s?.stats?.ticketsCompleted > 0
+                ? `${s.stats.ticketsCompleted} done`
+                : null,
+          }))
+
+          setTeamMembers(mappedStaff)
+        }
+
+        // Low stock alerts from inventory
+        if (!cancelled) {
+          const items =
+            invRes.status === 'fulfilled' && Array.isArray(invRes.value?.items)
+              ? invRes.value.items
+              : []
+          const low = items
+            .filter((i: any) => {
+              const qty = Number(i.onHand ?? 0)
+              const min = Number(i.min ?? 0)
+              return qty <= Math.max(1, min || 2)
+            })
+            .sort((a: any, b: any) => (a.onHand ?? 0) - (b.onHand ?? 0))
+            .slice(0, 6)
+            .map((i: any) => ({
+              part: i.name,
+              qty: Number(i.onHand ?? 0),
+              reorderPoint: Number(i.min ?? 0) || 0,
+            })) as LowStockAlert[]
+          setLowStockAlerts(low)
+        }
+
+        // Upcoming / open repairs = newest open tickets
+        if (!cancelled) {
+          const tickets =
+            ticketsRes.status === 'fulfilled' && Array.isArray(ticketsRes.value?.tickets)
+              ? ticketsRes.value.tickets
+              : []
+
+          const open = tickets
+            .filter(
+              (t: any) =>
+                !['READY', 'PICKED_UP', 'CANCELLED', 'COMPLETE'].includes(
+                  (t.status || '').toUpperCase()
+                )
+            )
+            .slice(0, 6)
+            .map((t: any) => {
+              const date = t?.createdAt ? new Date(t.createdAt) : new Date()
+              const time = date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+              })
+              return {
+                id: t.id || crypto.randomUUID(),
+                time,
+                customer: t.customer?.name || t.customerName || 'Customer',
+                device: t.device || t.deviceModel || 'Device',
+                issue: t.issue || t.description || 'Issue',
+                status: 'confirmed',
+              } as UpcomingRepair
+            })
+
+          setUpcomingRepairs(open)
+        }
+
+        if (!cancelled) {
+          const sum = summaryRes.status === 'fulfilled' ? summaryRes.value : null
+          setSummary(sum || null)
+        }
+
+        if (!cancelled) {
+          const events =
+            activityRes.status === 'fulfilled' && Array.isArray(activityRes.value?.events)
+              ? activityRes.value.events
+              : []
+          setActivityEvents(events.slice(0, 20))
+        }
+      } catch (err) {
+        // soft-fail; UI will show placeholders
+        console.error('Dashboard data load failed', err)
+      } finally {
+        if (!cancelled) setDashLoading(false)
+      }
+    }
+
+    load()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Dynamic greeting based on time
@@ -702,11 +806,9 @@ export default function DashboardPage() {
           <StatCard
             emoji="🎫"
             label="Created"
-            value={129}
-            change={21.7}
-            positive
-            sublabel="tickets this month"
-            sparkData={[45, 52, 48, 61, 58, 72, 68, 75, 82, 90, 95, 129]}
+            value={summary?.tickets?.createdLast30 ?? 0}
+            sublabel="tickets last 30d"
+            loading={dashLoading && !summary}
           />
         </div>
 
@@ -717,11 +819,9 @@ export default function DashboardPage() {
           <StatCard
             emoji="✅"
             label="Completed"
-            value={97}
-            change={120.45}
-            positive
-            sublabel="repairs done"
-            sparkData={[30, 35, 42, 38, 55, 48, 62, 58, 70, 78, 85, 97]}
+            value={summary?.tickets?.completedLast30 ?? 0}
+            sublabel="ready/picked up last 30d"
+            loading={dashLoading && !summary}
           />
         </div>
 
@@ -732,9 +832,9 @@ export default function DashboardPage() {
           <StatCard
             emoji="⏳"
             label="In Progress"
-            value={14}
-            sublabel="being worked on"
-            sparkData={[8, 12, 10, 15, 11, 18, 14, 16, 12, 15, 13, 14]}
+            value={summary?.tickets?.inProgress ?? 0}
+            sublabel="active repairs"
+            loading={dashLoading && !summary}
           />
         </div>
 
@@ -745,10 +845,10 @@ export default function DashboardPage() {
           <StatCard
             emoji="📦"
             label="Waiting Parts"
-            value={3}
+            value={summary?.tickets?.waitingParts ?? 0}
             sublabel="parts on order"
             warning={true}
-            sparkData={[5, 4, 6, 3, 5, 4, 2, 3, 4, 2, 3, 3]}
+            loading={dashLoading && !summary}
           />
         </div>
 
@@ -757,7 +857,10 @@ export default function DashboardPage() {
           "col-span-12 lg:col-span-4 transition-all duration-500",
           animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )} style={{ transitionDelay: '350ms' }}>
-          <RevenueTrendCard data={REVENUE_DATA} />
+          <RevenueTrendCard
+            data={summary?.revenue?.daily ?? []}
+            loading={dashLoading && !summary}
+          />
         </div>
 
         {/* Goals Section */}
@@ -808,7 +911,7 @@ export default function DashboardPage() {
           "col-span-12 lg:col-span-4 transition-all duration-500",
           animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )} style={{ transitionDelay: '450ms' }}>
-          <TeamStatusCard members={TEAM_MEMBERS} />
+          <TeamStatusCard members={teamMembers} loading={dashLoading} />
         </div>
 
         {/* Upcoming Appointments */}
@@ -816,7 +919,7 @@ export default function DashboardPage() {
           "col-span-12 lg:col-span-4 transition-all duration-500",
           animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )} style={{ transitionDelay: '500ms' }}>
-          <UpcomingRepairsCard repairs={UPCOMING_REPAIRS} />
+          <UpcomingRepairsCard repairs={upcomingRepairs} loading={dashLoading} />
         </div>
 
         {/* Low Stock Alerts */}
@@ -824,7 +927,7 @@ export default function DashboardPage() {
           "col-span-12 lg:col-span-4 transition-all duration-500",
           animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )} style={{ transitionDelay: '550ms' }}>
-          <LowStockCard alerts={LOW_STOCK_ALERTS} onReorder={() => router.push('/inventory')} />
+          <LowStockCard alerts={lowStockAlerts} loading={dashLoading} onReorder={() => router.push('/inventory')} />
         </div>
 
         {/* Updates Feed */}
@@ -847,7 +950,10 @@ export default function DashboardPage() {
             </div>
 
             <div className="divide-y divide-[var(--border-subtle)]">
-              {UPDATES.slice(0, 4).map((update) => (
+              {activityEvents.length === 0 && (
+                <div className="p-4 text-sm text-[var(--text-muted)]">No recent updates.</div>
+              )}
+              {(activityEvents.slice(0, 4)).map((update) => (
                 <button
                   key={update.id}
                   onClick={() => setSelectedUpdate(selectedUpdate === update.id ? null : update.id)}
@@ -859,28 +965,20 @@ export default function DashboardPage() {
                   )}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-xl">{update.emoji}</span>
+                    <span className="text-xl">🛈</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-[var(--text-primary)] truncate">
-                          {update.title}
+                          {update.type || 'Activity'}
                         </span>
-                        {update.badge && (
-                          <span className={cn(
-                            "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
-                            update.badgeColor === 'violet' 
-                              ? "bg-violet-500/20 text-violet-300"
-                              : "bg-fuchsia-500/20 text-fuchsia-300"
-                          )}>
-                            {update.badge}
-                          </span>
-                        )}
                       </div>
-                      <div className="text-xs text-[var(--text-muted)] mt-0.5">{update.date}</div>
+                      <div className="text-xs text-[var(--text-muted)] mt-0.5">
+                        {update.timestamp ? new Date(update.timestamp).toLocaleString() : ''}
+                      </div>
                       
                       {selectedUpdate === update.id && (
                         <p className="text-sm text-[var(--text-secondary)] mt-2 leading-relaxed">
-                          {update.preview}
+                          {update.userName ? `${update.userName} • ` : ''}{update.type || 'Event'}
                         </p>
                       )}
                     </div>
@@ -993,12 +1091,33 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              <ActivityItem emoji="💰" text="Payment $219" time="5m" highlight />
-              <ActivityItem emoji="🎫" text="New ticket #1052" time="12m" />
-              <ActivityItem emoji="✅" text="Completed #1048" time="25m" />
-              <ActivityItem emoji="👤" text="New customer: Sarah M." time="1h" />
-              <ActivityItem emoji="⭐" text="5-star review received" time="2h" highlight />
-              <ActivityItem emoji="📦" text="Parts delivered" time="3h" />
+              {activityEvents.length === 0 && (
+                <div className="text-xs text-[var(--text-muted)]">No activity yet.</div>
+              )}
+              {activityEvents.slice(0, 6).map((evt) => {
+                const type = evt.type || 'event'
+                const emoji =
+                  type === 'clock_in' ? '⏱️' :
+                  type === 'clock_out' ? '✅' :
+                  type === 'shop_open' ? '🏪' :
+                  type === 'shop_close' ? '🚪' :
+                  type === 'ticket' ? '🎫' :
+                  '🛈'
+                const time = evt.timestamp ? new Date(evt.timestamp) : null
+                const minsAgo = time ? Math.floor((Date.now() - time.getTime()) / 60000) : null
+                const timeLabel = minsAgo != null
+                  ? minsAgo < 1 ? 'now' : minsAgo < 60 ? `${minsAgo}m` : `${Math.floor(minsAgo / 60)}h`
+                  : ''
+
+                return (
+                  <ActivityItem
+                    key={evt.id}
+                    emoji={emoji}
+                    text={evt.userName ? `${evt.userName} • ${type}` : type}
+                    time={timeLabel}
+                  />
+                )
+              })}
             </div>
 
             <button 
@@ -1087,7 +1206,7 @@ function StatCard({
   positive,
   sublabel,
   warning,
-  sparkData,
+  loading,
 }: {
   emoji: string
   label: string
@@ -1096,9 +1215,10 @@ function StatCard({
   positive?: boolean
   sublabel: string
   warning?: boolean
-  sparkData?: number[]
+  loading?: boolean
 }) {
   const [hovered, setHovered] = useState(false)
+  const displayValue = loading ? '—' : value
 
   return (
     <div
@@ -1168,43 +1288,9 @@ function StatCard({
             hovered ? "text-white" : "text-white/90"
           )}
         >
-          {value}
+          {displayValue}
         </div>
         <div className="text-xs text-white/40 mt-1.5">{sublabel}</div>
-        
-        {/* Mini Sparkline - Enhanced */}
-        {sparkData && (
-          <div className="mt-4 h-10 flex items-end gap-1">
-            {sparkData.map((v, i) => {
-              const max = Math.max(...sparkData)
-              const height = (v / max) * 100
-              const isLast = i === sparkData.length - 1
-              return (
-                <div
-                  key={i}
-                  className="flex-1 rounded-t-sm transition-all duration-300"
-                  style={{
-                    height: `${height}%`,
-                    background: isLast
-                      ? warning
-                        ? 'linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%)'
-                        : 'linear-gradient(180deg, #a78bfa 0%, #8b5cf6 100%)'
-                      : warning
-                        ? 'rgba(251, 191, 36, 0.25)'
-                        : 'rgba(139, 92, 246, 0.25)',
-                    boxShadow: isLast
-                      ? warning
-                        ? '0 0 12px rgba(251, 191, 36, 0.4)'
-                        : '0 0 12px rgba(139, 92, 246, 0.4)'
-                      : 'none',
-                    transform: hovered ? 'scaleY(1.05)' : 'scaleY(1)',
-                    transformOrigin: 'bottom',
-                  }}
-                />
-              )
-            })}
-          </div>
-        )}
       </div>
     </div>
   )
@@ -1256,12 +1342,13 @@ function GoalProgress({
 // REVENUE TREND CARD
 // ============================================
 
-function RevenueTrendCard({ data }: { data: number[] }) {
-  const total = data.reduce((a, b) => a + b, 0)
-  const avg = Math.round(total / data.length)
-  const max = Math.max(...data)
-  const today = data[data.length - 1]
-  const yesterday = data[data.length - 2]
+function RevenueTrendCard({ data, loading }: { data: { label: string; total: number }[]; loading?: boolean }) {
+  const totals = Array.isArray(data) ? data : []
+  const total = totals.reduce((a, b) => a + (b.total || 0), 0)
+  const avg = totals.length ? Math.round(total / totals.length) : 0
+  const max = totals.length ? Math.max(...totals.map((d) => d.total)) : 0
+  const today = totals[totals.length - 1]?.total ?? 0
+  const yesterday = totals[totals.length - 2]?.total ?? 0
   const change = yesterday > 0 ? ((today - yesterday) / yesterday) * 100 : 0
 
   return (
@@ -1280,14 +1367,20 @@ function RevenueTrendCard({ data }: { data: number[] }) {
         </div>
       </div>
 
-      <div className="text-3xl font-bold text-[var(--text-primary)]">${total.toLocaleString()}</div>
-      <div className="text-xs text-[var(--text-muted)] mt-1">Avg ${avg}/day · Today ${today}</div>
+      <div className="text-3xl font-bold text-[var(--text-primary)]">
+        {loading ? '—' : `$${total.toLocaleString()}`}
+      </div>
+      <div className="text-xs text-[var(--text-muted)] mt-1">
+        {loading ? 'Loading…' : `Avg $${avg}/day · Today $${today}`}
+      </div>
 
       {/* Bar Chart */}
       <div className="mt-4 h-20 flex items-end gap-2">
-        {data.map((v, i) => {
-          const height = (v / max) * 100
-          const isToday = i === data.length - 1
+        {loading && totals.length === 0 && <div className="text-xs text-[var(--text-muted)]">Loading…</div>}
+        {!loading && totals.length === 0 && <div className="text-xs text-[var(--text-muted)]">No payments yet.</div>}
+        {totals.map((v, i) => {
+          const height = max > 0 ? (v.total / max) * 100 : 0
+          const isToday = i === totals.length - 1
           return (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <div
@@ -1312,7 +1405,7 @@ function RevenueTrendCard({ data }: { data: number[] }) {
 // TEAM STATUS CARD - ENHANCED
 // ============================================
 
-function TeamStatusCard({ members }: { members: typeof TEAM_MEMBERS }) {
+function TeamStatusCard({ members, loading }: { members: TeamMember[]; loading?: boolean }) {
   const statusStyles: Record<string, { bg: string; shadow: string }> = {
     working: { bg: '#4ade80', shadow: 'rgba(74, 222, 128, 0.5)' },
     available: { bg: '#60a5fa', shadow: 'rgba(96, 165, 250, 0.5)' },
@@ -1353,8 +1446,15 @@ function TeamStatusCard({ members }: { members: typeof TEAM_MEMBERS }) {
       </div>
 
       <div className="space-y-2">
-        {members.map((member, i) => {
+        {loading && members.length === 0 && (
+          <div className="text-xs text-white/50">Loading team…</div>
+        )}
+        {!loading && members.length === 0 && (
+          <div className="text-xs text-white/40">No staff data yet.</div>
+        )}
+        {members.map((member) => {
           const style = statusStyles[member.status] || statusStyles.available
+          const badge = member.name?.[0]?.toUpperCase?.() || '👤'
           return (
             <div
               key={member.id}
@@ -1364,8 +1464,8 @@ function TeamStatusCard({ members }: { members: typeof TEAM_MEMBERS }) {
                 border: '1px solid rgba(255, 255, 255, 0.04)',
               }}
             >
-              <span className="text-xl group-hover:scale-110 transition-transform duration-300">
-                {member.avatar}
+              <span className="text-sm w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-105 transition-transform duration-300 text-white/80">
+                {badge}
               </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -1382,7 +1482,7 @@ function TeamStatusCard({ members }: { members: typeof TEAM_MEMBERS }) {
                   {member.currentTask ? (
                     <span>
                       {member.currentTask}{' '}
-                      <span className="text-purple-400/60">{member.taskId}</span>
+                      {member.taskId ? <span className="text-purple-400/60">{member.taskId}</span> : null}
                     </span>
                   ) : (
                     member.status === 'break' ? 'On break' : 'Available'
@@ -1401,7 +1501,7 @@ function TeamStatusCard({ members }: { members: typeof TEAM_MEMBERS }) {
 // UPCOMING REPAIRS CARD
 // ============================================
 
-function UpcomingRepairsCard({ repairs }: { repairs: typeof UPCOMING_REPAIRS }) {
+function UpcomingRepairsCard({ repairs, loading }: { repairs: UpcomingRepair[]; loading?: boolean }) {
   return (
     <div className="rounded-2xl bg-[var(--bg-card)] border border-[var(--border-default)] p-5 h-full">
       <div className="flex items-center justify-between mb-4">
@@ -1409,10 +1509,16 @@ function UpcomingRepairsCard({ repairs }: { repairs: typeof UPCOMING_REPAIRS }) 
           <Calendar className="w-5 h-5 text-violet-400" />
           <h2 className="text-base font-semibold text-[var(--text-primary)]">Upcoming</h2>
         </div>
-        <span className="text-xs text-[var(--text-muted)]">{repairs.length} today</span>
+        <span className="text-xs text-[var(--text-muted)]">{repairs.length} open</span>
       </div>
 
       <div className="space-y-2">
+        {loading && repairs.length === 0 && (
+          <div className="text-xs text-[var(--text-muted)]">Loading tickets…</div>
+        )}
+        {!loading && repairs.length === 0 && (
+          <div className="text-xs text-[var(--text-muted)]">No open tickets right now.</div>
+        )}
         {repairs.map((repair) => (
           <div key={repair.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-[var(--bg-card-hover)] transition-colors">
             <div className="w-14 text-center">
@@ -1441,7 +1547,7 @@ function UpcomingRepairsCard({ repairs }: { repairs: typeof UPCOMING_REPAIRS }) 
 // LOW STOCK CARD
 // ============================================
 
-function LowStockCard({ alerts, onReorder }: { alerts: typeof LOW_STOCK_ALERTS; onReorder: () => void }) {
+function LowStockCard({ alerts, loading, onReorder }: { alerts: LowStockAlert[]; loading?: boolean; onReorder: () => void }) {
   return (
     <div className="rounded-2xl bg-amber-500/[0.08] border border-amber-500/20 p-5 h-full">
       <div className="flex items-center justify-between mb-4">
@@ -1455,6 +1561,12 @@ function LowStockCard({ alerts, onReorder }: { alerts: typeof LOW_STOCK_ALERTS; 
       </div>
 
       <div className="space-y-2">
+        {loading && alerts.length === 0 && (
+          <div className="text-xs text-amber-200/70">Checking stock…</div>
+        )}
+        {!loading && alerts.length === 0 && (
+          <div className="text-xs text-amber-200/70">All stocked — no alerts.</div>
+        )}
         {alerts.map((alert, i) => (
           <div key={i} className="flex items-center justify-between p-2 rounded-xl bg-[var(--bg-card)]/50 border border-[var(--border-subtle)]">
             <div className="flex-1 min-w-0">
