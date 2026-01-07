@@ -14,6 +14,8 @@ import {
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+// Give the serverless function enough runway on Vercel.
+export const maxDuration = 60
 
 type CacheEntry<T> = { value: T; expiresAt: number }
 
@@ -51,6 +53,26 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
   } finally {
     if (timeoutId) clearTimeout(timeoutId)
   }
+}
+
+async function callDiagnosticsAI(args: {
+  systemPrompt: string
+  messages: Array<{ role: 'user' | 'assistant'; content: string }>
+  maxTokens: number
+  timeoutMs: number
+}) {
+  return await withTimeout(
+    createChatCompletion({
+      systemPrompt: args.systemPrompt,
+      messages: args.messages,
+      maxTokens: args.maxTokens,
+      temperature: 0.15,
+      responseFormat: 'json_object',
+      model: 'meta-llama/llama-3.3-70b-instruct',
+    }),
+    args.timeoutMs,
+    'AI'
+  )
 }
 
 const DiagnosticsInputSchema = z.object({
@@ -281,19 +303,36 @@ export async function POST(request: NextRequest) {
     // Call AI with structured JSON output
     let aiResponse: any
     try {
-      const completion = await withTimeout(
-        createChatCompletion({
-        systemPrompt: SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : ''),
-        messages: messages.slice(1), // Skip system prompt (already in systemPrompt param)
-        // Keep output small (speed), but still enough room for the full structure.
-        maxTokens: 1400,
-        temperature: 0.15,
-        responseFormat: 'json_object',
-        model: 'meta-llama/llama-3.3-70b-instruct',
-      }),
-        30000,
-        'AI'
-      )
+      const basePrompt = SYSTEM_PROMPT + (repairKnowledge ? `\n\nREPAIR.WIKI KNOWLEDGE:\n${repairKnowledge}` : '')
+      const chatMessages = messages
+        .slice(1) // skip system prompt (provided separately)
+        .filter((m) => m.role !== 'system') as Array<{ role: 'user' | 'assistant'; content: string }>
+
+      // First attempt: normal detail level.
+      let completion
+      try {
+        completion = await callDiagnosticsAI({
+          systemPrompt: basePrompt,
+          messages: chatMessages,
+          maxTokens: 1400,
+          timeoutMs: 30000,
+        })
+      } catch (e: any) {
+        // Second attempt: shorter + faster (prevents UI toast most of the time).
+        if (e?.message?.includes('AI_TIMEOUT')) {
+          const fastPrompt =
+            basePrompt +
+            `\n\nSPEED OVERRIDE: Respond extremely concisely. Keep every field short. Do not add extra commentary.`
+          completion = await callDiagnosticsAI({
+            systemPrompt: fastPrompt,
+            messages: chatMessages,
+            maxTokens: 900,
+            timeoutMs: 20000,
+          })
+        } else {
+          throw e
+        }
+      }
 
       const aiContent = completion.content || ''
 
@@ -364,7 +403,7 @@ export async function POST(request: NextRequest) {
     } catch (aiError: any) {
       console.error('AI enhancement error:', aiError)
 
-      // Don't show "quick mode" content. If the model is slow, return a retryable error instead.
+      // Don't show "quick mode" content. If it's still slow after retry, return a retryable error.
       if (aiError?.message?.includes('AI_TIMEOUT')) {
         return NextResponse.json(
           { error: 'Analysis is taking too long. Please retry with device model + symptoms.' },
