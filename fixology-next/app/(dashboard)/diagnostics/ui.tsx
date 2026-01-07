@@ -122,6 +122,11 @@ export function DiagnosticsClient() {
     scrollToBottom()
   }, [messages])
 
+  const isDemo = () => {
+    if (typeof document === 'undefined') return false
+    return document.cookie.includes('fx_demo=1')
+  }
+
   const sendMessage = async (messageText?: string) => {
     const text = messageText || input.trim()
     if (!text || isLoading) return
@@ -140,9 +145,18 @@ export function DiagnosticsClient() {
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/ai/diagnostics', {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 18000) // client-side guard
+
+      const demo = isDemo()
+      const url = demo ? '/api/ai/diagnostics?demo=1' : '/api/ai/diagnostics'
+
+      const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(demo ? { 'x-fx-demo': '1' } : {}),
+        },
         credentials: 'include',
         body: JSON.stringify({
           message: text,
@@ -153,7 +167,10 @@ export function DiagnosticsClient() {
               : m.content,
           })),
         }),
+        signal: controller.signal,
       })
+
+      clearTimeout(timer)
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -172,12 +189,16 @@ export function DiagnosticsClient() {
 
       setMessages(prev => [...prev, assistantMessage])
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to get diagnosis')
-      // Add error message
+      const friendly = e?.name === 'AbortError'
+        ? 'That took too long. Please try again with device model + symptoms.'
+        : (e?.message || 'Failed to get diagnosis')
+
+      toast.error(friendly)
+      // Add error message bubble so the chat isn’t empty
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again or rephrase your question.',
+        content: friendly,
         timestamp: new Date(),
       }])
     } finally {
