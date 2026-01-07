@@ -55,26 +55,6 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
   }
 }
 
-async function callDiagnosticsAI(args: {
-  systemPrompt: string
-  messages: Array<{ role: 'user' | 'assistant'; content: string }>
-  maxTokens: number
-  timeoutMs: number
-}) {
-  return await withTimeout(
-    createChatCompletion({
-      systemPrompt: args.systemPrompt,
-      messages: args.messages,
-      maxTokens: args.maxTokens,
-      temperature: 0.15,
-      responseFormat: 'json_object',
-      model: 'meta-llama/llama-3.3-70b-instruct',
-    }),
-    args.timeoutMs,
-    'AI'
-  )
-}
-
 const DiagnosticsInputSchema = z.object({
   message: z.string().optional(),
   conversationHistory: z.array(z.object({
@@ -308,31 +288,15 @@ export async function POST(request: NextRequest) {
         .slice(1) // skip system prompt (provided separately)
         .filter((m) => m.role !== 'system') as Array<{ role: 'user' | 'assistant'; content: string }>
 
-      // First attempt: normal detail level.
-      let completion
-      try {
-        completion = await callDiagnosticsAI({
-          systemPrompt: basePrompt,
-          messages: chatMessages,
-          maxTokens: 1400,
-          timeoutMs: 30000,
-        })
-      } catch (e: any) {
-        // Second attempt: shorter + faster (prevents UI toast most of the time).
-        if (e?.message?.includes('AI_TIMEOUT')) {
-          const fastPrompt =
-            basePrompt +
-            `\n\nSPEED OVERRIDE: Respond extremely concisely. Keep every field short. Do not add extra commentary.`
-          completion = await callDiagnosticsAI({
-            systemPrompt: fastPrompt,
-            messages: chatMessages,
-            maxTokens: 900,
-            timeoutMs: 20000,
-          })
-        } else {
-          throw e
-        }
-      }
+      // Back to normal: no artificial AI timeouts; let the model complete.
+      const completion = await createChatCompletion({
+        systemPrompt: basePrompt,
+        messages: chatMessages,
+        maxTokens: 1400,
+        temperature: 0.15,
+        responseFormat: 'json_object',
+        model: 'meta-llama/llama-3.3-70b-instruct',
+      })
 
       const aiContent = completion.content || ''
 
@@ -402,14 +366,6 @@ export async function POST(request: NextRequest) {
       }
     } catch (aiError: any) {
       console.error('AI enhancement error:', aiError)
-
-      // Don't show "quick mode" content. If it's still slow after retry, return a retryable error.
-      if (aiError?.message?.includes('AI_TIMEOUT')) {
-        return NextResponse.json(
-          { error: 'Analysis is taking too long. Please retry with device model + symptoms.' },
-          { status: 504 }
-        )
-      }
 
       // If NOVITA_API_KEY is missing, provide helpful error
       if (aiError?.message?.includes('NOVITA_API_KEY')) {
