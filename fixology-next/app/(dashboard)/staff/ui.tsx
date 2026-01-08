@@ -291,40 +291,54 @@ export function StaffClient() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null)
   const [addOpen, setAddOpen] = useState(false)
-  const [staffList, setStaffList] = useState<StaffMember[]>(mockStaff)
+  const [staffList, setStaffList] = useState<StaffMember[]>([])
 
   const fetchStaff = useCallback(async () => {
     try {
       const res = await fetch('/api/staff')
       if (!res.ok) {
-        // Fallback to mock data on error
-        setStaffList(mockStaff)
         return
       }
       const data = await res.json()
-      // Map API data to StaffMember format, merging with mock defaults
-      const mapped: StaffMember[] = data.map((s: any) => {
-        const mock = mockStaff.find((m) => m.email === s.email) || mockStaff[0]
-        return {
-          ...mock,
-          id: s.id,
-          firstName: s.name.split(' ')[0] || s.name,
-          lastName: s.name.split(' ').slice(1).join(' ') || '',
-          email: s.email,
-          role: s.role,
-          pin: s.pin,
-          isActive: s.isActive,
-          stats: {
-            ...mock.stats,
-            ticketsCompleted: s.stats?.ticketsCompleted || 0,
-          },
-        }
-      })
+      // Map API data to StaffMember format
+      const mapped: StaffMember[] = data.map((s: any) => ({
+        id: s.id,
+        firstName: s.name?.split(' ')[0] || s.name || 'Staff',
+        lastName: s.name?.split(' ').slice(1).join(' ') || '',
+        email: s.email,
+        role: (s.role || 'technician').toLowerCase() as any,
+        permissions: [],
+        startDate: s.createdAt ? new Date(s.createdAt) : new Date(),
+        hourlyRate: undefined,
+        isActive: s.isActive ?? true,
+        specializations: [],
+        certifications: [],
+        stats: {
+          ticketsCompleted: s.stats?.ticketsCompleted || 0,
+          averageTime: s.stats?.averageTime || 0,
+          customerRating: s.stats?.customerRating || 0,
+          warrantyClaimRate: 0,
+          revenue: 0,
+        },
+        workingHours: {
+          monday: null,
+          tuesday: null,
+          wednesday: null,
+          thursday: null,
+          friday: null,
+          saturday: null,
+          sunday: null,
+        },
+        status: 'working',
+        currentWorkload: s.stats?.ticketsAssigned || 0,
+        maxWorkload: 6,
+        phone: s.phone || '',
+      }))
       if (mapped.length > 0) {
         setStaffList(mapped)
       }
     } catch {
-      // Keep mock data on error
+      // leave empty on error
     }
   }, [])
 
