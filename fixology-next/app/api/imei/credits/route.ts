@@ -5,6 +5,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 
+function isDemo(request: NextRequest) {
+  const demoHeader = request.headers.get('x-fx-demo') === '1'
+  const demoQuery = request.nextUrl.searchParams.get('demo') === '1'
+  const demoCookie = request.cookies.get('fx_demo')?.value === '1'
+  return demoHeader || demoQuery || demoCookie
+}
+
+const DEMO_CREDITS = 5
+
 async function hasImeiCreditsColumn() {
   const rows = (await prisma.$queryRawUnsafe(
     `SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='shops' AND column_name='imei_credits' LIMIT 1`
@@ -14,6 +23,10 @@ async function hasImeiCreditsColumn() {
 
 export async function GET(request: NextRequest) {
   try {
+    if (isDemo(request)) {
+      return NextResponse.json({ credits: DEMO_CREDITS, enabled: false, demo: true })
+    }
+
     const supabase = await createClient()
     const {
       data: { user },
@@ -55,6 +68,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (isDemo(request)) {
+      // In demo mode we don't mutate real data; just return static credits.
+      return NextResponse.json({ credits: DEMO_CREDITS, demo: true })
+    }
+
     const supabase = await createClient()
     const {
       data: { user },
