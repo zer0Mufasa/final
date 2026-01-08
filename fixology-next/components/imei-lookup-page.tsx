@@ -237,7 +237,7 @@ export default function IMEILookupPage() {
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                 <span className="text-sm text-white/60">Deep Scan:</span>
                 <span className="text-sm font-semibold text-violet-300">
-                  ({credits} {credits === 1 ? 'Credit' : 'Credits'} Remaining)
+                  {credits} {credits === 1 ? 'credit' : 'credits'} available
                 </span>
               </div>
             )}
@@ -312,7 +312,7 @@ export default function IMEILookupPage() {
             <p className="text-xs text-white/40 mt-2">
               {mode === 'basic'
                 ? 'Quick check: Device info, blacklist status, carrier lock (Free)'
-                : `Full scan: Includes warranty, iCloud status, purchase date (1 Credit${credits !== null && credits < 1 ? ' - Insufficient' : ''})`}
+                : `Full scan: Includes warranty, iCloud status, purchase date (costs 1 credit${credits !== null ? ` • ${credits} left` : ''})`}
             </p>
           </div>
           <div className="flex items-end">
