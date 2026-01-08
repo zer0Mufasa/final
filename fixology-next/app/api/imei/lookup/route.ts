@@ -190,6 +190,9 @@ function normalizeApiResponse(raw: any, imei: string) {
     result.purchaseDate ||
     (props.estPurchaseDate ? new Date(props.estPurchaseDate * 1000).toISOString().slice(0, 10) : undefined)
 
+  const imageUrl = props.image || result.image || result.deviceImage
+  const displayName = props.deviceName || props.modelName || model
+
   return {
     imei: imei,
     valid: true,
@@ -200,6 +203,8 @@ function normalizeApiResponse(raw: any, imei: string) {
       type: result.device_type || result.type || 'Smartphone',
       manufacturer: result.manufacturer || brand,
     },
+    displayName,
+    imageUrl,
     carrier: carrierName
       ? {
           name: carrierName,

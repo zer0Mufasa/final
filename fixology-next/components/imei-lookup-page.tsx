@@ -29,6 +29,8 @@ interface IMEIResult {
   imei: string
   valid: boolean
   limitedInfo?: boolean
+  displayName?: string
+  imageUrl?: string
   deviceInfo?: {
     brand: string
     model: string
@@ -255,7 +257,7 @@ export default function IMEILookupPage() {
         "rounded-2xl bg-white/[0.02] border border-white/[0.06] p-6 mb-6 transition-all duration-500 hover:bg-white/[0.04] hover:border-white/[0.1]",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )} style={{ transitionDelay: '100ms' }}>
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-col lg:flex-row">
           <div className="flex-1">
             <label className="block text-sm font-medium text-white/70 mb-2">IMEI / Serial Number</label>
             <div className="relative">
@@ -315,7 +317,22 @@ export default function IMEILookupPage() {
                 : `Full scan: Includes warranty, iCloud status, purchase date (costs 1 credit${credits !== null ? ` • ${credits} left` : ''})`}
             </p>
           </div>
-          <div className="flex items-end">
+          <div className="flex items-end justify-between gap-4">
+            {result?.imageUrl && (
+              <div className="hidden lg:block w-44">
+                <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={result.imageUrl}
+                    alt={result.displayName || result.deviceInfo?.model || 'Device'}
+                    className="h-28 w-auto mx-auto object-contain"
+                  />
+                  <div className="text-xs text-center text-white/60 mt-2">
+                    {result.displayName || result.deviceInfo?.model || 'Device'}
+                  </div>
+                </div>
+              </div>
+            )}
             <button
               onClick={() => void handleLookup()}
               disabled={loading}
