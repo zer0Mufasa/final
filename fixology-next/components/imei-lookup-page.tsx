@@ -407,6 +407,65 @@ export default function IMEILookupPage() {
             </div>
           )}
 
+          {/* Quick summary badges */}
+          <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4 flex flex-wrap gap-2">
+            <SummaryPill label="Device" value={`${result.deviceInfo?.brand || 'Unknown'} ${result.deviceInfo?.model || ''}`.trim()} />
+            <SummaryPill label="Carrier" value={result.carrier?.name || 'Unknown'} />
+            <SummaryPill
+              label="SIM Lock"
+              value={
+                result.carrier?.simLock === 'unlocked'
+                  ? 'Unlocked'
+                  : result.carrier?.simLock === 'locked'
+                  ? 'Locked'
+                  : 'Unknown'
+              }
+              tone={
+                result.carrier?.simLock === 'unlocked'
+                  ? 'good'
+                  : result.carrier?.simLock === 'locked'
+                  ? 'bad'
+                  : 'neutral'
+              }
+            />
+            <SummaryPill
+              label="Blacklist"
+              value={
+                result.blacklistStatus?.status === 'clean'
+                  ? 'Clean'
+                  : result.blacklistStatus?.status === 'blacklisted'
+                  ? 'Blacklisted'
+                  : 'Unknown'
+              }
+              tone={
+                result.blacklistStatus?.status === 'clean'
+                  ? 'good'
+                  : result.blacklistStatus?.status === 'blacklisted'
+                  ? 'bad'
+                  : 'neutral'
+              }
+            />
+            <SummaryPill
+              label="iCloud / FMI"
+              value={
+                result.iCloud?.status === 'on'
+                  ? 'On'
+                  : result.iCloud?.status === 'off'
+                  ? 'Off'
+                  : 'Unknown'
+              }
+              tone={
+                result.iCloud?.status === 'off'
+                  ? 'good'
+                  : result.iCloud?.status === 'on'
+                  ? 'warn'
+                  : 'neutral'
+              }
+            />
+            <SummaryPill label="Warranty" value={result.warranty?.status ? result.warranty.status.toUpperCase() : 'Unknown'} />
+            <SummaryPill label="Purchase Date" value={result.purchaseDate || 'Unknown'} />
+          </div>
+
           <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-6">
             <div className="flex items-start justify-between mb-4">
               <h2 className="text-lg font-semibold text-white/90 flex items-center gap-2">
@@ -626,6 +685,30 @@ export default function IMEILookupPage() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function SummaryPill({
+  label,
+  value,
+  tone = 'neutral',
+}: {
+  label: string
+  value: string
+  tone?: 'neutral' | 'good' | 'bad' | 'warn'
+}) {
+  const toneMap: Record<typeof tone, string> = {
+    neutral: 'bg-white/[0.04] text-white/70 border-white/[0.08]',
+    good: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30',
+    bad: 'bg-rose-500/15 text-rose-200 border-rose-500/30',
+    warn: 'bg-amber-500/15 text-amber-200 border-amber-500/30',
+  } as any
+
+  return (
+    <div className={cn('px-3 py-2 rounded-xl border text-xs flex flex-col gap-1 min-w-[140px]', toneMap[tone])}>
+      <span className="text-[10px] uppercase tracking-wide text-white/50">{label}</span>
+      <span className="font-semibold text-white">{value}</span>
     </div>
   )
 }
