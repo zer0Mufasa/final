@@ -105,6 +105,7 @@ export async function POST(request: NextRequest) {
 function normalizeApiResponse(raw: any, imei: string) {
   // imeicheck.net returns { id, status, result, serviceId, deviceId, ... }
   const result = raw?.result || raw?.data || raw || {}
+  const props = result.properties || {}
 
   const brand =
     result.brand ||
@@ -115,6 +116,7 @@ function normalizeApiResponse(raw: any, imei: string) {
     result.vendor ||
     result?.device?.brand ||
     result?.device?.manufacturer ||
+    (props['apple/modelName'] ? 'Apple' : undefined) ||
     'Unknown'
 
   const model =
@@ -126,6 +128,9 @@ function normalizeApiResponse(raw: any, imei: string) {
     result.name ||
     result?.device?.model ||
     result?.device?.name ||
+    props['apple/modelName'] ||
+    props.deviceName ||
+    props.modelName ||
     'Unknown'
 
   const carrierName =
@@ -134,29 +139,55 @@ function normalizeApiResponse(raw: any, imei: string) {
     result.lockedCarrier ||
     result.carrierName ||
     result.lockedCarrierName ||
-    result.simLockCarrier
+    result.simLockCarrier ||
+    props.network
   const carrierCountry =
     result.carrier_country || result.country || result.lockedCarrierCountry || result.carrierCountry
   const simLock =
-    result.sim_lock || result.simLock || result.lockStatus || result.networkLock || result.lockedStatus
+    result.sim_lock ||
+    result.simLock ||
+    result.lockStatus ||
+    result.networkLock ||
+    result.lockedStatus ||
+    props.simLock
 
   const blacklistStatusField =
     result.blacklist_status ||
     result.blacklistStatus ||
     result.blacklisted ||
     result.blacklist ||
-    result.blacklistState
-  const blacklistReason = result.blacklist_reason || result.blacklistReason
-  const blacklistDate = result.blacklist_date || result.blacklistDate
+    result.blacklistState ||
+    props.usaBlockStatus
+  const blacklistReason = result.blacklist_reason || result.blacklistReason || props.blacklistReason
+  const blacklistDate = result.blacklist_date || result.blacklistDate || props.blacklistDate
 
   const warrantyStatus =
-    result.warranty_status || result.warrantyStatus || result.coverageStatus || result.warranty
+    result.warranty_status ||
+    result.warrantyStatus ||
+    result.coverageStatus ||
+    result.warranty ||
+    props.warrantyStatus
   const warrantyExpiry =
-    result.warranty_expiry || result.warrantyExpiry || result.coverageEndDate || result.warrantyEndDate
+    result.warranty_expiry ||
+    result.warrantyExpiry ||
+    result.coverageEndDate ||
+    result.warrantyEndDate ||
+    props.coverageEndDate ||
+    props.warrantyEndDate
 
   const icloudStatus =
-    result.icloud_status || result.iCloudStatus || result.icloudStatus || result.findMyIphoneStatus
-  const fmiStatus = result.fmi_status || result.fmiStatus || result.findMyIphone || result.findMyIphoneStatus
+    result.icloud_status ||
+    result.iCloudStatus ||
+    result.icloudStatus ||
+    result.findMyIphoneStatus ||
+    (props.fmiOn === true ? 'on' : props.fmiOn === false ? 'off' : undefined)
+  const fmiStatus =
+    result.fmi_status || result.fmiStatus || result.findMyIphone || result.findMyIphoneStatus || props.fmiOn
+
+  const estPurchaseDate =
+    result.purchase_date ||
+    result.purchaseDate ||
+    (props.estPurchaseDate ? new Date(props.estPurchaseDate * 1000).toISOString().slice(0, 10) : undefined)
 
   return {
     imei: imei,
@@ -164,7 +195,7 @@ function normalizeApiResponse(raw: any, imei: string) {
     deviceInfo: {
       brand,
       model,
-      modelNumber: result.model_number || result.modelNumber || '',
+      modelNumber: result.model_number || result.modelNumber || props.modelNumber || '',
       type: result.device_type || result.type || 'Smartphone',
       manufacturer: result.manufacturer || brand,
     },
@@ -187,10 +218,10 @@ function normalizeApiResponse(raw: any, imei: string) {
     },
     iCloud: {
       status: mapICloudStatus(icloudStatus),
-      fmiEnabled: fmiStatus === 'on' || fmiStatus === 'enabled',
+      fmiEnabled: fmiStatus === 'on' || fmiStatus === 'enabled' || fmiStatus === true,
     },
-    purchaseDate: result.purchase_date || result.purchaseDate,
-    repairCoverage: result.repair_coverage ?? result.repairCoverage ?? false,
+    purchaseDate: estPurchaseDate,
+    repairCoverage: result.repair_coverage ?? result.repairCoverage ?? props.repairCoverage ?? false,
     raw: result,
     provider: 'imeicheck.net',
   }
