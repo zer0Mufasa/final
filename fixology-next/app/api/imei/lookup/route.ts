@@ -108,34 +108,55 @@ function normalizeApiResponse(raw: any, imei: string) {
 
   const brand =
     result.brand ||
+    result.brandName ||
     result.deviceBrand ||
     result.manufacturer ||
     result.oem ||
     result.vendor ||
+    result?.device?.brand ||
+    result?.device?.manufacturer ||
     'Unknown'
 
   const model =
     result.model ||
-    result.deviceModel ||
     result.modelName ||
+    result.deviceModel ||
     result.deviceName ||
+    result.productName ||
     result.name ||
+    result?.device?.model ||
+    result?.device?.name ||
     'Unknown'
 
-  const carrierName = result.carrier || result.network || result.lockedCarrier
-  const carrierCountry = result.carrier_country || result.country || result.lockedCarrierCountry
-  const simLock = result.sim_lock || result.simLock || result.lockStatus || result.networkLock
+  const carrierName =
+    result.carrier ||
+    result.network ||
+    result.lockedCarrier ||
+    result.carrierName ||
+    result.lockedCarrierName ||
+    result.simLockCarrier
+  const carrierCountry =
+    result.carrier_country || result.country || result.lockedCarrierCountry || result.carrierCountry
+  const simLock =
+    result.sim_lock || result.simLock || result.lockStatus || result.networkLock || result.lockedStatus
 
   const blacklistStatusField =
-    result.blacklist_status || result.blacklistStatus || result.blacklisted || result.blacklist
+    result.blacklist_status ||
+    result.blacklistStatus ||
+    result.blacklisted ||
+    result.blacklist ||
+    result.blacklistState
   const blacklistReason = result.blacklist_reason || result.blacklistReason
   const blacklistDate = result.blacklist_date || result.blacklistDate
 
-  const warrantyStatus = result.warranty_status || result.warrantyStatus
-  const warrantyExpiry = result.warranty_expiry || result.warrantyExpiry || result.coverageEndDate
+  const warrantyStatus =
+    result.warranty_status || result.warrantyStatus || result.coverageStatus || result.warranty
+  const warrantyExpiry =
+    result.warranty_expiry || result.warrantyExpiry || result.coverageEndDate || result.warrantyEndDate
 
-  const icloudStatus = result.icloud_status || result.iCloudStatus || result.icloudStatus
-  const fmiStatus = result.fmi_status || result.fmiStatus
+  const icloudStatus =
+    result.icloud_status || result.iCloudStatus || result.icloudStatus || result.findMyIphoneStatus
+  const fmiStatus = result.fmi_status || result.fmiStatus || result.findMyIphone || result.findMyIphoneStatus
 
   return {
     imei: imei,
