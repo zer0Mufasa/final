@@ -38,7 +38,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
           orderBy: { createdAt: 'desc' },
         },
         statusHistory: {
-          orderBy: { changedAt: 'desc' },
+          orderBy: { createdAt: 'desc' },
         },
       },
     })
