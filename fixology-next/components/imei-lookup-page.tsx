@@ -217,12 +217,12 @@ export default function IMEILookupPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6 animate-page-in">
+    <div className="p-6 w-full max-w-6xl mx-auto space-y-6 animate-page-in">
       <div className={cn(
         "mb-8 transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )}>
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-white/95 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
@@ -258,7 +258,7 @@ export default function IMEILookupPage() {
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )} style={{ transitionDelay: '100ms' }}>
         <div className="flex gap-4 flex-col lg:flex-row">
-          <div className="flex-1">
+          <div className="flex-1 min-w-[280px]">
             <label className="block text-sm font-medium text-white/70 mb-2">IMEI / Serial Number</label>
             <div className="relative">
               <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
@@ -281,7 +281,7 @@ export default function IMEILookupPage() {
             </p>
 
             {/* Mode Toggle */}
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-4 mt-4 flex-wrap">
               <span className="text-sm text-white/50">Check Mode:</span>
               <div className="flex rounded-xl bg-white/[0.04] border border-white/[0.08] p-1">
                 <button
@@ -317,7 +317,7 @@ export default function IMEILookupPage() {
                 : `Full scan: Includes warranty, iCloud status, purchase date (costs 1 credit${credits !== null ? ` • ${credits} left` : ''})`}
             </p>
           </div>
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex items-end justify-between gap-4 flex-1 min-w-[220px]">
             {result?.imageUrl && (
               <div className="hidden lg:block w-44">
                 <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-3">
