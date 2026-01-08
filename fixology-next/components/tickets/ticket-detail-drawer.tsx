@@ -6,7 +6,7 @@ import { StatusBadge, RiskBadge } from '@/components/dashboard/ui/badge'
 import { Tabs } from '@/components/dashboard/ui/tabs'
 import { cn } from '@/lib/utils/cn'
 import type { Ticket, TicketStatus } from '@/lib/mock/types'
-import { ticketColumns, mockTechs } from '@/lib/mock/data'
+import { ticketColumns } from '@/lib/mock/data'
 import {
   Phone,
   Mail,
@@ -74,12 +74,14 @@ export function TicketDetailDrawer({
   onOpenChange,
   onStatusChange,
   onAssign,
+  staffOptions = [],
 }: {
   ticket: Ticket | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onStatusChange?: (ticketId: string, status: TicketStatus) => void
   onAssign?: (ticketId: string, tech: string) => void
+  staffOptions?: string[]
 }) {
   const [tab, setTab] = useState<'details' | 'timeline' | 'notes'>('details')
   const [copied, setCopied] = useState(false)
@@ -168,7 +170,7 @@ export function TicketDetailDrawer({
                 className="bg-white/[0.06] border border-white/10 rounded-xl px-3 py-2 text-sm text-white/80"
               >
                 <option value="">Unassigned</option>
-                {mockTechs.map((tech) => (
+                {staffOptions.map((tech) => (
                   <option key={tech} value={tech}>{tech}</option>
                 ))}
               </select>

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ticketColumns, mockTechs } from '@/lib/mock/data'
+import { ticketColumns } from '@/lib/mock/data'
 import type { Ticket, TicketStatus } from '@/lib/mock/types'
 import { PageHeader } from '@/components/dashboard/ui/page-header'
 import { GlassCard } from '@/components/dashboard/ui/glass-card'
@@ -38,6 +38,7 @@ export function TicketsClient() {
   const [animationReady, setAnimationReady] = useState(false)
 
   const [tickets, setTickets] = useState<Ticket[]>([])
+  const [staff, setStaff] = useState<string[]>([])
 
   // Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -144,6 +145,27 @@ export function TicketsClient() {
   useEffect(() => {
     fetchTickets()
   }, [fetchTickets])
+
+  // Load staff list for filters/assignment
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const res = await fetch('/api/staff', { cache: 'no-store' })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.error || 'Failed to load staff')
+        if (cancelled) return
+        const names = Array.isArray(data) ? data.map((s: any) => s.name || s.email).filter(Boolean) : []
+        setStaff(names)
+      } catch {
+        if (!cancelled) setStaff([])
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Open ticket drawer
   const openTicketDrawer = useCallback((ticket: Ticket) => {
@@ -425,7 +447,7 @@ export function TicketsClient() {
                 onChange={(e) => setTech(e.target.value)}
               >
                 <option value="ALL">All techs</option>
-                {mockTechs.map((t) => (
+                {staff.map((t) => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
@@ -674,6 +696,7 @@ export function TicketsClient() {
         onOpenChange={setDrawerOpen}
         onStatusChange={handleStatusChange}
         onAssign={handleAssign}
+        staffOptions={staff}
       />
     </div>
   )
