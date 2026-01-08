@@ -117,6 +117,7 @@ function normalizeApiResponse(raw: any, imei: string) {
     result?.device?.brand ||
     result?.device?.manufacturer ||
     (props['apple/modelName'] ? 'Apple' : undefined) ||
+    (typeof props.deviceName === 'string' && props.deviceName.toLowerCase().includes('iphone') ? 'Apple' : undefined) ||
     'Unknown'
 
   const model =
