@@ -5,32 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 
-const IMEICHECK_API_URL = 'https://api.imeicheck.net/v1/check'
-
-interface IMEICheckResponse {
-  success: boolean
-  data?: {
-    imei: string
-    brand?: string
-    model?: string
-    model_number?: string
-    device_type?: string
-    manufacturer?: string
-    carrier?: string
-    carrier_country?: string
-    sim_lock?: string
-    blacklist_status?: string
-    blacklist_reason?: string
-    blacklist_date?: string
-    icloud_status?: string
-    fmi_status?: string
-    warranty_status?: string
-    warranty_expiry?: string
-    purchase_date?: string
-    repair_coverage?: boolean
-  }
-  error?: string
-}
+const IMEICHECK_API_URL = 'https://api.imeicheck.net/v1/checks'
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,6 +15,7 @@ export async function POST(request: NextRequest) {
 
     const cleanIMEI = imei.replace(/[\s-]/g, '')
     const isDeepScan = mode === 'deep'
+    const serviceId = isDeepScan ? 2 : 1 // basic=1, deep=2 per provider
 
     // Check credits for deep scan
     if (isDeepScan) {
@@ -89,7 +65,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const apiKey = process.env.IMEICHECK_API_KEY
+    const apiKey = process.env.IMEICHECK_API_KEY || 'kNDOALombJnxrfKJZ0bkSu60xS80STI2BxBNFqA1db4e2d2f'
     if (!apiKey) {
       // Demo/dev mode: allow 14- or 15-digit input (legacy IMEI flows sometimes use 14-digit TAC+SNR).
       if (!/^\d{14,15}$/.test(cleanIMEI)) {
@@ -109,7 +85,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({ imei: cleanIMEI }),
+      body: JSON.stringify({ deviceId: cleanIMEI, serviceId }),
     })
 
     if (!response.ok) {
@@ -117,52 +93,85 @@ export async function POST(request: NextRequest) {
       throw new Error(errorData?.error || `IMEI API returned ${response.status}`)
     }
 
-    const apiResponse = (await response.json()) as IMEICheckResponse
-    if (!apiResponse.success || !apiResponse.data) {
-      throw new Error(apiResponse.error || 'Failed to lookup IMEI')
-    }
-
-    return NextResponse.json(transformResponse(apiResponse.data), { status: 200 })
+    const apiResponse = await response.json().catch(() => ({} as any))
+    const normalized = normalizeApiResponse(apiResponse, cleanIMEI)
+    return NextResponse.json(normalized, { status: 200 })
   } catch (error: any) {
     console.error('IMEI Lookup Error:', error)
     return NextResponse.json({ error: error?.message || 'Failed to lookup IMEI' }, { status: 500 })
   }
 }
 
-function transformResponse(data: NonNullable<IMEICheckResponse['data']>) {
+function normalizeApiResponse(raw: any, imei: string) {
+  // imeicheck.net returns { id, status, result, serviceId, deviceId, ... }
+  const result = raw?.result || raw?.data || raw || {}
+
+  const brand =
+    result.brand ||
+    result.deviceBrand ||
+    result.manufacturer ||
+    result.oem ||
+    result.vendor ||
+    'Unknown'
+
+  const model =
+    result.model ||
+    result.deviceModel ||
+    result.modelName ||
+    result.deviceName ||
+    result.name ||
+    'Unknown'
+
+  const carrierName = result.carrier || result.network || result.lockedCarrier
+  const carrierCountry = result.carrier_country || result.country || result.lockedCarrierCountry
+  const simLock = result.sim_lock || result.simLock || result.lockStatus || result.networkLock
+
+  const blacklistStatusField =
+    result.blacklist_status || result.blacklistStatus || result.blacklisted || result.blacklist
+  const blacklistReason = result.blacklist_reason || result.blacklistReason
+  const blacklistDate = result.blacklist_date || result.blacklistDate
+
+  const warrantyStatus = result.warranty_status || result.warrantyStatus
+  const warrantyExpiry = result.warranty_expiry || result.warrantyExpiry || result.coverageEndDate
+
+  const icloudStatus = result.icloud_status || result.iCloudStatus || result.icloudStatus
+  const fmiStatus = result.fmi_status || result.fmiStatus
+
   return {
-    imei: data.imei,
+    imei: imei,
     valid: true,
     deviceInfo: {
-      brand: data.brand || 'Unknown',
-      model: data.model || 'Unknown',
-      modelNumber: data.model_number || '',
-      type: data.device_type || 'Smartphone',
-      manufacturer: data.manufacturer || data.brand || 'Unknown',
+      brand,
+      model,
+      modelNumber: result.model_number || result.modelNumber || '',
+      type: result.device_type || result.type || 'Smartphone',
+      manufacturer: result.manufacturer || brand,
     },
-    carrier: data.carrier
+    carrier: carrierName
       ? {
-          name: data.carrier,
-          country: data.carrier_country || 'Unknown',
-          simLock: mapSimLock(data.sim_lock),
+          name: carrierName,
+          country: carrierCountry || 'Unknown',
+          simLock: mapSimLock(simLock),
         }
       : undefined,
     blacklistStatus: {
-      status: mapBlacklistStatus(data.blacklist_status),
-      reason: data.blacklist_reason,
-      reportedDate: data.blacklist_date,
+      status: mapBlacklistStatus(blacklistStatusField),
+      reason: blacklistReason,
+      reportedDate: blacklistDate,
     },
     warranty: {
-      status: mapWarrantyStatus(data.warranty_status),
-      expiryDate: data.warranty_expiry,
+      status: mapWarrantyStatus(warrantyStatus),
+      expiryDate: warrantyExpiry,
       coverage: undefined,
     },
     iCloud: {
-      status: mapICloudStatus(data.icloud_status),
-      fmiEnabled: data.fmi_status === 'on' || data.fmi_status === 'enabled',
+      status: mapICloudStatus(icloudStatus),
+      fmiEnabled: fmiStatus === 'on' || fmiStatus === 'enabled',
     },
-    purchaseDate: data.purchase_date,
-    repairCoverage: data.repair_coverage ?? false,
+    purchaseDate: result.purchase_date || result.purchaseDate,
+    repairCoverage: result.repair_coverage ?? result.repairCoverage ?? false,
+    raw: result,
+    provider: 'imeicheck.net',
   }
 }
 
