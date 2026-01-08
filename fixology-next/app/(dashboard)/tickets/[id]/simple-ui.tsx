@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils/cn'
-import { mockTickets } from '@/lib/mock/data'
 import { useRole } from '@/contexts/role-context'
 import { searchDevices } from '@/lib/devices-autocomplete'
 import { theme } from '@/lib/theme/tokens'
@@ -125,7 +124,8 @@ function MethodButton({
 
 export default function TicketSimple({ id }: { id: string }) {
   const { isTechnician } = useRole()
-  const ticket = useMemo(() => mockTickets.find((t) => t.id === id) || mockTickets[0], [id])
+  const [ticket, setTicket] = useState<any | null>(null)
+  const [loading, setLoading] = useState(true)
 
   // UI-only state
   const [payDrawerOpen, setPayDrawerOpen] = useState(false)
@@ -134,9 +134,48 @@ export default function TicketSimple({ id }: { id: string }) {
   const [deviceQuery, setDeviceQuery] = useState('')
   const [selectedDevices, setSelectedDevices] = useState<
     { id: string; name: string; imei: string; passcode: string }[]
-  >(() => [
-    { id: 'primary', name: ticket.device, imei: '', passcode: '' },
-  ])
+  >([])
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      try {
+        setLoading(true)
+        const res = await fetch(`/api/tickets/${id}`, { cache: 'no-store' })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data?.error || 'Failed to load ticket')
+        if (cancelled) return
+
+        const t = data.ticket || {}
+        const customerName = t?.customer
+          ? `${t.customer.firstName ?? ''} ${t.customer.lastName ?? ''}`.trim() || 'Customer'
+          : t?.customerName || 'Customer'
+        const device = `${t.deviceBrand ?? ''} ${t.deviceType ?? ''}${t.deviceModel ? ` ${t.deviceModel}` : ''}`.trim() || 'Device'
+
+        const mapped = {
+          id: t.id,
+          ticketNumber: t.ticketNumber || 'Ticket',
+          customerName,
+          status: t.status || 'INTAKE',
+          device,
+          promisedAt: t.dueAt || t.intakeAt || t.createdAt,
+          issue: t.issueDescription || t.issue || '',
+          price: Number(t.estimatedCost || t.actualCost || 0),
+        }
+
+        setTicket(mapped)
+        setSelectedDevices([{ id: 'primary', name: device, imei: '', passcode: '' }])
+      } catch (e) {
+        if (!cancelled) setTicket(null)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [id])
 
   const canTakePayment = !isTechnician // front desk + owner
   const lineItems = [
@@ -151,6 +190,26 @@ export default function TicketSimple({ id }: { id: string }) {
   const tips = 0
   const amountPaid = 0
   const totalDue = Math.max(0, subtotal + tax + tips - discount - amountPaid)
+
+  if (loading) {
+    return <div className="p-6 border border-[var(--border-default)] rounded-2xl bg-white/5 text-white/60">Loading ticket…</div>
+  }
+
+  if (!ticket) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-[var(--border-default)] bg-white/[0.03] p-6 text-white/70">
+          Ticket not found or not accessible.
+          <div className="mt-3">
+            <Link href="/tickets" className="btn-primary px-4 py-2 rounded-lg inline-flex items-center gap-2">
+              <ArrowRight className="w-4 h-4" />
+              Back to tickets
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
