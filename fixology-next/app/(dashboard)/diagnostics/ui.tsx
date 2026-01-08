@@ -145,9 +145,6 @@ export function DiagnosticsClient() {
     setIsLoading(true)
 
     try {
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 18000) // client-side guard
-
       const demo = isDemo()
       const url = demo ? '/api/ai/diagnostics?demo=1' : '/api/ai/diagnostics'
 
@@ -167,10 +164,7 @@ export function DiagnosticsClient() {
               : m.content,
           })),
         }),
-        signal: controller.signal,
       })
-
-      clearTimeout(timer)
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
@@ -189,9 +183,7 @@ export function DiagnosticsClient() {
 
       setMessages(prev => [...prev, assistantMessage])
     } catch (e: any) {
-      const friendly = e?.name === 'AbortError'
-        ? 'That took too long. Please try again with device model + symptoms.'
-        : (e?.message || 'Failed to get diagnosis')
+      const friendly = e?.message || 'Failed to get diagnosis'
 
       toast.error(friendly)
       // Add error message bubble so the chat isn’t empty
