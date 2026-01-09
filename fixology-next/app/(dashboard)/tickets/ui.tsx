@@ -362,7 +362,7 @@ export function TicketsClient() {
         "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )} style={{ transitionDelay: '150ms' }}>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Tabs
             value={view}
             onValueChange={(v) => setView(v as any)}
@@ -394,8 +394,8 @@ export function TicketsClient() {
           )}
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="relative group">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center flex-wrap">
+          <div className="relative group w-full sm:w-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within:text-purple-400 transition-colors" aria-hidden="true" />
             <input
               value={query}
