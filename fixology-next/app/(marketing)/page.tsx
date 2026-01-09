@@ -154,6 +154,14 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
 @media(max-width:1100px){.asymmetric-layout{grid-template-columns:1fr;gap:40px}}
 .section-spacer{padding:160px 0}
 @media(max-width:768px){.section-spacer{padding:80px 0}}
+.wide-container.mobile-pad,
+@media(max-width:768px){
+  .wide-container{padding:0 16px}
+  .asymmetric-layout{gap:24px}
+  .section-spacer{padding:64px 0}
+  .header-cta,.header-ghost{width:100%;justify-content:center}
+  .glow-button{width:100%;text-align:center}
+}
 .glow-spot{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
