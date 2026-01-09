@@ -201,7 +201,7 @@ export function EstimatesPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="px-4 py-5 sm:p-6 space-y-6">
         <PageHeader title="Estimates" description="Loading..." />
         <div className="grid gap-4 md:grid-cols-4">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-[100px] rounded-2xl" />)}
@@ -212,7 +212,7 @@ export function EstimatesPage() {
   }
 
   return (
-    <div className="space-y-6 animate-page-in">
+    <div className="px-4 py-5 sm:p-6 space-y-6 animate-page-in">
       <div className={cn(
         "transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -246,7 +246,7 @@ export function EstimatesPage() {
 
       {/* Stats Cards */}
       <div className={cn(
-        "grid gap-4 md:grid-cols-4 transition-all duration-500",
+        "grid gap-4 sm:grid-cols-2 md:grid-cols-4 transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )} style={{ transitionDelay: '100ms' }}>
         {[
