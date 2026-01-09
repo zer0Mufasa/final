@@ -107,17 +107,6 @@ const statusConfig: Record<PaymentStatus, { label: string; color: string }> = {
   'refunded': { label: 'Refunded', color: 'bg-rose-500/15 text-rose-300 border border-rose-500/20' },
 }
 
-// Weekly revenue chart data
-const weeklyRevenue = [
-  { day: 'Mon', amount: 2840 },
-  { day: 'Tue', amount: 3120 },
-  { day: 'Wed', amount: 2450 },
-  { day: 'Thu', amount: 3680 },
-  { day: 'Fri', amount: 4210 },
-  { day: 'Sat', amount: 2120 },
-  { day: 'Sun', amount: 1000 },
-]
-
 export function PaymentsHubPage() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'all' | 'pending' | 'refunds'>('all')
@@ -232,6 +221,25 @@ export function PaymentsHubPage() {
     
     return result
   }, [payments, tab, methodFilter, searchQuery])
+
+  const weeklyRevenue = useMemo(() => {
+    const days: { day: string; dateKey: string; amount: number }[] = []
+    const today = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today)
+      d.setDate(today.getDate() - i)
+      const key = d.toISOString().slice(0, 10)
+      const label = d.toLocaleString('en-US', { weekday: 'short' })
+      days.push({ day: label, dateKey: key, amount: 0 })
+    }
+    const lookup = new Map(days.map((d) => [d.dateKey, d]))
+    payments.forEach((p) => {
+      const key = new Date(p.createdAt).toISOString().slice(0, 10)
+      const entry = lookup.get(key)
+      if (entry) entry.amount += Number(p.totalAmount || 0)
+    })
+    return days
+  }, [payments])
 
   if (loading) {
     return (
