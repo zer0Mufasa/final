@@ -788,6 +788,7 @@ export default function MarketingPage() {
         {/* NAV */}
         <nav
           className="hidden md:block"
+          data-marketing-desktop-nav
           style={{ 
             position: 'fixed', 
             top: 0, 
@@ -2555,6 +2556,7 @@ export default function MarketingPage() {
         {/* LIVE CHAT WIDGET */}
         <div
           ref={chatDockRef}
+          className="fx-chat-dock"
           style={{
             position: 'absolute',
             top: chatDockY ?? 24,
@@ -2659,9 +2661,24 @@ export default function MarketingPage() {
           @media (max-width: 768px) {
             .mobile-sticky-bar { display: flex !important; }
             .sticky-cta-desktop { display: none !important; }
+            /* Reserve space so the fixed mobile bar doesn't cover content (forms/footer). */
+            body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+            /* Safe area padding for iOS home indicator. */
+            .mobile-sticky-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important; }
+            /* Extra guard: never show the desktop marketing nav on mobile (even if utility CSS fails/caches). */
+            [data-marketing-desktop-nav] { display: none !important; }
+            /* Keep chat dock above the sticky mobile CTA bar. */
+            .fx-chat-dock {
+              position: fixed !important;
+              top: auto !important;
+              right: 16px !important;
+              bottom: calc(96px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+            }
           }
           @media (min-width: 769px) {
             .mobile-sticky-bar { display: none !important; }
+            body { padding-bottom: 0 !important; }
+            .fx-chat-dock { position: absolute !important; right: 24px !important; }
           }
         ` }} />
 
