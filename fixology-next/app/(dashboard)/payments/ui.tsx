@@ -441,7 +441,7 @@ export function PaymentsHubPage() {
           </div>
 
           {filteredPayments.length === 0 ? (
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               <EmptyState
                 icon={<FileText className="w-8 h-8" aria-hidden="true" />}
                 title="No payments found"
@@ -455,7 +455,7 @@ export function PaymentsHubPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[720px]">
                 <thead>
                   <tr className="text-left text-xs uppercase tracking-wide text-[var(--text-faint)] border-b border-white/[0.06]">
                     <th className="px-5 py-3">Time</th>
