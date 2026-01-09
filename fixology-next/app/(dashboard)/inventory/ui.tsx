@@ -231,7 +231,7 @@ export function InventoryClient() {
   }
 
   return (
-    <div className="space-y-6 animate-page-in">
+    <div className="px-4 py-5 sm:p-6 space-y-6 animate-page-in">
       {/* Enhanced Header */}
       <div className={cn(
         "transition-all duration-500",

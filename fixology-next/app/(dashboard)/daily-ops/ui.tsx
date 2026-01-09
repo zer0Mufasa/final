@@ -90,7 +90,7 @@ export function DailyOpsClient() {
   }, [activeTickets, staff])
 
   return (
-    <div>
+    <div className="px-4 py-5 sm:p-6 space-y-6">
       <PageHeader
         title="To Do"
         description="Morning overview — commitments, risks, workload, and bottlenecks. Calm and factual."

@@ -554,10 +554,10 @@ export default function DashboardPage() {
   if (!mounted) return null
 
   return (
-    <div className="p-6 space-y-6 animate-page-in">
+    <div className="px-4 py-5 sm:p-6 space-y-6 animate-page-in">
       {/* Header with Live Clock */}
       <div className={cn(
-        "flex items-start justify-between",
+        "flex flex-col gap-3 md:flex-row md:items-start md:justify-between",
         animationReady ? "animate-slide-in-left" : "opacity-0"
       )}>
         <div>
@@ -588,7 +588,7 @@ export default function DashboardPage() {
         </div>
         
         {/* Quick Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {QUICK_ACTIONS.map((action, i) => (
             <button
               key={action.label}
