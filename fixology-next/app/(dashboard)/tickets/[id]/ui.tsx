@@ -63,12 +63,12 @@ export function TicketDetailClient({ id }: { id: string }) {
   }
 
   return (
-    <div>
+    <div className="px-4 py-5 sm:px-0">
       <PageHeader
         title={`${ticket.ticketNumber} • ${ticket.customerName}`}
         description={`${ticket.device} • Promised ${new Date(ticket.promisedAt).toLocaleString()} • Assigned ${ticket.assignedTo || '—'}`}
         action={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link href="/tickets" className="btn-secondary px-4 py-3 rounded-xl">Tickets</Link>
             <Button leftIcon={<MessageSquare className="w-4 h-4" aria-hidden="true" />} variant="secondary">
               Send update (UI)

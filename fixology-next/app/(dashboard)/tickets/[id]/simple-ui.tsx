@@ -212,7 +212,7 @@ export default function TicketSimple({ id }: { id: string }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-4 py-5 sm:px-0">
       {/* Command Bar */}
       <div className="rounded-2xl border border-[var(--border-default)] bg-white/[0.03] p-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
