@@ -167,6 +167,10 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
   .hero-bullets div{justify-content:center}
   .hero-actions{flex-direction:column!important;align-items:stretch!important;justify-content:center!important}
   .hero-icons{justify-content:center}
+  .nav-link,.nav-link-ai{font-size:14px;padding:8px 10px;line-height:1.3}
+  .nav-group,.nav-links{flex-wrap:wrap;gap:8px;justify-content:center}
+  header .wide-container{padding:0 12px}
+  .glass-card, .breakout-panel, .asymmetric-layout > * {max-width:100%; overflow:hidden}
 }
 .glow-spot{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
