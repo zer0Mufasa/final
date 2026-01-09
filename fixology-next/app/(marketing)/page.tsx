@@ -161,6 +161,12 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
   .section-spacer{padding:64px 0}
   .header-cta,.header-ghost{width:100%;justify-content:center}
   .glow-button{width:100%;text-align:center}
+  .hero-title{text-align:center!important}
+  .hero-sub{text-align:center!important}
+  .hero-bullets{align-items:center}
+  .hero-bullets div{justify-content:center}
+  .hero-actions{flex-direction:column!important;align-items:stretch!important;justify-content:center!important}
+  .hero-icons{justify-content:center}
 }
 .glow-spot{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
@@ -879,9 +885,9 @@ export default function MarketingPage() {
               <div style={{ display: 'inline-block', padding: '8px 18px', background: 'rgba(167,139,250,.15)', borderRadius: 50, marginBottom: 24, border: '1px solid rgba(167,139,250,.3)' }}>
                 <span style={{ color: '#c4b5fd', fontSize: 13, fontWeight: 500 }}>✨ Repair Intelligence System</span>
               </div>
-                <h1 className="section-title" style={{ fontSize: 'clamp(34px,4.8vw,64px)', marginBottom: 24, textAlign: 'left' }}>Your techs stop guessing.<br /><span style={{ color: '#a78bfa' }}>Your tickets write themselves.</span></h1>
-                <p style={{ fontSize: 20, color: '#c4b5fd', lineHeight: 1.7, marginBottom: 32, maxWidth: 600 }}>Fixology turns messy customer messages into diagnoses, tickets, pricing, inventory actions, and customer updates — automatically.</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 48 }}>
+                <h1 className="section-title hero-title" style={{ fontSize: 'clamp(34px,4.8vw,64px)', marginBottom: 24, textAlign: 'left' }}>Your techs stop guessing.<br /><span style={{ color: '#a78bfa' }}>Your tickets write themselves.</span></h1>
+                <p className="hero-sub" style={{ fontSize: 20, color: '#c4b5fd', lineHeight: 1.7, marginBottom: 32, maxWidth: 600 }}>Fixology turns messy customer messages into diagnoses, tickets, pricing, inventory actions, and customer updates — automatically.</p>
+                <div className="hero-bullets" style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 48 }}>
                   {[
                     "Works with how your shop already runs",
                     "Fewer comebacks with guided steps + risk alerts",
@@ -894,7 +900,7 @@ export default function MarketingPage() {
                   ))}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div className="hero-actions" style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
                     <button className="glow-button" onClick={(e) => { 
                       e.preventDefault();
                       document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
@@ -908,10 +914,10 @@ export default function MarketingPage() {
                       <span>Watch Demo</span>
                     </button>
                   </div>
-                  <span style={{ fontSize: 14, color: 'rgba(196,181,253,.5)', marginLeft: 4 }}>Takes 60 seconds. No setup.</span>
+                  <span className="hero-sub" style={{ fontSize: 14, color: 'rgba(196,181,253,.5)', marginLeft: 4 }}>Takes 60 seconds. No setup.</span>
                 </div>
                 {/* Device imagery placeholders */}
-                <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
+                <div className="hero-icons" style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
                   <div style={{ width: 80, height: 80, borderRadius: 12, background: 'rgba(167,139,250,.1)', border: '1px solid rgba(167,139,250,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, opacity: 0.7 }}>
                     📱
                   </div>
