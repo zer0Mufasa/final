@@ -424,7 +424,7 @@ export function RiskMonitorPage() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="px-4 py-5 sm:p-6 space-y-6">
         <PageHeader title="Risk Monitor" description="Loading..." />
         <Skeleton className="h-[120px] rounded-3xl" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -438,7 +438,7 @@ export function RiskMonitorPage() {
   }
 
   return (
-    <div className="space-y-6 animate-page-in">
+    <div className="px-4 py-5 sm:p-6 space-y-6 animate-page-in">
       <div className={cn(
         "transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"

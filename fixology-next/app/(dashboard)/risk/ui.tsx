@@ -67,7 +67,7 @@ export function RiskClient() {
         </div>
 
         {/* Risk summary */}
-        <div className="space-y-6">
+        <div className="px-4 py-5 sm:p-6 space-y-6">
           <GlassCard className="p-6 rounded-3xl">
             <div className="flex items-center gap-2 mb-4">
               <Shield className="w-5 h-5 text-[var(--text-muted)]" />
