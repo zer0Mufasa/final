@@ -110,13 +110,13 @@ export function CheckoutDrawer({
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-white/10 flex items-center justify-between gap-3">
+        <div className="px-4 sm:px-6 py-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="text-xs text-white/60">Creates audit log + receipt automatically (UI only).</div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
             {!complete ? (
               <>
-                <button className="btn-secondary px-4 py-2 rounded-xl text-sm" onClick={() => setComplete(true)}>Mark as paid</button>
-                <button className="btn-primary px-4 py-2 rounded-xl text-sm" onClick={() => setComplete(true)}>Complete payment</button>
+                <button className="btn-secondary px-4 py-2 rounded-xl text-sm w-full sm:w-auto" onClick={() => setComplete(true)}>Mark as paid</button>
+                <button className="btn-primary px-4 py-2 rounded-xl text-sm w-full sm:w-auto" onClick={() => setComplete(true)}>Complete payment</button>
               </>
             ) : (
               <div className="flex items-center gap-3 text-emerald-200">
