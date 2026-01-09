@@ -132,6 +132,15 @@ const riskAlerts = [
   { severity: "low", device: "Galaxy S22", issue: "Charging port repairs up 40% this month", recommendation: "Check supplier quality for replacement ports." }
 ];
 
+const comparisonRows = [
+  { feature: 'Intake speed', traditional: '4-5 minutes', fixology: '40 seconds' },
+  { feature: 'Risk detection', traditional: 'Manual checks', fixology: 'Automatic IMEI + pattern alerts' },
+  { feature: 'Customer updates', traditional: 'Manual texts/calls', fixology: 'Auto-generated, tone-aware' },
+  { feature: 'Inventory intelligence', traditional: 'Basic tracking', fixology: 'Usage patterns + reorder suggestions' },
+  { feature: 'Diagnostic guidance', traditional: 'Tech experience only', fixology: 'AI-powered step-by-step' },
+  { feature: 'Pricing confidence', traditional: 'Guesswork', fixology: 'Market comparison + breakdown' },
+]
+
 const globalStyles = `
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -155,7 +164,7 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
 @media(max-width:1100px){.asymmetric-layout{grid-template-columns:1fr;gap:40px}}
 .section-spacer{padding:160px 0}
 @media(max-width:768px){.section-spacer{padding:80px 0}}
-.wide-container.mobile-pad,
+.wide-container.mobile-pad{padding:0 16px}
 @media(max-width:768px){
   .wide-container{padding:0 16px}
   .asymmetric-layout{gap:24px}
@@ -173,7 +182,23 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
   header .wide-container{padding:0 12px}
   .glass-card, .breakout-panel, .asymmetric-layout > * {max-width:100%; overflow:hidden}
   .floating, .floating-d1, .floating-d2{display:none!important}
-  .desktop-nav{display:none!important}
+  .desktop-nav, [data-marketing-desktop-nav]{display:none!important}
+  /* Extra safety: don't allow the legacy desktop menu items to render on mobile at all. */
+  .nav-center,.login-link,.trust-pill,.header-cta,.header-ghost{display:none!important}
+
+  /* Demos: remove heavy 3D transforms and let content grow vertically. */
+  .demo-container{min-height:auto!important;max-height:none!important;height:auto!important;transform:none!important}
+  .demo-split{grid-template-columns:1fr!important;height:auto!important;min-height:auto!important}
+  .demo-split > div{border-right:none!important}
+  .demo-fields-grid{grid-template-columns:1fr!important}
+
+  /* IMEI: prevent truncation of the scanned number + stack the report grid. */
+  .imei-number{font-size:20px!important;letter-spacing:.04em!important;overflow-wrap:anywhere!important;word-break:break-word!important}
+  .imei-report-grid{grid-template-columns:1fr!important}
+
+  /* Inventory: allow the desktop grid table to scroll if it appears. */
+  .inv-table-scroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+  .inv-grid-row{min-width:680px}
 }
 .glow-spot{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
@@ -1202,14 +1227,14 @@ export default function MarketingPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}><div style={{ width: 48, height: 44, background: 'linear-gradient(135deg,#a78bfa,#c4b5fd)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>✍️</div><div><div style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>Natural Language Parser</div><div style={{ fontSize: 13, color: '#a78bfa' }}>Continuous Extraction</div></div></div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', background: 'rgba(74,222,128,.1)', borderRadius: 24, border: '1px solid rgba(74,222,128,.3)' }}><span className="status-dot" style={{ background: '#4ade80' }} /><span style={{ fontSize: 13, color: '#4ade80', fontWeight: 600 }}>Active</span></div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: 440 }}>
+                <div className="demo-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: 440 }}>
                   <div style={{ padding: 28, borderRight: '1px solid rgba(167,139,250,.1)', background: 'rgba(15,10,26,0.4)' }}>
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: 16 }}>🎤 Input Stream</div>
                     <div style={{ background: 'rgba(15,10,26,.8)', border: '1px solid rgba(167,139,250,.25)', borderRadius: 16, padding: 20, minHeight: 120 }}><span style={{ fontFamily: 'monospace', fontSize: 15, lineHeight: 1.8, color: '#EDE9FE' }}>{tkInput}</span><span style={{ display: 'inline-block', width: 3, height: 20, background: '#a78bfa', marginLeft: 2, animation: 'blink 1s infinite', verticalAlign: 'middle' }} /></div>
                   </div>
                   <div style={{ padding: 28, background: 'rgba(167,139,250,.02)' }}>
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4ade80', marginBottom: 16 }}>📋 Auto-Generated Ticket</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div className="demo-fields-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                       {[{ l: 'Customer', v: tkFields.customer }, { l: 'Phone', v: tkFields.phone }, { l: 'Device', v: tkFields.device }, { l: 'Repair', v: tkFields.repair }].map((f, i) => <div key={i} className="ticker-field"><div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: '#a78bfa', marginBottom: 6 }}>{f.l}</div><div style={{ fontSize: 14, minHeight: 20, color: '#fff', fontWeight: 600 }}>{f.v || '—'}</div></div>)}
                       <div className="ticker-field" style={{ gridColumn: '1 / -1' }}><div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: '#a78bfa', marginBottom: 6 }}>Notes</div><div style={{ fontSize: 14, minHeight: 20, color: '#fff', lineHeight: 1.5 }}>{tkFields.note || '—'}</div></div>
                       <div className="ticker-field"><div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: '#a78bfa', marginBottom: 6 }}>Technician</div><div style={{ fontSize: 14, color: '#fff', fontWeight: 600 }}>{tkFields.tech || '—'}</div></div>
@@ -1252,15 +1277,15 @@ export default function MarketingPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}><div style={{ width: 48, height: 44, background: 'linear-gradient(135deg,#a78bfa,#c4b5fd)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>📡</div><div><div style={{ fontSize: 18, fontWeight: 600, color: '#fff' }}>Device Intelligence</div><div style={{ fontSize: 13, color: '#a78bfa' }}>Global Database Access</div></div></div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', background: imeiPhase === 'querying' ? 'rgba(251,191,36,.1)' : 'rgba(74,222,128,.1)', borderRadius: 24, border: `1px solid ${imeiPhase === 'querying' ? 'rgba(251,191,36,.3)' : 'rgba(74,222,128,.3)'}` }}>{imeiPhase === 'querying' ? <><div style={{ display: 'flex', gap: 4 }}><span className="thinking-dot" /><span className="thinking-dot" /><span className="thinking-dot" /></div><span style={{ fontSize: 13, color: '#fbbf24', fontWeight: 600, marginLeft: 6 }}>Querying</span></> : <><span className="status-dot" style={{ background: '#4ade80' }} /><span style={{ fontSize: 13, color: '#4ade80', fontWeight: 600 }}>{imeiPhase === 'results' ? 'Verified' : 'Ready'}</span></>}</div>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 440 }}>
+                <div className="demo-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: 440 }}>
                   <div style={{ padding: 28, borderRight: '1px solid rgba(167,139,250,.1)', display: 'flex', flexDirection: 'column', justifyContent: 'center', background: 'rgba(15,10,26,0.4)' }}>
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: 16, textAlign: 'center' }}>Captured IMEI</div>
-                    <div style={{ background: 'rgba(15,10,26,.8)', border: '1px solid rgba(167,139,250,.25)', borderRadius: 16, padding: 32, textAlign: 'center', position: 'relative' }}>{imeiPhase === 'querying' && <div className="scan-line" />}<div style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 800, letterSpacing: '.08em', color: '#fff' }}>{imeiNum}<span style={{ display: 'inline-block', width: 3, height: 24, background: '#a78bfa', marginLeft: 2, animation: 'blink 1s infinite', verticalAlign: 'middle' }} /></div><div style={{ fontSize: 13, color: '#a78bfa', marginTop: 12, fontWeight: 500 }}>📷 Auto-Scanned</div></div>
+                    <div style={{ background: 'rgba(15,10,26,.8)', border: '1px solid rgba(167,139,250,.25)', borderRadius: 16, padding: 32, textAlign: 'center', position: 'relative' }}>{imeiPhase === 'querying' && <div className="scan-line" />}<div className="imei-number" style={{ fontFamily: 'monospace', fontSize: 28, fontWeight: 800, letterSpacing: '.08em', color: '#fff' }}>{imeiNum}<span style={{ display: 'inline-block', width: 3, height: 24, background: '#a78bfa', marginLeft: 2, animation: 'blink 1s infinite', verticalAlign: 'middle' }} /></div><div style={{ fontSize: 13, color: '#a78bfa', marginTop: 12, fontWeight: 500 }}>📷 Auto-Scanned</div></div>
                   </div>
                   <div style={{ padding: 28, background: 'rgba(167,139,250,.02)' }}>
                     <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4ade80', marginBottom: 16 }}>📊 Instant Device Report</div>
                     {imeiPhase === 'querying' && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}><div style={{ textAlign: 'center' }}><div style={{ width: 48, height: 48, border: '4px solid rgba(167,139,250,.2)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} /><div style={{ color: '#a78bfa', fontSize: 14, fontWeight: 500 }}>Connecting to Carrier GSMA...</div></div></div>}
-                    {imeiResult && imeiPhase === 'results' && <div className="fade-in" style={{ background: 'rgba(15,10,26,.6)', border: '1px solid rgba(167,139,250,.25)', borderRadius: 16, padding: 20 }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(167,139,250,.15)' }}><div><div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{imeiResult.device}</div><div style={{ fontSize: 13, color: '#a78bfa', fontWeight: 500, marginTop: 4 }}>{imeiResult.storage} • {imeiResult.color}</div></div><span style={{ padding: '8px 16px', borderRadius: 24, fontSize: 12, fontWeight: 700, background: imeiResult.fmi === 'ON' ? 'rgba(251,191,36,.15)' : 'rgba(74,222,128,.15)', color: imeiResult.fmi === 'ON' ? '#fbbf24' : '#4ade80', border: `1px solid ${imeiResult.fmi === 'ON' ? 'rgba(251,191,36,.3)' : 'rgba(74,222,128,.3)'}` }}>{imeiResult.fmi === 'ON' ? '⚠️ FMI ON' : '✓ FMI OFF'}</span></div><div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>{[{ l: 'Carrier', v: imeiResult.carrier }, { l: 'SIM Lock', v: imeiResult.simlock, w: imeiResult.simlock === 'Locked' }, { l: 'Blacklist', v: imeiResult.blacklist, ok: true }, { l: 'Warranty', v: imeiResult.warranty }].map((item, i) => <div key={i} style={{ padding: 14, background: 'rgba(167,139,250,.05)', borderRadius: 12, border: '1px solid rgba(167,139,250,0.1)' }}><div style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: 6, letterSpacing: '0.05em' }}>{item.l}</div><div style={{ fontSize: 14, fontWeight: 700, color: item.ok ? '#4ade80' : item.w ? '#fbbf24' : '#fff' }}>{item.v}</div></div>)}</div></div>}
+                    {imeiResult && imeiPhase === 'results' && <div className="fade-in" style={{ background: 'rgba(15,10,26,.6)', border: '1px solid rgba(167,139,250,.25)', borderRadius: 16, padding: 20 }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(167,139,250,.15)' }}><div><div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{imeiResult.device}</div><div style={{ fontSize: 13, color: '#a78bfa', fontWeight: 500, marginTop: 4 }}>{imeiResult.storage} • {imeiResult.color}</div></div><span style={{ padding: '8px 16px', borderRadius: 24, fontSize: 12, fontWeight: 700, background: imeiResult.fmi === 'ON' ? 'rgba(251,191,36,.15)' : 'rgba(74,222,128,.15)', color: imeiResult.fmi === 'ON' ? '#fbbf24' : '#4ade80', border: `1px solid ${imeiResult.fmi === 'ON' ? 'rgba(251,191,36,.3)' : 'rgba(74,222,128,.3)'}` }}>{imeiResult.fmi === 'ON' ? '⚠️ FMI ON' : '✓ FMI OFF'}</span></div><div className="imei-report-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>{[{ l: 'Carrier', v: imeiResult.carrier }, { l: 'SIM Lock', v: imeiResult.simlock, w: imeiResult.simlock === 'Locked' }, { l: 'Blacklist', v: imeiResult.blacklist, ok: true }, { l: 'Warranty', v: imeiResult.warranty }].map((item, i) => <div key={i} style={{ padding: 14, background: 'rgba(167,139,250,.05)', borderRadius: 12, border: '1px solid rgba(167,139,250,0.1)' }}><div style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', marginBottom: 6, letterSpacing: '0.05em' }}>{item.l}</div><div style={{ fontSize: 14, fontWeight: 700, color: item.ok ? '#4ade80' : item.w ? '#fbbf24' : '#fff' }}>{item.v}</div></div>)}</div></div>}
                   </div>
                 </div>
               </div>
@@ -1390,27 +1415,60 @@ export default function MarketingPage() {
                   <div style={{ fontSize: 15, color: '#a1a1aa', fontStyle: 'italic', lineHeight: 1.6 }}>"i14pm oled soft 2pcs + bty 14pro 5pcs + ps5 hdmi 3"</div>
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: '#4ade80', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>→ AI Normalized Results</div>
-                <div style={{ background: 'rgba(74,222,128,.05)', border: '1px solid rgba(74,222,128,.2)', borderRadius: 16, padding: 16, marginBottom: 20, maxHeight: 220, overflowY: 'auto' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.2fr 0.6fr 0.8fr', gap: 12, fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(167,139,250,.2)' }}>
-                    <div>SKU</div>
-                    <div>Item</div>
-                    <div>Variant</div>
-                    <div>Qty</div>
-                    <div>Margin</div>
-                  </div>
-                  {[
-                    { sku: 'IP14PM-OLED-SOFT', item: 'OLED Display', variant: 'iPhone 14 Pro Max', qty: inventoryStock['IP14PM-OLED-SOFT'], margin: '32%', alert: inventoryStock['IP14PM-OLED-SOFT'] <= 2 },
-                    { sku: 'IP14P-BTY-GEN', item: 'Battery', variant: 'iPhone 14 Pro', qty: inventoryStock['IP14P-BTY-GEN'], margin: '28%' },
-                    { sku: 'PS5-HDMI-PORT', item: 'HDMI Port', variant: 'PS5 Console', qty: inventoryStock['PS5-HDMI-PORT'], margin: '15%', warn: true }
-                  ].map((row, i) => (
-                    <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.2fr 0.6fr 0.8fr', gap: 12, fontSize: 13, color: '#fff', padding: '12px 0', borderBottom: i < 2 ? '1px solid rgba(167,139,250,.1)' : 'none' }}>
-                      <div style={{ fontFamily: 'monospace', fontSize: 12, opacity: 0.9 }}>{row.sku}</div>
-                      <div>{row.item}</div>
-                      <div style={{ fontSize: 12, color: '#c4b5fd' }}>{row.variant}</div>
-                      <div style={{ color: row.alert ? '#ef4444' : row.warn ? '#fbbf24' : '#fff', fontWeight: 700 }}>{row.qty} {row.alert && '⚠️'}</div>
-                      <div style={{ color: row.warn ? '#fbbf24' : '#4ade80', fontWeight: 700 }}>{row.margin}</div>
-                    </div>
-                  ))}
+                <div className="inv-table-scroll" style={{ background: 'rgba(74,222,128,.05)', border: '1px solid rgba(74,222,128,.2)', borderRadius: 16, padding: 16, marginBottom: 20, maxHeight: 260, overflowY: 'auto' }}>
+                  {(() => {
+                    const rows = [
+                      { sku: 'IP14PM-OLED-SOFT', item: 'OLED Display', variant: 'iPhone 14 Pro Max', qty: inventoryStock['IP14PM-OLED-SOFT'], margin: '32%', alert: inventoryStock['IP14PM-OLED-SOFT'] <= 2 },
+                      { sku: 'IP14P-BTY-GEN', item: 'Battery', variant: 'iPhone 14 Pro', qty: inventoryStock['IP14P-BTY-GEN'], margin: '28%' },
+                      { sku: 'PS5-HDMI-PORT', item: 'HDMI Port', variant: 'PS5 Console', qty: inventoryStock['PS5-HDMI-PORT'], margin: '15%', warn: true },
+                    ]
+
+                    return (
+                      <>
+                        {/* Desktop/tablet grid (scrolls if needed) */}
+                        <div className="inv-desktop">
+                          <div className="inv-grid-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.2fr 0.6fr 0.8fr', gap: 12, fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(167,139,250,.2)' }}>
+                            <div>SKU</div>
+                            <div>Item</div>
+                            <div>Variant</div>
+                            <div>Qty</div>
+                            <div>Margin</div>
+                          </div>
+                          {rows.map((row, i) => (
+                            <div key={row.sku} className="inv-grid-row" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.2fr 0.6fr 0.8fr', gap: 12, fontSize: 13, color: '#fff', padding: '12px 0', borderBottom: i < rows.length - 1 ? '1px solid rgba(167,139,250,.1)' : 'none' }}>
+                              <div style={{ fontFamily: 'monospace', fontSize: 12, opacity: 0.9 }}>{row.sku}</div>
+                              <div>{row.item}</div>
+                              <div style={{ fontSize: 12, color: '#c4b5fd' }}>{row.variant}</div>
+                              <div style={{ color: row.alert ? '#ef4444' : row.warn ? '#fbbf24' : '#fff', fontWeight: 700 }}>{row.qty} {row.alert && '⚠️'}</div>
+                              <div style={{ color: row.warn ? '#fbbf24' : '#4ade80', fontWeight: 700 }}>{row.margin}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Mobile cards */}
+                        <div className="inv-mobile" style={{ display: 'none' }}>
+                          <div style={{ display: 'grid', gap: 10 }}>
+                            {rows.map((row) => (
+                              <div key={row.sku} style={{ padding: 14, borderRadius: 14, background: 'rgba(15,10,26,.55)', border: '1px solid rgba(167,139,250,.14)' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'baseline' }}>
+                                  <div style={{ fontFamily: 'monospace', fontSize: 12, color: '#fff', opacity: 0.95 }}>{row.sku}</div>
+                                  <div style={{ fontSize: 12, fontWeight: 800, color: row.alert ? '#ef4444' : row.warn ? '#fbbf24' : '#4ade80' }}>
+                                    {row.qty} on hand {row.alert ? '⚠️' : ''}
+                                  </div>
+                                </div>
+                                <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#fff' }}>{row.item}</div>
+                                <div style={{ marginTop: 4, fontSize: 12, color: '#c4b5fd' }}>{row.variant}</div>
+                                <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12 }}>
+                                  <div style={{ color: '#a78bfa', fontWeight: 700 }}>Margin</div>
+                                  <div style={{ color: row.warn ? '#fbbf24' : '#4ade80', fontWeight: 800 }}>{row.margin}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )
+                  })()}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {inventoryStock['IP14PM-OLED-SOFT'] <= 2 && (
@@ -1806,8 +1864,8 @@ export default function MarketingPage() {
               <p style={{ fontSize: 16, color: '#a1a1aa', maxWidth: 600, margin: '16px auto 0' }}>Built for repair shops, not retail</p>
             </div>
             <div className="glass-card" style={{ overflow: 'hidden' }}>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div className="comparison-table-wrap" style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 780 }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(167,139,250,.2)' }}>
                       <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '.1em' }}>Feature</th>
@@ -1816,14 +1874,7 @@ export default function MarketingPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      { feature: 'Intake speed', traditional: '4-5 minutes', fixology: '40 seconds' },
-                      { feature: 'Risk detection', traditional: 'Manual checks', fixology: 'Automatic IMEI + pattern alerts' },
-                      { feature: 'Customer updates', traditional: 'Manual texts/calls', fixology: 'Auto-generated, tone-aware' },
-                      { feature: 'Inventory intelligence', traditional: 'Basic tracking', fixology: 'Usage patterns + reorder suggestions' },
-                      { feature: 'Diagnostic guidance', traditional: 'Tech experience only', fixology: 'AI-powered step-by-step' },
-                      { feature: 'Pricing confidence', traditional: 'Guesswork', fixology: 'Market comparison + breakdown' },
-                    ].map((row, i) => (
+                    {comparisonRows.map((row, i) => (
                       <tr key={i} style={{ borderBottom: '1px solid rgba(167,139,250,.1)' }}>
                         <td style={{ padding: '20px 24px', fontSize: 15, fontWeight: 600, color: '#fff' }}>{row.feature}</td>
                         <td style={{ padding: '20px 24px', textAlign: 'center', fontSize: 14, color: '#6b7280' }}>{row.traditional}</td>
@@ -1832,6 +1883,26 @@ export default function MarketingPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              <div className="comparison-cards" style={{ display: 'none', padding: 20 }}>
+                <div style={{ display: 'grid', gap: 12 }}>
+                  {comparisonRows.map((row, i) => (
+                    <div key={i} style={{ padding: 16, borderRadius: 16, background: 'rgba(167,139,250,.05)', border: '1px solid rgba(167,139,250,.14)' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 12 }}>{row.feature}</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                        <div style={{ padding: 12, borderRadius: 12, background: 'rgba(15,10,26,.55)', border: '1px solid rgba(167,139,250,.12)' }}>
+                          <div style={{ fontSize: 11, color: '#a1a1aa', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Traditional</div>
+                          <div style={{ fontSize: 13, color: '#c4b5fd' }}>{row.traditional}</div>
+                        </div>
+                        <div style={{ padding: 12, borderRadius: 12, background: 'rgba(74,222,128,.08)', border: '1px solid rgba(74,222,128,.22)' }}>
+                          <div style={{ fontSize: 11, color: '#4ade80', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Fixology</div>
+                          <div style={{ fontSize: 13, color: '#4ade80', fontWeight: 700 }}>{row.fixology}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -2634,7 +2705,10 @@ export default function MarketingPage() {
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(167,139,250,.2)',
           display: 'none',
-          gap: 12
+          gap: 12,
+          transition: 'transform .3s ease',
+          transform: pastHero ? 'translateY(0)' : 'translateY(120%)',
+          pointerEvents: pastHero ? 'auto' : 'none',
         }}
         className="mobile-sticky-bar"
         >
@@ -2662,7 +2736,7 @@ export default function MarketingPage() {
             .mobile-sticky-bar { display: flex !important; }
             .sticky-cta-desktop { display: none !important; }
             /* Reserve space so the fixed mobile bar doesn't cover content (forms/footer). */
-            body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important; }
+            body { padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important; }
             /* Safe area padding for iOS home indicator. */
             .mobile-sticky-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important; }
             /* Extra guard: never show the desktop marketing nav on mobile (even if utility CSS fails/caches). */
@@ -2672,13 +2746,27 @@ export default function MarketingPage() {
               position: fixed !important;
               top: auto !important;
               right: 16px !important;
-              bottom: calc(96px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+              bottom: calc(140px + env(safe-area-inset-bottom, 0px) + 12px) !important;
             }
+
+            /* Comparison: cards on mobile, table hidden. */
+            .comparison-table-wrap { display: none !important; }
+            .comparison-cards { display: block !important; }
+
+            /* Inventory: cards on mobile, grid hidden. */
+            .inv-desktop { display: none !important; }
+            .inv-mobile { display: block !important; }
           }
           @media (min-width: 769px) {
             .mobile-sticky-bar { display: none !important; }
             body { padding-bottom: 0 !important; }
             .fx-chat-dock { position: absolute !important; right: 24px !important; }
+
+            .comparison-table-wrap { display: block !important; }
+            .comparison-cards { display: none !important; }
+
+            .inv-desktop { display: block !important; }
+            .inv-mobile { display: none !important; }
           }
         ` }} />
 
