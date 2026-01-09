@@ -16,7 +16,12 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 mb-6', className)}>
+    <div
+      className={cn(
+        'flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6',
+        className
+      )}
+    >
       <div className="min-w-0">
         {kicker ? (
           <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-semibold text-white/60 mb-2">
@@ -32,7 +37,7 @@ export function PageHeader({
           </p>
         ) : null}
       </div>
-      {action ? <div className="flex-shrink-0">{action}</div> : null}
+      {action ? <div className="w-full sm:w-auto sm:flex-shrink-0">{action}</div> : null}
     </div>
   )
 }

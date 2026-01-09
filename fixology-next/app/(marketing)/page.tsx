@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
+import { MarketingNav } from '@/components/marketing/mobile-nav';
 
 const heroDemoScenarios = [
   { message: 'iphone 14 pro keeps restarting, no water damage, battery drains fast', issue: 'Battery health problem', pct: 85, explanation: "Battery can't hold power during normal use", repair: 'Battery test + replacement', time: '30–45 min', price: '$69–79' },
@@ -171,6 +172,8 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
   .nav-group,.nav-links{flex-wrap:wrap;gap:8px;justify-content:center}
   header .wide-container{padding:0 12px}
   .glass-card, .breakout-panel, .asymmetric-layout > * {max-width:100%; overflow:hidden}
+  .floating, .floating-d1, .floating-d2{display:none!important}
+  .desktop-nav{display:none!important}
 }
 .glow-spot{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
@@ -775,6 +778,7 @@ export default function MarketingPage() {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
+      <MarketingNav />
       <div className="bg-structure">
         <div className="bg-grid" />
         <div className="vertical-rail left" />
@@ -782,7 +786,8 @@ export default function MarketingPage() {
       </div>
       <div style={{ minHeight: '100vh', position: 'relative' }}>
         {/* NAV */}
-        <nav 
+        <nav
+          className="hidden md:block"
           style={{ 
             position: 'fixed', 
             top: 0, 
