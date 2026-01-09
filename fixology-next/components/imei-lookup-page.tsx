@@ -217,7 +217,7 @@ export default function IMEILookupPage() {
   }
 
   return (
-    <div className="p-6 w-full max-w-6xl mx-auto space-y-6 animate-page-in">
+    <div className="px-4 py-5 sm:p-6 w-full max-w-6xl mx-auto space-y-6 animate-page-in">
       <div className={cn(
         "mb-8 transition-all duration-500",
         animationReady ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -234,7 +234,7 @@ export default function IMEILookupPage() {
           </div>
           
           {/* Credits Display */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap justify-end">
             {credits !== null && (
               <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08]">
                 <span className="text-sm text-white/60">Deep Scan:</span>
@@ -317,18 +317,19 @@ export default function IMEILookupPage() {
                 : `Full scan: Includes warranty, iCloud status, purchase date (costs 1 credit${credits !== null ? ` • ${credits} left` : ''})`}
             </p>
           </div>
-          <div className="flex items-end justify-between gap-4 flex-1 min-w-[220px]">
+          <div className="flex items-end justify-between gap-4 flex-1 min-w-[220px] flex-wrap">
             {result?.imageUrl && (
-              <div className="hidden lg:block w-44">
-                <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-3">
+              <div className="w-full sm:w-auto">
+                <div className="rounded-2xl bg-white/[0.03] border border-white/[0.08] p-3 flex items-center gap-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={result.imageUrl}
                     alt={result.displayName || result.deviceInfo?.model || 'Device'}
-                    className="h-28 w-auto mx-auto object-contain"
+                    className="h-16 w-16 object-contain rounded-xl bg-black/30 border border-white/[0.06]"
                   />
-                  <div className="text-xs text-center text-white/60 mt-2">
-                    {result.displayName || result.deviceInfo?.model || 'Device'}
+                  <div className="text-xs text-white/70">
+                    <div className="font-semibold text-white/90">{result.displayName || result.deviceInfo?.model || 'Device'}</div>
+                    <div className="text-white/50">{result.deviceInfo?.brand || ''}</div>
                   </div>
                 </div>
               </div>
@@ -337,7 +338,7 @@ export default function IMEILookupPage() {
               onClick={() => void handleLookup()}
               disabled={loading}
               className={cn(
-                'h-12 px-6 rounded-xl font-medium text-sm flex items-center gap-2 transition-all',
+                'h-12 px-6 rounded-xl font-medium text-sm flex items-center gap-2 transition-all w-full sm:w-auto justify-center',
                 loading
                   ? 'bg-white/[0.06] text-white/30 cursor-not-allowed'
                   : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40'
