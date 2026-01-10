@@ -167,6 +167,12 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
 .wide-container.mobile-pad{padding:0 16px}
 @media(max-width:768px){
   .wide-container{padding:0 16px}
+  /* Desktop nav - FORCE HIDE */
+  header:not(.mobile-header), [data-marketing-desktop-nav] { display: none !important; }
+
+  /* Asymmetric - FORCE SINGLE COLUMN (overrides inline gridTemplateColumns) */
+  .asymmetric-layout { grid-template-columns: 1fr !important; }
+
   .asymmetric-layout{gap:24px}
   .section-spacer{padding:72px 0}
   .vertical-rail{display:none!important}
@@ -271,6 +277,13 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
 
   /* Authority grid: stack on mobile */
   .authority-grid{grid-template-columns:1fr!important}
+
+  /* Customer updates - ensure bubbles never truncate */
+  .msg-bubble, .msg-bubble p, .msg-bubble span {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
 
   /* Typography: readable sizes + no truncation */
   .glass-card p,

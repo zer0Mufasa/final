@@ -15,7 +15,7 @@ export function MarketingNav() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#07070a]/80 backdrop-blur-xl border-b border-white/[0.06] md:hidden">
+    <header className="mobile-header fixed top-0 left-0 right-0 z-[100] bg-[#0f0a1a]/95 backdrop-blur-xl border-b border-violet-500/10 md:hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
