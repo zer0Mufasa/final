@@ -53,7 +53,7 @@ export function MarketingNav() {
       {/* Mobile Menu Dropdown */}
       <div
         className={cn(
-          'md:hidden absolute top-full left-0 right-0 bg-[#0a0a0f]/98 backdrop-blur-xl border-b border-white/[0.06] overflow-hidden transition-all duration-300',
+          'md:hidden absolute top-full left-0 right-0 bg-[#0f0a1a]/97 backdrop-blur-2xl border-b border-white/[0.08] overflow-hidden transition-all duration-300 shadow-[0_20px_60px_rgba(0,0,0,0.55)]',
           isOpen ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'
         )}
       >
@@ -63,7 +63,7 @@ export function MarketingNav() {
               key={link.href}
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-3 text-white/70 hover:text-white hover:bg-white/[0.05] rounded-xl transition-colors"
+              className="block px-4 py-3 rounded-xl transition-colors bg-white/[0.06] border border-white/[0.12] text-white/90 hover:text-white hover:bg-white/[0.12] hover:border-white/20"
             >
               {link.label}
             </Link>
@@ -72,14 +72,14 @@ export function MarketingNav() {
             <Link
               href="/login"
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-3 text-center text-white/70 hover:text-white border border-white/[0.1] rounded-xl transition-colors"
+              className="block px-4 py-3 text-center text-white bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.16] rounded-xl transition-colors"
             >
               Log in
             </Link>
             <Link
               href="/signup"
               onClick={() => setIsOpen(false)}
-              className="block px-4 py-3 text-center font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-xl transition-colors"
+              className="block px-4 py-3 text-center font-medium text-white bg-violet-500 hover:bg-violet-600 rounded-xl transition-colors shadow-[0_10px_30px_rgba(124,58,237,0.35)]"
             >
               Get Started →
             </Link>
