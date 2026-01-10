@@ -216,6 +216,71 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
 
   /* Contact form: stack the first row */
   .contact-two-col{grid-template-columns:1fr!important}
+
+  /* =====================================================
+     Mobile “box” system: consistent, readable, aesthetic
+     ===================================================== */
+  .glass-card,
+  .ticker-field,
+  .step-card,
+  .alert-card {
+    border-radius: 18px !important;
+  }
+
+  /* Make all “boxes” feel like the same design family on mobile */
+  .ticker-field,
+  .step-card,
+  .alert-card {
+    background: rgba(15, 10, 26, 0.70) !important;
+    border: 1px solid rgba(167, 139, 250, 0.18) !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.30);
+  }
+
+  /* Slightly stronger, cleaner surface for primary cards */
+  .glass-card {
+    background: linear-gradient(
+      135deg,
+      rgba(167, 139, 250, 0.10) 0%,
+      rgba(15, 10, 26, 0.92) 55%,
+      rgba(15, 10, 26, 0.84) 100%
+    ) !important;
+    border: 1px solid rgba(167, 139, 250, 0.20) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+  }
+
+  /* Typography: readable sizes + no truncation */
+  .glass-card p,
+  .ticker-field p,
+  .step-card p,
+  .alert-card p,
+  .glass-card span,
+  .ticker-field span,
+  .step-card span,
+  .alert-card span,
+  .glass-card div,
+  .ticker-field div,
+  .step-card div,
+  .alert-card div {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .glass-card p,
+  .ticker-field p,
+  .step-card p,
+  .alert-card p {
+    font-size: 14px !important;
+    line-height: 1.7 !important;
+    color: rgba(237, 233, 254, 0.86) !important;
+  }
+
+  /* Compact headings inside boxes */
+  .glass-card h2,
+  .glass-card h3 {
+    line-height: 1.2 !important;
+  }
+
+  /* Ensure flex children can shrink instead of clipping */
+  .glass-card * { min-width: 0; }
 }
 .glow-spot{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
