@@ -168,7 +168,7 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
 @media(max-width:768px){
   .wide-container{padding:0 16px}
   .asymmetric-layout{gap:24px}
-  .section-spacer{padding:64px 0}
+  .section-spacer{padding:72px 0}
   .vertical-rail{display:none!important}
   .section-title{text-align:center!important}
   .text-constraint{text-align:center!important}
@@ -247,6 +247,30 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
     border: 1px solid rgba(167, 139, 250, 0.20) !important;
     box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
   }
+
+  /* Consistent padding rhythm + reduce “giant” cards on mobile */
+  .glass-card:not(.demo-container){padding:22px!important}
+  .glass-card.demo-container{padding:18px!important}
+
+  /* Bridge text should feel like a gentle divider, not a huge block */
+  .bridge-text{padding:28px 16px!important;font-size:14px!important;line-height:1.6!important;opacity:.9!important}
+
+  /* Pricing: remove featured scale + make it read cleanly */
+  .pricing-card-featured{transform:none!important}
+  .pricing-explain-grid{grid-template-columns:1fr!important;gap:16px!important}
+  .pricing-savings{padding:18px!important}
+
+  /* Customer updates: consistent bubble styling */
+  .msg-bubble{
+    padding:14px!important;
+    border-radius:16px!important;
+    background: rgba(15,10,26,.72)!important;
+    border: 1px solid rgba(167,139,250,.18)!important;
+  }
+  .msg-meta{padding:0 2px!important;font-size:11px!important}
+
+  /* Authority grid: stack on mobile */
+  .authority-grid{grid-template-columns:1fr!important}
 
   /* Typography: readable sizes + no truncation */
   .glass-card p,
@@ -1610,7 +1634,7 @@ export default function MarketingPage() {
                 <h3 style={{ fontSize: 32, fontWeight: 700, color: '#fff', marginBottom: 24, letterSpacing: '-0.01em' }}>Built like enterprise tools.<br /><span style={{ color: '#a78bfa' }}>Without the enterprise bloat.</span></h3>
                 <p style={{ fontSize: 18, color: '#a1a1aa', lineHeight: 1.7 }}>Fixology is engineered to meet the standards of high-volume repair operations while staying fast and intuitive for single-shop owners.</p>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div className="authority-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
                 {[
                   { emoji: "🔧", label: "Repair-first architecture" },
                   { emoji: "💳", label: "POS-ready workflows" },
@@ -1659,7 +1683,7 @@ export default function MarketingPage() {
               <p style={{ fontSize: 15, color: '#a1a1aa', marginTop: 8 }}>Monthly subscription. Cancel or upgrade anytime.</p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 32, marginBottom: 100 }}>
-              <div className="glass-card" style={{ padding: 40, display: 'flex', flexDirection: 'column' }}>
+              <div className="glass-card pricing-card" style={{ padding: 40, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Starter</div>
                 <div style={{ fontSize: 48, fontWeight: 800, color: '#fff', marginBottom: 20 }}>$99<span style={{ fontSize: 20, color: '#a1a1aa', fontWeight: 400 }}>/mo</span></div>
                 <div style={{ fontSize: 15, color: '#c4b5fd', marginBottom: 32 }}>Perfect for specialized boutique shops.</div>
@@ -1672,7 +1696,7 @@ export default function MarketingPage() {
               </div>
               <div style={{ position: 'relative' }}>
                 <div style={{ position: 'absolute', top: -20, left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg,#a78bfa,#c4b5fd)', padding: '8px 24px', borderRadius: 999, fontSize: 12, fontWeight: 800, color: '#0f0a1a', whiteSpace: 'nowrap', zIndex: 10, boxShadow: '0 8px 20px rgba(167,139,250,0.4)' }}>RECOMMENDED</div>
-                <div className="glass-card" style={{ padding: 40, display: 'flex', flexDirection: 'column', height: '100%', border: '2px solid rgba(167,139,250,.4)', boxShadow: '0 0 50px rgba(167,139,250,.15)', transform: 'scale(1.05)', zIndex: 5 }}>
+                <div className="glass-card pricing-card pricing-card-featured" style={{ padding: 40, display: 'flex', flexDirection: 'column', height: '100%', border: '2px solid rgba(167,139,250,.4)', boxShadow: '0 0 50px rgba(167,139,250,.15)', transform: 'scale(1.05)', zIndex: 5 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Professional</div>
                   <div style={{ fontSize: 48, fontWeight: 800, color: '#fff', marginBottom: 20 }}>$249<span style={{ fontSize: 20, color: '#a1a1aa', fontWeight: 400 }}>/mo</span></div>
                   <div style={{ fontSize: 15, color: '#c4b5fd', marginBottom: 32 }}>Our most popular plan for high-volume shops.</div>
@@ -1684,7 +1708,7 @@ export default function MarketingPage() {
                   <Link href="/signup" className="glow-button" style={{ width: '100%', marginTop: 40, padding: '16px 24px', display: 'block', textAlign: 'center', textDecoration: 'none' }}>Get Started Now</Link>
                 </div>
               </div>
-              <div className="glass-card" style={{ padding: 40, display: 'flex', flexDirection: 'column' }}>
+              <div className="glass-card pricing-card" style={{ padding: 40, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#a78bfa', marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Enterprise</div>
                 <div style={{ fontSize: 48, fontWeight: 800, color: '#fff', marginBottom: 20 }}>Custom</div>
                 <div style={{ fontSize: 15, color: '#c4b5fd', marginBottom: 32 }}>Custom architecture for multi-location franchises.</div>
@@ -1708,7 +1732,7 @@ export default function MarketingPage() {
               <p style={{ fontSize: 16, color: '#a1a1aa' }}>Transparent, AI-generated repair breakdowns that build immediate trust.</p>
             </div>
             <div className="glass-card" style={{ padding: 40, maxWidth: 900, margin: '0 auto', border: '1px solid rgba(167,139,250,.15)', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 40 }}>
+              <div className="pricing-explain-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 40 }}>
                 <div>
                   <div style={{ marginBottom: 24 }}>
                     {[{ l: 'OLED Display Assembly', c: pricingBreakdown.parts }, { l: 'Technician time (45 min)', c: pricingBreakdown.labor }, { l: '90-day warranty', c: pricingBreakdown.warranty }].map((item, i) => <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid rgba(167,139,250,.1)' }}><span style={{ color: '#c4b5fd', fontSize: 15 }}>{item.l}</span><span style={{ color: '#fff', fontSize: 16, fontWeight: 700 }}>${item.c}</span></div>)}
@@ -1716,7 +1740,7 @@ export default function MarketingPage() {
                   </div>
                   <div style={{ padding: 20, background: 'rgba(167,139,250,.08)', borderRadius: 12, border: '1px solid rgba(167,139,250,.15)' }}><div style={{ fontSize: 11, fontWeight: 700, color: '#a78bfa', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Why this price?</div><p style={{ fontSize: 14, color: '#c4b5fd', lineHeight: 1.7 }}>{pricingBreakdown.reasoning}</p></div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 32, background: 'rgba(74,222,128,.08)', borderRadius: 20, border: '1px solid rgba(74,222,128,.2)' }}>
+                <div className="pricing-savings" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 32, background: 'rgba(74,222,128,.08)', borderRadius: 20, border: '1px solid rgba(74,222,128,.2)' }}>
                   <div style={{ fontSize: 14, color: '#4ade80', marginBottom: 12, fontWeight: 600 }}>Customer Savings</div>
                   <div style={{ fontSize: 48, fontWeight: 800, color: '#4ade80' }}>${pricingBreakdown.competitor - pricingBreakdown.total}</div>
                   <div style={{ fontSize: 13, color: '#a1a1aa', marginTop: 8 }}>Avg competitor: ${pricingBreakdown.competitor}</div>
@@ -1747,10 +1771,10 @@ export default function MarketingPage() {
                     <div key={i} className="fade-in" style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                       <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg,#a78bfa,#c4b5fd)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0, boxShadow: '0 4px 15px rgba(167,139,250,0.3)' }}>⚡</div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ padding: 18, background: 'rgba(15,10,26,.7)', border: '1px solid rgba(167,139,250,.2)', borderRadius: 16 }}>
+                        <div className="msg-bubble" style={{ padding: 18, background: 'rgba(15,10,26,.7)', border: '1px solid rgba(167,139,250,.2)', borderRadius: 16 }}>
                           <p style={{ fontSize: 15, color: '#EDE9FE', lineHeight: 1.6 }}>{msg.message}</p>
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 12, color: '#6b7280', padding: '0 4px' }}>
+                        <div className="msg-meta" style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10, fontSize: 12, color: '#6b7280', padding: '0 4px' }}>
                           <span>{msg.time}</span>
                           <span style={{ color: msg.status === 'Ready' ? '#4ade80' : '#a78bfa', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>{msg.status === 'Ready' && '✓ '}{msg.status}</span>
                         </div>
