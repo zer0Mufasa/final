@@ -29,10 +29,23 @@ export function MarketingNav() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="p-2 text-white/70 hover:text-white"
-            aria-label="Toggle navigation"
+            className={cn(
+              'inline-flex items-center gap-2',
+              'px-3 py-2 rounded-full',
+              'bg-black/60 backdrop-blur-xl',
+              'border border-white/15',
+              'text-white/90',
+              'shadow-[0_10px_30px_rgba(0,0,0,0.45)]',
+              'hover:bg-black/70 hover:border-white/25 hover:text-white',
+              'active:scale-[0.98]',
+              'transition-all'
+            )}
+            aria-label={isOpen ? 'Close menu' : 'Open menu'}
           >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            <span className="text-xs font-semibold tracking-wide">
+              {isOpen ? 'Close' : 'Menu'}
+            </span>
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
