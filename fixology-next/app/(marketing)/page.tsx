@@ -169,6 +169,11 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
   .wide-container{padding:0 16px}
   .asymmetric-layout{gap:24px}
   .section-spacer{padding:64px 0}
+  .vertical-rail{display:none!important}
+  .section-title{text-align:center!important}
+  .text-constraint{text-align:center!important}
+  .text-constraint p{margin-left:auto!important;margin-right:auto!important}
+  .narrow-wrap{padding-left:16px!important;padding-right:16px!important}
   .header-cta,.header-ghost{width:100%;justify-content:center}
   .glow-button{width:100%;text-align:center}
   .hero-title{text-align:center!important}
@@ -186,6 +191,15 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
   /* Extra safety: don't allow the legacy desktop menu items to render on mobile at all. */
   .nav-center,.login-link,.trust-pill,.header-cta,.header-ghost{display:none!important}
 
+  /* How-it-works: turn the horizontal flow into a vertical stepper on mobile. */
+  .how-steps{display:grid!important;grid-template-columns:1fr!important;gap:14px!important;padding:0!important}
+  .how-step{flex:none!important;align-items:flex-start!important;text-align:left!important}
+  .how-step > div:first-child{width:44px!important;height:44px!important;font-size:18px!important}
+  .how-connector{display:none!important}
+
+  /* Outcomes: 2x2 grid on mobile */
+  .outcomes-grid{grid-template-columns:repeat(2,1fr)!important;gap:16px!important}
+
   /* Demos: remove heavy 3D transforms and let content grow vertically. */
   .demo-container{min-height:auto!important;max-height:none!important;height:auto!important;transform:none!important}
   .demo-split{grid-template-columns:1fr!important;height:auto!important;min-height:auto!important}
@@ -199,6 +213,9 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
   /* Inventory: allow the desktop grid table to scroll if it appears. */
   .inv-table-scroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
   .inv-grid-row{min-width:680px}
+
+  /* Contact form: stack the first row */
+  .contact-two-col{grid-template-columns:1fr!important}
 }
 .glow-spot{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(167,139,250,0.08) 0%,transparent 70%);filter:blur(80px);pointer-events:none;z-index:0}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
@@ -1042,7 +1059,7 @@ export default function MarketingPage() {
 
         {/* 1. DIAGNOSIS */}
         <section ref={dxRef} style={{ padding: '100px 0', scrollMarginTop: '120px' }} id="diagnosis">
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
+          <div className="narrow-wrap" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
             <div style={{ textAlign: 'center', marginBottom: 50 }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 18px', background: 'rgba(167,139,250,.15)', borderRadius: 50, marginBottom: 16, border: '1px solid rgba(167,139,250,.3)' }}>
                 <span className="status-dot" style={{ background: '#4ade80' }} />
@@ -1061,7 +1078,7 @@ export default function MarketingPage() {
                   {dxPhase === 'analyzing' ? <><div style={{ display: 'flex', gap: 4 }}><span className="thinking-dot" /><span className="thinking-dot" /><span className="thinking-dot" /></div><span style={{ fontSize: 12, color: '#fbbf24', fontWeight: 500, marginLeft: 6 }}>Analyzing</span></> : <><span className="status-dot" style={{ background: '#4ade80' }} /><span style={{ fontSize: 12, color: '#4ade80', fontWeight: 500 }}>{dxPhase === 'typing' ? 'Listening' : 'Complete'}</span></>}
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: 400, overflow: 'hidden' }}>
+              <div className="demo-split" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: 400, overflow: 'hidden' }}>
                 <div style={{ padding: 24, borderRight: '1px solid rgba(167,139,250,.1)', overflow: 'auto' }}>
                   <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: '#a78bfa', marginBottom: 14 }}>💬 Customer Description</div>
                   <div style={{ background: 'rgba(15,10,26,.8)', border: '1px solid rgba(167,139,250,.2)', borderRadius: 14, padding: 18, minHeight: 100, position: 'relative' }}>
@@ -1154,14 +1171,14 @@ export default function MarketingPage() {
 
         {/* HOW IT WORKS */}
         <section id="how-it-works" style={{ padding: '60px 0', background: 'rgba(167,139,250,.03)', scrollMarginTop: '120px' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
+          <div className="narrow-wrap" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
             <div style={{ textAlign: 'center', marginBottom: 40 }}>
               <h3 style={{ fontSize: 24, fontWeight: 600, color: '#fff', marginBottom: 8 }}>The Fixology Loop</h3>
               <p style={{ fontSize: 14, color: '#a1a1aa' }}>Customer message → Diagnosis → Ticket + Price → Updates + Risk</p>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', padding: '20px 0' }}>
+            <div className="how-steps" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', padding: '20px 0' }}>
               {['Message', 'Diagnosis', 'Ticket + Price', 'Updates + Risk'].map((step, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, position: 'relative' }}>
+                <div key={i} className="how-step" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, position: 'relative' }}>
                   <div style={{
                     width: 50,
                     height: 50,
@@ -1178,7 +1195,7 @@ export default function MarketingPage() {
               </div>
                   <div style={{ fontSize: 12, color: '#c4b5fd', marginTop: 8, textAlign: 'center', fontWeight: 500 }}>{step}</div>
                   {i < 3 && (
-                    <div style={{
+                    <div className="how-connector" style={{
                       position: 'absolute',
                       top: 25,
                       left: '60%',
@@ -1196,8 +1213,8 @@ export default function MarketingPage() {
 
         {/* OUTCOMES */}
         <section id="outcomes" style={{ padding: '40px 0', background: 'rgba(167,139,250,.05)', borderTop: '1px solid rgba(167,139,250,.1)', borderBottom: '1px solid rgba(167,139,250,.1)', scrollMarginTop: '120px' }}>
-          <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 40, textAlign: 'center' }}>
+          <div className="narrow-wrap" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
+            <div className="outcomes-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 40, textAlign: 'center' }}>
               <div>
                 <div style={{ fontSize: 32, fontWeight: 700, color: '#4ade80', marginBottom: 8 }}>2+ hrs</div>
                 <div style={{ fontSize: 14, color: '#c4b5fd' }}>Saved per day</div>
@@ -2547,7 +2564,7 @@ export default function MarketingPage() {
                       aria-hidden="true"
                       tabIndex={-1}
                     />
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                    <div className="contact-two-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                       <div>
                         <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
                           Full name <span style={{ color: '#ef4444' }}>*</span>
