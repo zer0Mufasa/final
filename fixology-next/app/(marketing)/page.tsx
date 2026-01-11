@@ -285,6 +285,11 @@ body{font-family:'Poppins',sans-serif;background:#0f0a1a;min-height:100vh;overfl
     text-overflow: clip !important;
   }
 
+  /* Auth pages: mobile-friendly stacking and full-width cards */
+  .auth-grid{grid-template-columns:1fr!important;gap:18px!important}
+  .auth-card{max-width:100%!important;width:100%!important;padding:20px!important;margin:0!important}
+  .auth-side{display:none!important}
+
   /* Typography: readable sizes + no truncation */
   .glass-card p,
   .ticker-field p,

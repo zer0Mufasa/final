@@ -146,10 +146,10 @@ export default function SignupPage() {
       <div className="glow-spot" style={{ bottom: '12%', left: '10%', opacity: 0.7 }} />
 
       <div className="wide-container" style={{ paddingTop: 120, paddingBottom: 96 }}>
-        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-20">
+        <div className="grid items-start gap-12 lg:grid-cols-2 lg:gap-20 auth-grid">
           {/* Right (mobile first): form */}
           <div className="order-1 lg:order-2 fade-in">
-            <div className="glass-card" style={{ padding: 32, maxWidth: 620, marginLeft: 'auto' }}>
+            <div className="glass-card auth-card" style={{ padding: 32, maxWidth: 620, marginLeft: 'auto' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 18 }}>
                 <Link href="/" className="auth-link" aria-label="Back to Fixology home">
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
@@ -471,7 +471,7 @@ export default function SignupPage() {
           </div>
 
           {/* Left (desktop): subtle background + watermark (no marketing copy) */}
-          <div className="order-2 lg:order-1 fade-in">
+          <div className="order-2 lg:order-1 fade-in auth-side">
             <div style={{ position: 'relative', minHeight: 560 }}>
               <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
                 <div
