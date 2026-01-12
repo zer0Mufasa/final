@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { MarketingNav } from '@/components/marketing/mobile-nav';
+import { FixoProvider, FixoWidget } from '@/components/fixo/fixo-layout';
 
 const heroDemoScenarios = [
   { message: 'iphone 14 pro keeps restarting, no water damage, battery drains fast', issue: 'Battery health problem', pct: 85, explanation: "Battery can't hold power during normal use", repair: 'Battery test + replacement', time: '30–45 min', price: '$69–79' },
@@ -500,58 +501,8 @@ export default function MarketingPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
   const [roiRepairs, setRoiRepairs] = useState(150);
   const [roiTicket, setRoiTicket] = useState(120);
-  const [chatDockY, setChatDockY] = useState<number | null>(null);
-  const chatDockRef = useRef<HTMLDivElement>(null);
-  const chatFollowTimeoutRef = useRef<number | null>(null);
-
-  const computeChatDockY = useCallback(() => {
-    if (typeof window === 'undefined') return 0;
-    const isMobile = window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
-    const bottomPad = isMobile ? 160 : 96; // sits higher than bottom lip + clears mobile sticky bar
-    const h = chatDockRef.current?.getBoundingClientRect().height ?? 64;
-    const docH = document.documentElement.scrollHeight || 0;
-    const maxY = Math.max(24, docH - h - 24);
-    const y = window.scrollY + window.innerHeight - bottomPad - h;
-    return Math.min(Math.max(24, y), maxY);
-  }, []);
-
-  // "Lag-follow" chat dock: when user scrolls, wait 1s then glide the widget to the new dock position.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const setNow = () => setChatDockY(computeChatDockY());
-    setNow();
-
-    const onScroll = () => {
-      if (chatFollowTimeoutRef.current) window.clearTimeout(chatFollowTimeoutRef.current);
-      chatFollowTimeoutRef.current = window.setTimeout(() => {
-        setChatDockY(computeChatDockY());
-      }, 1000);
-    };
-
-    const onResize = () => {
-      if (chatFollowTimeoutRef.current) window.clearTimeout(chatFollowTimeoutRef.current);
-      setChatDockY(computeChatDockY());
-    };
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
-    return () => {
-      window.removeEventListener('scroll', onScroll as any);
-      window.removeEventListener('resize', onResize as any);
-      if (chatFollowTimeoutRef.current) window.clearTimeout(chatFollowTimeoutRef.current);
-    };
-  }, [computeChatDockY]);
-
-  // When opening/closing the panel, recalc dock height and animate to the correct spot.
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    // next frame so DOM has the new height
-    const t = window.setTimeout(() => setChatDockY(computeChatDockY()), 0);
-    return () => window.clearTimeout(t);
-  }, [chatOpen, computeChatDockY]);
   const [scheduleSubmitting, setScheduleSubmitting] = useState(false);
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
   const [scheduleError, setScheduleError] = useState('');
@@ -925,7 +876,8 @@ export default function MarketingPage() {
   const currentDx = dxData[dxIdx];
 
   return (
-    <>
+    <FixoProvider>
+      <>
       <style dangerouslySetInnerHTML={{ __html: globalStyles }} />
       <MarketingNav />
       <div className="bg-structure">
@@ -2748,75 +2700,6 @@ export default function MarketingPage() {
           </div>
         </section>
 
-        {/* LIVE CHAT WIDGET */}
-        <div
-          ref={chatDockRef}
-          className="fx-chat-dock"
-          style={{
-            position: 'absolute',
-            top: chatDockY ?? 24,
-            right: 24,
-            zIndex: 100,
-            transition: 'top .55s cubic-bezier(.2,.9,.25,1)',
-            willChange: 'top',
-          }}
-        >
-          {chatOpen ? (
-            <div className="glass-card" style={{ width: 320, padding: 24, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <div style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>Chat with Fixology</div>
-                <button
-                  onClick={() => setChatOpen(false)}
-                  style={{ background: 'transparent', border: 'none', color: '#a78bfa', cursor: 'pointer', fontSize: 20, padding: 4 }}
-                >
-                  ×
-                </button>
-              </div>
-              <div style={{ fontSize: 13, color: '#c4b5fd', marginBottom: 16, lineHeight: 1.6 }}>
-                Have questions? We're here to help. Send us a message and we'll get back to you soon.
-              </div>
-              <button
-                className="glow-button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' });
-                  setChatOpen(false);
-                }}
-                style={{ width: '100%', padding: '12px 20px', fontSize: 14 }}
-              >
-                Start Conversation →
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setChatOpen(true)}
-              className="glass-card"
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                border: '1px solid rgba(167,139,250,.3)',
-                boxShadow: '0 8px 30px rgba(167,139,250,.2)',
-                transition: 'all .3s ease'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = '0 12px 40px rgba(167,139,250,.3)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 8px 30px rgba(167,139,250,.2)';
-              }}
-            >
-              <span style={{ fontSize: 24 }}>💬</span>
-            </button>
-          )}
-        </div>
-
         {/* MOBILE STICKY BOTTOM BAR */}
         <div style={{
           position: 'fixed',
@@ -2865,14 +2748,6 @@ export default function MarketingPage() {
             .mobile-sticky-bar { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important; }
             /* Extra guard: never show the desktop marketing nav on mobile (even if utility CSS fails/caches). */
             [data-marketing-desktop-nav] { display: none !important; }
-            /* Keep chat dock above the sticky mobile CTA bar. */
-            .fx-chat-dock {
-              position: fixed !important;
-              top: auto !important;
-              right: 16px !important;
-              bottom: calc(140px + env(safe-area-inset-bottom, 0px) + 12px) !important;
-            }
-
             /* Comparison: cards on mobile, table hidden. */
             .comparison-table-wrap { display: none !important; }
             .comparison-cards { display: block !important; }
@@ -2884,8 +2759,6 @@ export default function MarketingPage() {
           @media (min-width: 769px) {
             .mobile-sticky-bar { display: none !important; }
             body { padding-bottom: 0 !important; }
-            .fx-chat-dock { position: absolute !important; right: 24px !important; }
-
             .comparison-table-wrap { display: block !important; }
             .comparison-cards { display: none !important; }
 
@@ -2914,6 +2787,8 @@ export default function MarketingPage() {
           </div>
         </footer>
       </div>
+      <FixoWidget />
     </>
+    </FixoProvider>
   );
 }
