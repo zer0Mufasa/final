@@ -5,6 +5,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 
+function safeLower(val: unknown): string {
+  if (typeof val === 'string') return val.toLowerCase()
+  if (typeof val === 'number') return String(val).toLowerCase()
+  return ''
+}
+
 const IMEICHECK_API_URL = 'https://api.imeicheck.net/v1/checks'
 
 export async function POST(request: NextRequest) {
@@ -106,12 +112,6 @@ function normalizeApiResponse(raw: any, imei: string) {
   // imeicheck.net returns { id, status, result, serviceId, deviceId, ... }
   const result = raw?.result || raw?.data || raw || {}
   const props = result.properties || {}
-
-  const safeLower = (val: unknown): string => {
-    if (typeof val === 'string') return val.toLowerCase()
-    if (typeof val === 'number') return String(val).toLowerCase()
-    return ''
-  }
 
   const brand =
     result.brand ||
