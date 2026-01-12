@@ -107,6 +107,12 @@ function normalizeApiResponse(raw: any, imei: string) {
   const result = raw?.result || raw?.data || raw || {}
   const props = result.properties || {}
 
+  const safeLower = (val: unknown): string => {
+    if (typeof val === 'string') return val.toLowerCase()
+    if (typeof val === 'number') return String(val).toLowerCase()
+    return ''
+  }
+
   const brand =
     result.brand ||
     result.brandName ||
@@ -117,7 +123,7 @@ function normalizeApiResponse(raw: any, imei: string) {
     result?.device?.brand ||
     result?.device?.manufacturer ||
     (props['apple/modelName'] ? 'Apple' : undefined) ||
-    (typeof props.deviceName === 'string' && props.deviceName.toLowerCase().includes('iphone') ? 'Apple' : undefined) ||
+    (typeof props.deviceName === 'string' && safeLower(props.deviceName).includes('iphone') ? 'Apple' : undefined) ||
     'Unknown'
 
   const model =
@@ -234,32 +240,32 @@ function normalizeApiResponse(raw: any, imei: string) {
 }
 
 function mapSimLock(status?: string): 'locked' | 'unlocked' | 'unknown' {
-  if (!status) return 'unknown'
-  const lower = status.toLowerCase()
+  const lower = safeLower(status)
+  if (!lower) return 'unknown'
   if (lower.includes('unlock') || lower === 'off') return 'unlocked'
   if (lower.includes('lock') || lower === 'on') return 'locked'
   return 'unknown'
 }
 
 function mapBlacklistStatus(status?: string): 'clean' | 'blacklisted' | 'unknown' {
-  if (!status) return 'unknown'
-  const lower = status.toLowerCase()
+  const lower = safeLower(status)
+  if (!lower) return 'unknown'
   if (lower.includes('clean') || lower === 'no' || lower === 'off') return 'clean'
   if (lower.includes('black') || lower === 'yes' || lower === 'on') return 'blacklisted'
   return 'unknown'
 }
 
 function mapWarrantyStatus(status?: string): 'active' | 'expired' | 'unknown' {
-  if (!status) return 'unknown'
-  const lower = status.toLowerCase()
+  const lower = safeLower(status)
+  if (!lower) return 'unknown'
   if (lower.includes('active') || lower === 'yes') return 'active'
   if (lower.includes('expir') || lower === 'no') return 'expired'
   return 'unknown'
 }
 
 function mapICloudStatus(status?: string): 'on' | 'off' | 'unknown' {
-  if (!status) return 'unknown'
-  const lower = status.toLowerCase()
+  const lower = safeLower(status)
+  if (!lower) return 'unknown'
   if (lower === 'off' || lower === 'clean' || lower === 'no') return 'off'
   if (lower === 'on' || lower === 'locked' || lower === 'yes') return 'on'
   return 'unknown'
