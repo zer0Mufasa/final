@@ -100,8 +100,22 @@ export async function POST(request: NextRequest) {
     }
 
     const apiResponse = await response.json().catch(() => ({} as any))
-    const normalized = normalizeApiResponse(apiResponse, cleanIMEI)
-    return NextResponse.json(normalized, { status: 200 })
+    try {
+      const normalized = normalizeApiResponse(apiResponse, cleanIMEI)
+      return NextResponse.json(normalized, { status: 200 })
+    } catch (e: any) {
+      console.error('IMEI normalize error', e?.message || e, { apiResponse })
+      // Fail soft: return a minimal shape instead of throwing so the UI won't crash
+      return NextResponse.json(
+        {
+          imei: cleanIMEI,
+          valid: false,
+          error: 'IMEI data could not be normalized',
+          raw: apiResponse,
+        },
+        { status: 200 }
+      )
+    }
   } catch (error: any) {
     console.error('IMEI Lookup Error:', error)
     return NextResponse.json({ error: error?.message || 'Failed to lookup IMEI' }, { status: 500 })
