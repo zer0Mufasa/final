@@ -17,17 +17,23 @@ function toMode(value: unknown): Mode {
 type Blacklist = 'clean' | 'blacklisted' | 'unknown'
 type SimLock = 'locked' | 'unlocked' | 'unknown'
 
+function safeLower(val: unknown): string {
+  if (typeof val === 'string') return val.toLowerCase()
+  if (typeof val === 'number') return String(val).toLowerCase()
+  return ''
+}
+
 function mapBlacklist(status?: string): Blacklist {
-  if (!status) return 'unknown'
-  const s = status.toLowerCase()
+  const s = safeLower(status)
+  if (!s) return 'unknown'
   if (s.includes('black')) return 'blacklisted'
   if (s.includes('clean')) return 'clean'
   return 'unknown'
 }
 
 function mapSimLock(status?: string): SimLock {
-  if (!status) return 'unknown'
-  const s = status.toLowerCase()
+  const s = safeLower(status)
+  if (!s) return 'unknown'
   if (s.includes('unlock')) return 'unlocked'
   if (s.includes('lock')) return 'locked'
   return 'unknown'
