@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { MarketingNav } from '@/components/marketing/mobile-nav';
-import { FixoProvider, FixoWidget } from '@/components/fixo/fixo-layout';
+import { FixoProvider, FixoWidget } from '@/components/fixo/fixo-chat-widget';
 
 const heroDemoScenarios = [
   { message: 'iphone 14 pro keeps restarting, no water damage, battery drains fast', issue: 'Battery health problem', pct: 85, explanation: "Battery can't hold power during normal use", repair: 'Battery test + replacement', time: '30–45 min', price: '$69–79' },
