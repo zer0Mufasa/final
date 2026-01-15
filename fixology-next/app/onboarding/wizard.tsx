@@ -181,7 +181,7 @@ export function OnboardingWizard({ initial }: { initial: InitialData }) {
       return true
     }
     return true
-  }, [saving, step, shopName, timezone, phone, repairFocus, techEmail])
+  }, [saving, step, shopName, phone, repairFocus, techEmail])
 
   const saveStep = async (overrideStep?: number) => {
     const currentStep = overrideStep ?? step

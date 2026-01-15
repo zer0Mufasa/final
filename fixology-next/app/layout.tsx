@@ -22,6 +22,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.fixologyai.com'),
   title: {
     default: 'Fixology - AI-Powered Repair Intelligence',
     template: '%s | Fixology',
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://fixologyai.com',
+    url: 'https://www.fixologyai.com',
     siteName: 'Fixology',
     title: 'Fixology - AI-Powered Repair Intelligence',
     description:

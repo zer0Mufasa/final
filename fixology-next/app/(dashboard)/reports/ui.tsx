@@ -448,7 +448,7 @@ export function ReportsClient() {
       if (date.getMonth() > month && date.getDay() === 6) break
     }
     return days.slice(0, 35)
-  }, [currentMonth, entries, selectedStaff])
+  }, [currentMonth, entries, selectedStaff, activity])
 
   const staffNameById = useMemo(() => {
     const m: Record<string, string> = {}

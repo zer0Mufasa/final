@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import { getAdminFromRequest } from '@/lib/admin/auth'
 
+// This route depends on request headers/cookies for authentication, so it must be dynamic.
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const admin = getAdminFromRequest(request)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -176,17 +176,17 @@ export function AdminShell({ admin, children }: AdminShellProps) {
     } catch {}
   }, [])
 
-  const clearCloseTimeout = () => {
+  const clearCloseTimeout = useCallback(() => {
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current)
       closeTimeoutRef.current = null
     }
-  }
+  }, [])
 
-  const scheduleClose = () => {
+  const scheduleClose = useCallback(() => {
     clearCloseTimeout()
     closeTimeoutRef.current = setTimeout(() => setCollapsed(true), 220)
-  }
+  }, [clearCloseTimeout])
 
   // Hover-based expand/collapse (desktop only)
   useEffect(() => {
@@ -217,7 +217,7 @@ export function AdminShell({ admin, children }: AdminShellProps) {
       window.removeEventListener('mousemove', handleMouseMove)
       clearCloseTimeout()
     }
-  }, [collapsed])
+  }, [collapsed, clearCloseTimeout, scheduleClose])
 
   const setCollapsedPersist = (v: boolean) => {
     setCollapsed(v)

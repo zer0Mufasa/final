@@ -30,6 +30,74 @@ function hoursFromNow(iso: string) {
   return Math.round(diff / (60 * 60 * 1000))
 }
 
+function mapApiStatusToUi(s: string): TicketStatus | 'ALL' {
+  switch (s) {
+    case 'IN_PROGRESS':
+      return 'IN_REPAIR'
+    case 'PICKED_UP':
+      return 'READY'
+    case 'CANCELLED':
+      return 'READY'
+    default:
+      return s as TicketStatus
+  }
+}
+
+function mapUiStatusToApi(s: TicketStatus): string {
+  switch (s) {
+    case 'IN_REPAIR':
+      return 'IN_PROGRESS'
+    default:
+      return s
+  }
+}
+
+function mapApiTicketToUi(t: any): Ticket {
+  const customerName = t?.customer
+    ? `${t.customer.firstName ?? ''} ${t.customer.lastName ?? ''}`.trim() || 'Customer'
+    : t?.customerName || 'Customer'
+  const customerPhone = t?.customer?.phone || t?.customerPhone || '—'
+  const customerEmail = t?.customer?.email || t?.customerEmail || undefined
+  const device =
+    `${t.deviceBrand ?? ''} ${t.deviceType ?? ''}${t.deviceModel ? ` ${t.deviceModel}` : ''}`.trim() ||
+    'Device'
+  const promisedAt = (t.dueAt || t.intakeAt || t.createdAt || new Date().toISOString()) as string
+
+  return {
+    id: t.id,
+    ticketNumber: t.ticketNumber || t.ticket_number || 'FIX-????',
+    customerId: t.customerId,
+    customerName,
+    customerPhone,
+    customerEmail,
+    device,
+    deviceType: t.deviceType,
+    deviceModel: t.deviceModel,
+    imei: t.imei || undefined,
+    passcode: t.passcode || undefined,
+    issue: t.issueDescription || undefined,
+    symptoms: Array.isArray(t.symptoms) ? t.symptoms : undefined,
+    diagnosis: t.diagnosis || undefined,
+    repairType: t.resolution || undefined,
+    status: mapApiStatusToUi(String(t.status)) as TicketStatus,
+    priority: (t.priority || 'medium')?.toString?.().toLowerCase?.() as any,
+    promisedAt,
+    createdAt: (t.createdAt || t.intakeAt || new Date().toISOString()) as string,
+    startedAt: t.repairedAt || undefined,
+    completedAt: t.completedAt || undefined,
+    price: Number(t.estimatedCost || t.actualCost || 0),
+    deposit: undefined,
+    depositPaid: undefined,
+    assignedTo: t.assignedTo?.name || undefined,
+    risk: 'none',
+    riskReasons: [],
+    notes: [],
+    statusHistory: [],
+    source: 'walk-in',
+    tags: [],
+  }
+}
+
 export function TicketsClient() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -56,72 +124,6 @@ export function TicketsClient() {
     }, 650)
     return () => clearTimeout(t)
   }, [])
-
-  const mapApiStatusToUi = (s: string): TicketStatus | 'ALL' => {
-    switch (s) {
-      case 'IN_PROGRESS':
-        return 'IN_REPAIR'
-      case 'PICKED_UP':
-        return 'READY'
-      case 'CANCELLED':
-        return 'READY'
-      default:
-        return s as TicketStatus
-    }
-  }
-
-  const mapUiStatusToApi = (s: TicketStatus): string => {
-    switch (s) {
-      case 'IN_REPAIR':
-        return 'IN_PROGRESS'
-      default:
-        return s
-    }
-  }
-
-  const mapApiTicketToUi = (t: any): Ticket => {
-    const customerName = t?.customer
-      ? `${t.customer.firstName ?? ''} ${t.customer.lastName ?? ''}`.trim() || 'Customer'
-      : t?.customerName || 'Customer'
-    const customerPhone = t?.customer?.phone || t?.customerPhone || '—'
-    const customerEmail = t?.customer?.email || t?.customerEmail || undefined
-    const device = `${t.deviceBrand ?? ''} ${t.deviceType ?? ''}${t.deviceModel ? ` ${t.deviceModel}` : ''}`.trim() || 'Device'
-    const promisedAt = (t.dueAt || t.intakeAt || t.createdAt || new Date().toISOString()) as string
-
-    return {
-      id: t.id,
-      ticketNumber: t.ticketNumber || t.ticket_number || 'FIX-????',
-      customerId: t.customerId,
-      customerName,
-      customerPhone,
-      customerEmail,
-      device,
-      deviceType: t.deviceType,
-      deviceModel: t.deviceModel,
-      imei: t.imei || undefined,
-      passcode: t.passcode || undefined,
-      issue: t.issueDescription || undefined,
-      symptoms: Array.isArray(t.symptoms) ? t.symptoms : undefined,
-      diagnosis: t.diagnosis || undefined,
-      repairType: t.resolution || undefined,
-      status: mapApiStatusToUi(String(t.status)) as TicketStatus,
-      priority: (t.priority || 'medium')?.toString?.().toLowerCase?.() as any,
-      promisedAt,
-      createdAt: (t.createdAt || t.intakeAt || new Date().toISOString()) as string,
-      startedAt: t.repairedAt || undefined,
-      completedAt: t.completedAt || undefined,
-      price: Number(t.estimatedCost || t.actualCost || 0),
-      deposit: undefined,
-      depositPaid: undefined,
-      assignedTo: t.assignedTo?.name || undefined,
-      risk: 'none',
-      riskReasons: [],
-      notes: [],
-      statusHistory: [],
-      source: 'walk-in',
-      tags: [],
-    }
-  }
 
   const fetchTickets = useCallback(async () => {
     try {

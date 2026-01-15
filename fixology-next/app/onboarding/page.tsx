@@ -34,6 +34,7 @@ export default function OnboardingPage() {
   const billing = params.get('billing')
   const reason = params.get('reason') || undefined
   const checkout = params.get('checkout')
+  const isBillingRequired = billing === 'required'
 
   const [loading, setLoading] = useState(true)
   const [initial, setInitial] = useState<any>(null)
@@ -48,12 +49,10 @@ export default function OnboardingPage() {
     }
   }, [checkout])
 
-  // Billing-required pages are fully client-safe.
-  if (billing === 'required') {
-    return <BillingRequired reason={reason} />
-  }
-
   useEffect(() => {
+    // Billing-required variant is a pure UI route; don't run the onboarding fetch/redirect logic.
+    if (isBillingRequired) return
+
     let cancelled = false
 
     const run = async () => {
@@ -130,7 +129,12 @@ export default function OnboardingPage() {
     return () => {
       cancelled = true
     }
-  }, [router])
+  }, [router, isBillingRequired])
+
+  // Billing-required pages are fully client-safe.
+  if (isBillingRequired) {
+    return <BillingRequired reason={reason} />
+  }
 
   if (hardError) return <BillingRequired reason={hardError} />
 

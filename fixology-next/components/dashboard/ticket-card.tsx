@@ -5,7 +5,7 @@
 
 import { Ticket, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
-import { useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 interface TicketCardProps {
   ticket: {
@@ -53,24 +53,34 @@ function formatDate(date: Date | string): string {
 }
 
 export function TicketCard({ ticket, onClick, isSelected }: TicketCardProps) {
-  if (!ticket) return null
+  const createdAt = useMemo(() => {
+    return ticket?.createdAt ? new Date(ticket.createdAt) : new Date()
+  }, [ticket?.createdAt])
 
-  const deviceDisplay = ticket.deviceModel || ticket.deviceType || 'Device'
-  const customerName = ticket.customer 
-    ? `${ticket.customer.firstName || ''} ${ticket.customer.lastName || ''}`.trim() || 'Unknown Customer'
-    : 'Unknown Customer'
-  const isOverdue = ticket.isOverdue || (ticket.dueAt && new Date(ticket.dueAt).getTime() < new Date().getTime())
-  const createdAt = ticket.createdAt ? new Date(ticket.createdAt) : new Date()
-  const [timeAgo, setTimeAgo] = useState(formatTimeAgo(createdAt))
+  const [timeAgo, setTimeAgo] = useState(() => formatTimeAgo(createdAt))
   const [showTimer, setShowTimer] = useState(false)
 
   // Update timer every minute
   useEffect(() => {
+    // Make sure it updates immediately when the ticket changes.
+    setTimeAgo(formatTimeAgo(createdAt))
+
     const interval = setInterval(() => {
       setTimeAgo(formatTimeAgo(createdAt))
     }, 60000)
     return () => clearInterval(interval)
   }, [createdAt])
+
+  if (!ticket) return null
+
+  const deviceDisplay = ticket.deviceModel || ticket.deviceType || 'Device'
+  const customerName = ticket.customer
+    ? `${ticket.customer.firstName || ''} ${ticket.customer.lastName || ''}`.trim() ||
+      'Unknown Customer'
+    : 'Unknown Customer'
+  const isOverdue =
+    ticket.isOverdue ||
+    (ticket.dueAt && new Date(ticket.dueAt).getTime() < new Date().getTime())
 
   return (
     <div
