@@ -3,8 +3,8 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Cpu, Loader2, RefreshCw, CheckCircle, AlertTriangle } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { RefreshCw, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { ReticleIcon, ReticleLoader } from '@/components/shared/reticle-icon'
 
@@ -46,7 +46,7 @@ export function AIDiagnosticsPanel({
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const runDiagnostics = async () => {
+  const runDiagnostics = useCallback(async () => {
     setIsAnalyzing(true)
     setError(null)
 
@@ -65,25 +65,29 @@ export function AIDiagnosticsPanel({
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to analyze')
+        const data: unknown = await response.json().catch(() => null)
+        const message =
+          typeof data === 'object' && data && 'error' in data && typeof (data as any).error === 'string'
+            ? (data as any).error
+            : 'Failed to analyze'
+        throw new Error(message)
       }
 
       const data = await response.json()
       setResult(data)
-    } catch (err: any) {
-      setError(err.message || 'Failed to generate diagnostics')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to generate diagnostics')
     } finally {
       setIsAnalyzing(false)
     }
-  }
+  }, [deviceBrand, deviceModel, deviceType, issueDescription, symptoms, ticketId])
 
   // Auto-run on mount if no existing diagnosis
   useEffect(() => {
     if (!result && !isAnalyzing) {
       runDiagnostics()
     }
-  }, [])
+  }, [isAnalyzing, result, runDiagnostics])
 
   return (
     <div className="p-4 rounded-xl bg-white/[0.03] border border-white/10">

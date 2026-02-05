@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Info, ShieldCheck, ArrowRightLeft, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -74,7 +75,7 @@ export function ApprovalCard({
     <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-5 space-y-4 max-w-xl">
       <div className="flex items-center gap-3">
         <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 overflow-hidden flex items-center justify-center">
-          <img src={deviceImage} alt="Device" className="object-contain w-full h-full" />
+          <Image src={deviceImage} alt="Device" width={112} height={112} className="object-contain w-full h-full" unoptimized />
         </div>
         <div>
           <p className="text-white font-semibold">Repair approval</p>

@@ -7,6 +7,63 @@ import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-
 import crypto from 'crypto'
 import { Prisma } from '@prisma/client'
 
+type DemoState = {
+  shopOpen?: boolean
+  // Multi-user demo tracking
+  timeEntries?: Array<{
+    id: string
+    userId: string
+    userName: string
+    clockIn: string
+    clockOut: string | null
+    breakMinutes: number
+    openedShop: boolean
+    closedShop: boolean
+    notes?: string | null
+  }>
+  activity?: any[]
+  preferences?: Record<string, any>
+}
+
+function isDemo(req: NextRequest) {
+  return req.cookies.get('fx_demo')?.value === '1'
+}
+
+function readActor(req: NextRequest): { id: string; name: string } {
+  try {
+    const raw = req.cookies.get('fx_actor')?.value
+    if (!raw) return { id: 'demo', name: 'Demo User' }
+    const parsed = JSON.parse(decodeURIComponent(raw))
+    const id = typeof parsed?.id === 'string' ? parsed.id : 'demo'
+    const name = typeof parsed?.name === 'string' ? parsed.name : 'Demo User'
+    return { id, name }
+  } catch {
+    return { id: 'demo', name: 'Demo User' }
+  }
+}
+
+function readDemoState(req: NextRequest): DemoState {
+  try {
+    const raw = req.cookies.get('fx_demo_state')?.value
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? (parsed as DemoState) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeDemoState(res: NextResponse, next: DemoState) {
+  res.cookies.set({
+    name: 'fx_demo_state',
+    value: JSON.stringify(next),
+    path: '/',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: false,
+  })
+}
+
 // No-op safeguards (legacy; table may not have these columns)
 async function ensureColumns() {
   try {
@@ -45,7 +102,22 @@ async function appendActivity(shopId: string, features: any, event: any) {
   })
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Demo mode: allow UI to work without auth/DB
+  if (isDemo(request)) {
+    const actor = readActor(request)
+    const state = readDemoState(request)
+    const entries = Array.isArray(state.timeEntries) ? state.timeEntries : []
+    const open = entries
+      .filter((e) => e.userId === actor.id && !e.clockOut)
+      .sort((a, b) => (a.clockIn < b.clockIn ? 1 : -1))[0]
+    const clockedIn = !!open
+    return NextResponse.json({
+      clockedIn,
+      entry: open || null,
+    })
+  }
+
   const context = await getShopContext()
   if (isContextError(context)) {
     return NextResponse.json({ error: context.error }, { status: context.status })
@@ -68,6 +140,94 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Demo mode: keep state in cookie and return success
+  if (isDemo(request)) {
+    const body = await request.json().catch(() => ({}))
+    const intent = typeof body?.intent === 'string' ? body.intent : 'toggle'
+
+    const actor = readActor(request)
+    const state = readDemoState(request)
+    const entries = Array.isArray(state.timeEntries) ? state.timeEntries.slice(0) : []
+    const open = entries
+      .filter((e) => e.userId === actor.id && !e.clockOut)
+      .sort((a, b) => (a.clockIn < b.clockIn ? 1 : -1))[0]
+    const wasClockedIn = !!open
+
+    const nextActivity = Array.isArray(state.activity) ? state.activity.slice(0) : []
+    const nowIso = new Date().toISOString()
+
+    let nextClockedIn = wasClockedIn
+    let returnedEntry: any = null
+
+    const startOfDay = new Date()
+    startOfDay.setHours(0, 0, 0, 0)
+    const anyEntryToday = entries.some((e) => new Date(e.clockIn) >= startOfDay)
+
+    if (intent === 'clock_in' || (intent === 'toggle' && !wasClockedIn)) {
+      nextClockedIn = true
+      const created = {
+        id: crypto.randomUUID(),
+        userId: actor.id,
+        userName: actor.name,
+        clockIn: nowIso,
+        clockOut: null,
+        breakMinutes: 0,
+        openedShop: !anyEntryToday,
+        closedShop: false,
+        notes: null,
+      }
+      entries.unshift(created)
+      returnedEntry = created
+      nextActivity.unshift({
+        id: crypto.randomUUID(),
+        type: 'clock_in',
+        userId: actor.id,
+        userName: actor.name,
+        timestamp: nowIso,
+        entryId: created.id,
+      })
+      if (!anyEntryToday) {
+        nextActivity.unshift({
+          id: crypto.randomUUID(),
+          type: 'shop_open',
+          userId: actor.id,
+          userName: actor.name,
+          timestamp: nowIso,
+          entryId: created.id,
+        })
+      }
+    } else if (intent === 'clock_out' || (intent === 'toggle' && wasClockedIn)) {
+      nextClockedIn = false
+      const idx = open ? entries.findIndex((e) => e.id === open.id) : -1
+      const closed = open
+        ? { ...open, clockOut: nowIso }
+        : null
+      if (closed && idx >= 0) entries[idx] = closed
+      returnedEntry = closed
+      nextActivity.unshift({
+        id: crypto.randomUUID(),
+        type: 'clock_out',
+        userId: actor.id,
+        userName: actor.name,
+        timestamp: nowIso,
+        entryId: open?.id || crypto.randomUUID(),
+      })
+    }
+
+    const nextState: DemoState = {
+      ...state,
+      timeEntries: entries.slice(0, 200),
+      activity: nextActivity.slice(0, 50),
+    }
+
+    const res = NextResponse.json({
+      clockedIn: nextClockedIn,
+      entry: returnedEntry,
+    })
+    writeDemoState(res, nextState)
+    return res
+  }
+
   try {
     const context = await getShopContext()
     if (isContextError(context)) {

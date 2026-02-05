@@ -6,8 +6,9 @@ import { prisma } from '@/lib/prisma/client'
 import bcrypt from 'bcryptjs'
 import { addDays } from 'date-fns'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { Prisma } from '@prisma/client'
+import { sendWelcomeEmail } from '@/lib/email/send'
 
 // Generate a URL-safe slug from shop name
 function generateSlug(name: string): string {
@@ -188,14 +189,13 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       {
         cookies: {
-          get(name: string) {
-            return request.cookies.get(name)?.value
+          getAll() {
+            return request.cookies.getAll()
           },
-          set(name: string, value: string, options: CookieOptions) {
-            response.cookies.set({ name, value, ...options, secure })
-          },
-          remove(name: string, options: CookieOptions) {
-            response.cookies.set({ name, value: '', ...options, secure })
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set({ name, value, ...options, secure })
+            })
           },
         },
       }
@@ -205,10 +205,32 @@ export async function POST(request: NextRequest) {
     if (signInError) {
       // User is created + shop is created, but we couldn't auto-login.
       // Return success anyway and let them login manually.
+      try {
+        await sendWelcomeEmail(email, {
+          shopName: result.shop.name,
+          ownerName: ownerName,
+          trialDays: 14,
+          loginUrl: `${request.nextUrl.origin}/dashboard`,
+        })
+      } catch {
+        // never block signup due to email failures
+      }
       return NextResponse.json(
         { success: true, shop: { id: result.shop.id, name: result.shop.name, slug: result.shop.slug } },
         { status: 201 }
       )
+    }
+
+    // Best-effort: welcome email (does not block signup).
+    try {
+      await sendWelcomeEmail(email, {
+        shopName: result.shop.name,
+        ownerName: ownerName,
+        trialDays: 14,
+        loginUrl: `${request.nextUrl.origin}/dashboard`,
+      })
+    } catch {
+      // never block signup due to email failures
     }
 
     return response

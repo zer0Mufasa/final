@@ -306,7 +306,14 @@ export function SupportClient() {
           {/* Support Options */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <SupportCard emoji="✨" title="Fixo AI Assistant" desc="Get instant answers powered by AI" cta="Start chat" variant="featured" badge="New" onClick={openChat} />
-            <SupportCard emoji="📚" title="Documentation" desc="In-depth guides and tutorials" cta="Browse docs" variant="default" />
+            <SupportCard
+              emoji="📚"
+              title="Documentation"
+              desc="In-depth guides and tutorials"
+              cta="Browse docs"
+              variant="default"
+              onClick={() => (window.location.href = '/support/docs')}
+            />
             <SupportCard emoji="🎥" title="Video Tutorials" desc="Step-by-step video walkthroughs" cta="Watch videos" variant="default" badge="12 videos" />
           </div>
 
@@ -673,7 +680,10 @@ function SupportCard({
 
 function TopicCard({ topic }: { topic: { id: string; emoji: string; title: string; desc: string; articles: number } }) {
   return (
-    <button className="p-4 rounded-xl bg-[var(--bg-card)] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all text-left group">
+    <Link
+      href={`/support/docs?topic=${encodeURIComponent(topic.id)}`}
+      className="block p-4 rounded-xl bg-[var(--bg-card)] border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all text-left group"
+    >
       <div className="flex items-start gap-3">
         <span className="text-2xl">{topic.emoji}</span>
         <div className="flex-1 min-w-0">
@@ -683,7 +693,7 @@ function TopicCard({ topic }: { topic: { id: string; emoji: string; title: strin
         </div>
         <ChevronRight className="w-4 h-4 text-[var(--text-primary)]/20 group-hover:text-[var(--text-primary)]/40 group-hover:translate-x-0.5 transition-all shrink-0" />
       </div>
-    </button>
+    </Link>
   )
 }
 

@@ -75,7 +75,7 @@ export function BillingRequired({ reason }: BillingRequiredProps) {
           {/* Actions */}
           <div className="space-y-3">
             <button
-              onClick={() => router.push('/settings?tab=billing')}
+              onClick={() => router.push('/settings/billing')}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all"
             >
               <CreditCard className="w-5 h-5" />

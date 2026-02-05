@@ -28,12 +28,14 @@ npm install
 cp .env.example .env.local
 ```
 
-4. Fill in your environment variables:
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anon key
-- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
-- `DATABASE_URL` - Your database connection string
-- `DIRECT_URL` - Your direct database connection string
+4. Fill in your environment variables (see `.env.example`):
+- **Core**: `DATABASE_URL`, `DIRECT_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`
+- **Stripe (paid plans)**: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PROFESSIONAL`
+- **Email (contact + notifications)**: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CONTACT_TO`, `CONTACT_FROM`
+- **Admin (production)**: `ADMIN_JWT_SECRET`
+- **Optional**: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `NOVITA_API_KEY`, `IMEICHECK_API_KEY`
+
+For go-live validation, follow `LAUNCH-CHECKLIST.md` and use **Admin → Launch Readiness** (`/admin/launch-readiness`).
 
 5. Generate Prisma client and push schema:
 ```bash

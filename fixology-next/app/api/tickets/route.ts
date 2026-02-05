@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import { getShopContext, isContextError, isPlatformAdmin, isShopUser } from '@/lib/auth/get-shop-context'
+import { sendTicketCreatedEmail } from '@/lib/email/send'
 
 // GET /api/tickets - List tickets for the shop
 export async function GET(request: NextRequest) {
@@ -280,6 +281,29 @@ export async function POST(request: NextRequest) {
       where: { id: customerId },
       data: { ticketCount: { increment: 1 } },
     })
+
+    // Best-effort: customer notification (does not block ticket creation).
+    try {
+      const customerEmail = ticket.customer?.email
+      if (customerEmail) {
+        const shop = await prisma.shop.findUnique({
+          where: { id: shopId },
+          select: { name: true },
+        })
+        const customerName = [ticket.customer?.firstName, ticket.customer?.lastName].filter(Boolean).join(' ') || 'there'
+        await sendTicketCreatedEmail(customerEmail, {
+          customerName,
+          ticketNumber: ticket.ticketNumber,
+          deviceType: ticket.deviceType,
+          deviceBrand: ticket.deviceBrand,
+          issueSummary: ticket.issueDescription,
+          shopName: shop?.name || 'Fixology Repair Shop',
+          dashboardUrl: undefined,
+        })
+      }
+    } catch {
+      // ignore
+    }
 
     return NextResponse.json(ticket, { status: 201 })
   } catch (error) {

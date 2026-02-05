@@ -9,6 +9,7 @@ import {
   Bell,
   ChevronLeft,
   Crown,
+  ClipboardCheck,
   Flag,
   LayoutDashboard,
   LogOut,
@@ -86,6 +87,7 @@ const NAV: Array<{ title?: string; items: NavItem[] }> = [
     title: 'Platform',
     items: [
       { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+      { href: '/admin/launch-readiness', label: 'Launch Readiness', icon: ClipboardCheck },
       { href: '/admin/system', label: 'System', icon: Server },
       { href: '/admin/features', label: 'Features', icon: Flag },
       { href: '/admin/announcements', label: 'Announcements', icon: Bell },
@@ -139,6 +141,7 @@ function routeLabel(pathname: string) {
   if (pathname.startsWith('/admin/users')) return 'Users'
   if (pathname.startsWith('/admin/billing')) return 'Billing'
   if (pathname.startsWith('/admin/support')) return 'Support'
+  if (pathname.startsWith('/admin/launch-readiness')) return 'Launch Readiness'
   if (pathname.startsWith('/admin/clone')) return 'Clone Center'
   if (pathname.startsWith('/admin/god-mode')) return 'God Mode'
   if (pathname.startsWith('/admin/segments')) return 'Tags & Segments'

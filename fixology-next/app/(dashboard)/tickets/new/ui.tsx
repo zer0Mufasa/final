@@ -673,6 +673,8 @@ type ModelButtonProps = {
 
 function ModelButton({ model, category, isSelected, onSelect, priority }: ModelButtonProps) {
   const [failed, setFailed] = useState(false)
+  const [loaded, setLoaded] = useState(false)
+  const [candidateIdx, setCandidateIdx] = useState(0)
   const sources = useMemo(() => {
     const list = modelImageCandidates(category, model)
     const thumbs = list.map(toThumbPath)
@@ -685,6 +687,24 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
   const isOther = model.toLowerCase().includes('other')
   const src = isOther ? deviceCatalog[category].imageSrc : sources[0] || deviceCatalog[category].imageSrc
   const scaleClass = category === 'ps5' || category === 'xbox' ? 'scale-110' : ''
+
+  useEffect(() => {
+    setFailed(false)
+    setLoaded(false)
+    setCandidateIdx(0)
+  }, [category, model])
+
+  const handleImageError = () => {
+    if (failed) return
+    const nextIdx = candidateIdx + 1
+    const next = sources[nextIdx]
+    if (next) {
+      setCandidateIdx(nextIdx)
+      setLoaded(false)
+      return
+    }
+    setFailed(true)
+  }
 
   return (
     <button
@@ -700,45 +720,21 @@ function ModelButton({ model, category, isSelected, onSelect, priority }: ModelB
       {!failed ? (
         <div className={cn('relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-white/40 border border-black/5 overflow-hidden', !isSelected && 'bg-white')}>
           <div className="absolute inset-0 bg-gradient-to-r from-white/10 via-white/20 to-white/10 animate-pulse" />
-          <img
-            data-candidate-idx={0}
-            src={src}
+          <NextImage
+            src={isOther ? src : sources[candidateIdx] || src}
             alt={model}
             width={120}
             height={120}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            fetchPriority={priority ? 'high' : 'auto'}
+            priority={!!priority}
+            unoptimized
             style={{ contentVisibility: 'auto', containIntrinsicSize: '100px 100px' }}
             className={cn(
-              'object-contain w-full h-full relative z-10 opacity-0 transition-opacity duration-150',
+              'object-contain w-full h-full relative z-10 transition-opacity duration-150',
+              loaded ? 'opacity-100' : 'opacity-0',
               scaleClass
             )}
-            onLoad={(e) => {
-              e.currentTarget.classList.remove('opacity-0')
-            }}
-            onError={(e) => {
-              if (failed) return
-              const el = e.currentTarget as HTMLImageElement
-              const currentFull = el.currentSrc || el.src || ''
-              const current = currentFull.replace(window.location.origin, '')
-              const currentIdx = Number(el.dataset.candidateIdx ?? '-1')
-              const idx = sources.findIndex((c) => c === current || current.endsWith(c))
-              const nextIdx = (idx >= 0 ? idx : currentIdx) + 1
-              const next = sources[nextIdx]
-              if (next && next !== current) {
-                el.dataset.candidateIdx = String(nextIdx)
-                el.src = next
-                return
-              }
-              // final fallback to category image
-              const catImg = deviceCatalog[category].imageSrc
-              if (catImg && current !== catImg) {
-                el.src = catImg
-                return
-              }
-              setFailed(true)
-            }}
+            onLoadingComplete={() => setLoaded(true)}
+            onError={handleImageError}
           />
         </div>
       ) : (

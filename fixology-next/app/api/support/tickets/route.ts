@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma/client'
 import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-context'
 import { z } from 'zod'
+import { sendEmail } from '@/lib/email/send'
 
 const CreateSupportTicketSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -87,6 +88,55 @@ export async function POST(request: NextRequest) {
           supportTickets: updatedTickets,
         },
       },
+    })
+
+    // Best-effort: notify internal support (does not block ticket creation).
+    const supportTo = process.env.SUPPORT_TO || process.env.CONTACT_TO
+    const supportFrom = process.env.SUPPORT_FROM || process.env.CONTACT_FROM
+    if (supportTo) {
+      const summary = [
+        `Ticket: ${ticketId}`,
+        `Shop: ${context.shopId}`,
+        `From: ${data.name} <${data.email}>`,
+        `Category: ${data.category}`,
+        `Priority: ${data.priority}`,
+        `Title: ${data.title}`,
+        '',
+        data.message,
+      ].join('\n')
+
+      await sendEmail({
+        to: supportTo,
+        from: supportFrom || undefined,
+        replyTo: data.email,
+        subject: `[Fixology Support] ${ticketId} • ${data.title}`,
+        text: summary,
+        tags: [
+          { name: 'type', value: 'support_ticket' },
+          { name: 'ticket', value: ticketId },
+          { name: 'shopId', value: context.shopId },
+        ],
+      })
+    }
+
+    // Best-effort: confirmation to the submitter (only if email is configured).
+    await sendEmail({
+      to: data.email,
+      subject: `We received your support ticket (${ticketId})`,
+      text: [
+        `Hi ${data.name},`,
+        '',
+        `We received your support request: ${data.title}`,
+        `Ticket ID: ${ticketId}`,
+        '',
+        'We’ll follow up as soon as possible.',
+        '',
+        '— Fixology Support',
+      ].join('\n'),
+      tags: [
+        { name: 'type', value: 'support_ticket_confirmation' },
+        { name: 'ticket', value: ticketId },
+      ],
     })
 
     return NextResponse.json({ success: true, ticket: newTicket }, { status: 201 })

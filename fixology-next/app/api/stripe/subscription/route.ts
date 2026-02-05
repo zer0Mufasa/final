@@ -6,9 +6,24 @@ import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma/client'
 import { getStripeServer } from '@/lib/stripe/server'
 import { PLANS } from '@/lib/stripe/plans'
+import Stripe from 'stripe'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+
+function mapStripeSubscriptionStatusToShopStatus(status: Stripe.Subscription.Status) {
+  if (status === 'trialing') return 'TRIAL' as const
+  if (status === 'active') return 'ACTIVE' as const
+  if (status === 'past_due' || status === 'unpaid') return 'PAST_DUE' as const
+  if (status === 'canceled') return 'CANCELLED' as const
+  if (status === 'incomplete' || status === 'incomplete_expired' || status === 'paused') return 'SUSPENDED' as const
+  return 'SUSPENDED' as const
+}
+
+function toDateFromUnixSeconds(sec?: number | null) {
+  if (!sec) return null
+  return new Date(sec * 1000)
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -64,6 +79,42 @@ export async function GET(req: NextRequest) {
     // Get subscription from Stripe
     const stripe = getStripeServer()
     const subscription = await stripe.subscriptions.retrieve(shop.stripeSubscriptionId)
+
+    // Best-effort sync: if webhook wasn't configured or missed events, keep our DB in sync.
+    try {
+      const nextStatus = mapStripeSubscriptionStatusToShopStatus(subscription.status)
+      const nextTrialEndsAt = toDateFromUnixSeconds(subscription.trial_end || null)
+
+      const priceId = subscription.items?.data?.[0]?.price?.id
+      const nextPlan =
+        priceId && process.env.STRIPE_PRICE_STARTER && priceId === process.env.STRIPE_PRICE_STARTER
+          ? 'STARTER'
+          : priceId && process.env.STRIPE_PRICE_PROFESSIONAL && priceId === process.env.STRIPE_PRICE_PROFESSIONAL
+            ? 'PRO'
+            : undefined
+
+      const needsUpdate =
+        shop.status !== nextStatus ||
+        String(shop.trialEndsAt || '') !== String(nextTrialEndsAt || '') ||
+        (nextPlan && shop.plan !== nextPlan) ||
+        (typeof subscription.customer === 'string' && shop.stripeCustomerId !== subscription.customer) ||
+        shop.stripeSubscriptionId !== subscription.id
+
+      if (needsUpdate) {
+        await prisma.shop.update({
+          where: { id: shop.id },
+          data: {
+            status: nextStatus,
+            trialEndsAt: nextTrialEndsAt,
+            ...(nextPlan ? { plan: nextPlan as any } : {}),
+            stripeCustomerId: typeof subscription.customer === 'string' ? subscription.customer : (subscription.customer as any)?.id,
+            stripeSubscriptionId: subscription.id,
+          },
+        })
+      }
+    } catch {
+      // ignore sync errors (subscription endpoint should still respond)
+    }
 
     const planKey = shop.plan === 'STARTER' ? 'STARTER' : shop.plan === 'PRO' ? 'PROFESSIONAL' : null
     const planDetails = planKey ? PLANS[planKey] : null

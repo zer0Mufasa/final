@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { prisma } from '@/lib/prisma/client'
 import { canPerformAction, getAdminFromRequest } from '@/lib/admin/auth'
@@ -59,14 +59,13 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   // 3) Set SSR cookies for the browser (so /dashboard sees a real session)
   const supabaseSsr = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
     cookies: {
-      get(name: string) {
-        return request.cookies.get(name)?.value
+      getAll() {
+        return request.cookies.getAll()
       },
-      set(name: string, value: string, options: CookieOptions) {
-        response.cookies.set({ name, value, ...options, secure })
-      },
-      remove(name: string, options: CookieOptions) {
-        response.cookies.set({ name, value: '', ...options, secure })
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set({ name, value, ...options, secure })
+        })
       },
     },
   })

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import { mockTickets } from '@/lib/mock/data'
@@ -251,7 +252,14 @@ export function TicketDetailClient({ id }: { id: string }) {
                 { label: 'Post-repair', time: '4:05 PM', thumb: '/devices/thumbs/iPhone_14_Pro_Max-130x130.webp' },
               ].map((p) => (
                 <div key={p.label} className="min-w-[140px] rounded-2xl bg-white/[0.03] border border-[var(--border-default)] p-3 space-y-2">
-                  <img src={p.thumb} alt={p.label} className="w-full h-20 object-contain rounded-xl bg-white/5 border border-[var(--border-default)]" />
+                  <Image
+                    src={p.thumb}
+                    alt={p.label}
+                    width={280}
+                    height={160}
+                    className="w-full h-20 object-contain rounded-xl bg-white/5 border border-[var(--border-default)]"
+                    unoptimized
+                  />
                   <div className="text-sm font-semibold text-[var(--text-primary)]/85">{p.label}</div>
                   <div className="text-xs text-[var(--text-muted)]">{p.time}</div>
                 </div>

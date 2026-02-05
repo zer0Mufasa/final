@@ -5,8 +5,112 @@ import { prisma } from '@/lib/prisma/client'
 import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-context'
 import { z } from 'zod'
 
+type DemoTimeEntry = {
+  id: string
+  userId: string
+  userName: string
+  clockIn: string
+  clockOut: string | null
+  breakMinutes: number
+  openedShop: boolean
+  closedShop: boolean
+  notes?: string | null
+}
+
+type DemoState = {
+  timeEntries?: DemoTimeEntry[]
+}
+
+function isDemo(req: NextRequest) {
+  return req.cookies.get('fx_demo')?.value === '1'
+}
+
+function readDemoState(req: NextRequest): DemoState {
+  try {
+    const raw = req.cookies.get('fx_demo_state')?.value
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? (parsed as DemoState) : {}
+  } catch {
+    return {}
+  }
+}
+
 // GET /api/time-tracking - List time entries for the shop
 export async function GET(request: NextRequest) {
+  // Demo mode: return cookie-backed entries so UI can track per-person without auth/DB
+  if (isDemo(request)) {
+    const { searchParams } = new URL(request.url)
+    const dateFrom = searchParams.get('from')
+    const dateTo = searchParams.get('to')
+    const userId = searchParams.get('userId')
+    const range = searchParams.get('range')
+
+    const state = readDemoState(request)
+    let entries = Array.isArray(state.timeEntries) ? state.timeEntries.slice(0) : []
+
+    let rangeFrom: Date | undefined
+    if (range === 'week') {
+      const d = new Date()
+      d.setDate(d.getDate() - 7)
+      rangeFrom = d
+    } else if (range === 'month') {
+      const d = new Date()
+      d.setDate(d.getDate() - 30)
+      rangeFrom = d
+    }
+
+    if (userId) entries = entries.filter((e) => e.userId === userId)
+    if (dateFrom) entries = entries.filter((e) => new Date(e.clockIn) >= new Date(dateFrom))
+    if (dateTo) entries = entries.filter((e) => new Date(e.clockIn) <= new Date(dateTo))
+    if (rangeFrom) entries = entries.filter((e) => new Date(e.clockIn) >= rangeFrom)
+
+    const uiEntries = entries
+      .sort((a, b) => (a.clockIn < b.clockIn ? 1 : -1))
+      .slice(0, 500)
+      .map((e) => {
+        const durationMinutes =
+          e.clockOut ? Math.round((new Date(e.clockOut).getTime() - new Date(e.clockIn).getTime()) / 1000 / 60) : null
+        return {
+          id: e.id,
+          userId: e.userId,
+          odisId: e.userId,
+          userName: e.userName,
+          staffName: e.userName,
+          clockIn: e.clockIn,
+          clockOut: e.clockOut,
+          durationMinutes,
+          breakMinutes: e.breakMinutes || 0,
+          notes: e.notes,
+          openedShop: !!e.openedShop,
+          closedShop: !!e.closedShop,
+          status: e.clockOut ? 'completed' : 'active',
+        }
+      })
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const todayEntries = uiEntries.filter((e) => new Date(e.clockIn) >= today)
+    const completedToday = todayEntries.filter((e) => e.status === 'completed' && typeof e.durationMinutes === 'number')
+
+    const totalMinutesToday = todayEntries.reduce((sum, e) => sum + (e.durationMinutes || 0), 0)
+    const activeTimers = todayEntries.filter((e) => e.status === 'active').length
+    const avgMinutesPerEntry =
+      completedToday.length > 0
+        ? Math.round(completedToday.reduce((s, e) => s + (e.durationMinutes || 0), 0) / completedToday.length)
+        : 0
+
+    return NextResponse.json({
+      demo: true,
+      entries: uiEntries,
+      summary: {
+        totalHoursToday: Math.round((totalMinutesToday / 60) * 10) / 10,
+        activeTimers,
+        avgMinutesPerEntryToday: avgMinutesPerEntry,
+      },
+    })
+  }
+
   const context = await getShopContext()
 
   if (isContextError(context)) {

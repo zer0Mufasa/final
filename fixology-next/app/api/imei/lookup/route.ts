@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const apiKey = process.env.IMEICHECK_API_KEY || 'kNDOALombJnxrfKJZ0bkSu60xS80STI2BxBNFqA1db4e2d2f'
+    const apiKey = process.env.IMEICHECK_API_KEY
     if (!apiKey) {
       // Demo/dev mode: allow 14- or 15-digit input (legacy IMEI flows sometimes use 14-digit TAC+SNR).
       if (!/^\d{14,15}$/.test(cleanIMEI)) {

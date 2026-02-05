@@ -108,6 +108,16 @@ export function ActorProvider({
       // Also keep legacy preview role in sync
       localStorage.setItem('fx_preview_role', mapStaffRoleToUserRole(nextActor.role))
     } catch {}
+    try {
+      // Used by demo-mode API routes to attribute actions to the selected actor.
+      // Stored as a normal cookie so it can be read server-side in Next route handlers.
+      if (typeof document !== 'undefined') {
+        const payload = encodeURIComponent(
+          JSON.stringify({ id: nextActor.id, name: nextActor.name, role: nextActor.role })
+        )
+        document.cookie = `fx_actor=${payload}; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`
+      }
+    } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, staff])
 

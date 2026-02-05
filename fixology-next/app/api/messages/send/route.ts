@@ -4,9 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getShopContext, isContextError, isShopUser } from '@/lib/auth/get-shop-context'
 import { prisma } from '@/lib/prisma/client'
-import { Resend } from 'resend'
-
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+import { sendDeviceReadyEmail, sendEmail } from '@/lib/email/send'
 
 const statusTemplates: Record<string, { subject: (ticket: any) => string; body: (ticket: any) => string }> = {
   INTAKE: {
@@ -107,14 +105,41 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email if customer has email
-    if (channel === 'email' && ticket.customer.email && resend) {
+    if (channel === 'email' && ticket.customer.email) {
       try {
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'noreply@fixology.ai',
-          to: ticket.customer.email,
-          subject,
-          text: body,
-        })
+        if (!message && ticket.status === 'READY') {
+          const shop = await prisma.shop.findUnique({
+            where: { id: context.shopId },
+            select: { name: true, phone: true, address: true, city: true, state: true, zip: true },
+          })
+          const addr = [shop?.address, [shop?.city, shop?.state].filter(Boolean).join(', '), shop?.zip]
+            .filter(Boolean)
+            .join(' ')
+
+          const customerName =
+            [ticket.customer.firstName, ticket.customer.lastName].filter(Boolean).join(' ') || 'there'
+
+          await sendDeviceReadyEmail(ticket.customer.email, {
+            customerName,
+            deviceType: `${ticket.deviceBrand} ${ticket.deviceType}`.trim(),
+            ticketId: ticket.ticketNumber,
+            shopName: shop?.name || 'Your repair shop',
+            shopPhone: shop?.phone || '',
+            shopAddress: addr,
+            pickupUrl: undefined,
+          })
+        } else {
+          await sendEmail({
+            to: ticket.customer.email,
+            subject,
+            text: body,
+            tags: [
+              { name: 'type', value: 'ticket_status' },
+              { name: 'ticket', value: ticket.ticketNumber },
+              { name: 'shopId', value: context.shopId },
+            ],
+          })
+        }
       } catch (emailError: any) {
         console.error('Failed to send email:', emailError)
         // Continue even if email fails

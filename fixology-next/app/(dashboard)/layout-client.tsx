@@ -40,7 +40,10 @@ type ShopDetails = {
 
 async function getJson<T>(url: string): Promise<{ ok: true; data: T } | { ok: false; status: number; error: any }> {
   try {
-    const res = await fetch(url, { credentials: 'include' })
+    const controller = new AbortController()
+    const t = setTimeout(() => controller.abort(), 8000)
+    const res = await fetch(url, { credentials: 'include', signal: controller.signal })
+    clearTimeout(t)
     const data = await res.json().catch(() => ({}))
     if (!res.ok) return { ok: false, status: res.status, error: data }
     return { ok: true, data: data as T }
@@ -51,6 +54,13 @@ async function getJson<T>(url: string): Promise<{ ok: true; data: T } | { ok: fa
 
 function hasDemoCookie() {
   return typeof document !== 'undefined' && document.cookie.includes('fx_demo=1')
+}
+
+function enterDemoMode() {
+  try {
+    document.cookie = `fx_demo=1; path=/; max-age=${60 * 60 * 24 * 7}; samesite=lax`
+  } catch {}
+  window.location.reload()
 }
 
 export function DashboardClientLayout({ children }: { children: React.ReactNode }) {
@@ -89,14 +99,19 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
 
       const meRes = await getJson<MeResponse>('/api/me')
       if (!meRes.ok) {
-        // Not logged in
-        if (!cancelled) router.replace('/login')
+        if (!cancelled) {
+          setError('You are not signed in. Please log in, or continue in demo mode.')
+          setLoading(false)
+        }
         return
       }
 
       const me = meRes.data as any
       if (me?.type !== 'shop_user') {
-        if (!cancelled) router.replace('/login')
+        if (!cancelled) {
+          setError('You are not signed in. Please log in, or continue in demo mode.')
+          setLoading(false)
+        }
         return
       }
 
@@ -183,12 +198,26 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
           <div className="mx-auto max-w-[900px] px-6 py-20 text-white/80">
             <div className="text-white font-semibold">Dashboard couldn’t load</div>
             <div className="mt-2 text-white/60">{error}</div>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-6 rounded-xl bg-white/10 border border-white/10 px-4 py-2 text-white hover:bg-white/15"
-            >
-              Refresh
-            </button>
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => (window.location.href = '/login')}
+                className="rounded-xl bg-white/10 border border-white/10 px-4 py-2 text-white hover:bg-white/15"
+              >
+                Go to login
+              </button>
+              <button
+                onClick={enterDemoMode}
+                className="rounded-xl bg-purple-500/20 border border-purple-400/30 px-4 py-2 text-purple-100 hover:bg-purple-500/25"
+              >
+                Continue in demo mode
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="rounded-xl bg-white/5 border border-white/10 px-4 py-2 text-white/80 hover:bg-white/10"
+              >
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       </ThemeProvider>

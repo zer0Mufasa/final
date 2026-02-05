@@ -2,11 +2,13 @@
 // Marketing pricing page
 
 import { PricingCards } from '@/components/pricing-cards'
+import { MarketingNav } from '@/components/marketing/mobile-nav'
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-[#07070a] py-20">
-      <div className="mx-auto max-w-5xl px-4">
+    <div className="min-h-screen bg-[#07070a]">
+      <MarketingNav />
+      <div className="mx-auto max-w-5xl px-4 pt-24 pb-20">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-white md:text-5xl">
             Simple, Transparent Pricing

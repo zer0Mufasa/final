@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma/client'
 import { getStripeServer } from '@/lib/stripe/server'
+import { sendPaymentFailedEmail, sendPaymentSuccessEmail, sendSubscriptionCancelledEmail } from '@/lib/email/send'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -15,6 +16,37 @@ function requireEnv(name: string) {
 function toDateFromUnixSeconds(sec?: number | null) {
   if (!sec) return null
   return new Date(sec * 1000)
+}
+
+function formatDate(d: Date) {
+  try {
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return d.toISOString().slice(0, 10)
+  }
+}
+
+function getSiteUrl() {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://fixologyai.com')
+  ).replace(/\/+$/, '')
+}
+
+async function getShopOwnerEmail(shopId: string) {
+  const owner = await prisma.shopUser.findFirst({
+    where: { shopId, role: 'OWNER' },
+    select: { email: true, name: true },
+  })
+  return owner ? { email: owner.email, name: owner.name } : null
+}
+
+async function getShopBasics(shopId: string) {
+  return prisma.shop.findUnique({
+    where: { id: shopId },
+    select: { id: true, name: true, plan: true, status: true },
+  })
 }
 
 function mapStripeSubscriptionStatusToShopStatus(status: Stripe.Subscription.Status) {
@@ -131,6 +163,28 @@ export async function POST(req: Request) {
             ...(dbPlan ? { plan: dbPlan } : {}),
           },
         })
+
+        // Best-effort: cancellation email (only on delete event).
+        if (event.type === 'customer.subscription.deleted') {
+          try {
+            const owner = await getShopOwnerEmail(shopId)
+            const shop = await getShopBasics(shopId)
+            if (owner?.email && shop) {
+              const effectiveSec = sub.cancel_at_period_end
+                ? sub.cancel_at || sub.ended_at || sub.canceled_at
+                : null
+              const effective = effectiveSec ? formatDate(new Date(effectiveSec * 1000)) : 'immediately'
+              await sendSubscriptionCancelledEmail(owner.email, {
+                shopName: shop.name,
+                ownerName: owner.name,
+                effectiveDate: effective,
+                billingUrl: `${getSiteUrl()}/settings/billing`,
+              })
+            }
+          } catch {
+            // never fail webhook due to email
+          }
+        }
         break
       }
 
@@ -144,6 +198,41 @@ export async function POST(req: Request) {
             status: 'PAST_DUE',
           },
         })
+
+        // Best-effort: notify owner
+        try {
+          const owner = await getShopOwnerEmail(shopId)
+          const shop = await getShopBasics(shopId)
+          if (owner?.email && shop) {
+            let lastFour = '****'
+            try {
+              const paymentIntentId =
+                typeof (invoice as any).payment_intent === 'string'
+                  ? (invoice as any).payment_intent
+                  : (invoice as any).payment_intent?.id
+              if (paymentIntentId) {
+                const pi = await stripe.paymentIntents.retrieve(paymentIntentId, { expand: ['payment_method'] })
+                const pm: any = (pi as any)?.payment_method
+                const cardLast4 = pm?.card?.last4
+                if (typeof cardLast4 === 'string' && cardLast4) lastFour = cardLast4
+              }
+            } catch {
+              // ignore
+            }
+
+            const amount = `$${(((invoice.amount_due ?? 0) as number) / 100).toFixed(2)}`
+            await sendPaymentFailedEmail(owner.email, {
+              shopName: shop.name,
+              ownerName: owner.name,
+              amount,
+              lastFour,
+              retryDate: 'soon',
+              billingUrl: `${getSiteUrl()}/settings/billing`,
+            })
+          }
+        } catch {
+          // never fail webhook due to email
+        }
         break
       }
 
@@ -157,6 +246,33 @@ export async function POST(req: Request) {
           where: { id: shopId },
           data: { status: 'ACTIVE' },
         })
+
+        // Best-effort: notify owner
+        try {
+          const owner = await getShopOwnerEmail(shopId)
+          const shop = await getShopBasics(shopId)
+          if (owner?.email && shop) {
+            const amount = `$${(((invoice.amount_paid ?? 0) as number) / 100).toFixed(2)}`
+            const periodEndSec = invoice.lines?.data?.[0]?.period?.end
+            const nextBillingDate =
+              typeof periodEndSec === 'number' ? formatDate(new Date(periodEndSec * 1000)) : 'next month'
+
+            const invoiceUrl =
+              typeof (invoice as any)?.hosted_invoice_url === 'string' ? (invoice as any).hosted_invoice_url : undefined
+
+            await sendPaymentSuccessEmail(owner.email, {
+              shopName: shop.name,
+              ownerName: owner.name,
+              planName: String(shop.plan),
+              amount,
+              nextBillingDate,
+              invoiceUrl,
+              dashboardUrl: `${getSiteUrl()}/dashboard`,
+            })
+          }
+        } catch {
+          // never fail webhook due to email
+        }
         break
       }
     }

@@ -58,15 +58,6 @@ type ActivityEvent = {
   timestamp: string
 }
 
-const sessions: TimeEntry[] = [
-  { id: 't1', tech: 'Ava Chen', techInitials: 'AC', ticket: '#2381', device: 'iPhone 14 Pro', start: '9:05 AM', end: null, duration: '1h 45m', type: 'repair', status: 'active' },
-  { id: 't2', tech: 'Noah Smith', techInitials: 'NS', ticket: '#2378', device: 'MacBook Air', start: '8:50 AM', end: '10:30 AM', duration: '1h 40m', type: 'repair', status: 'completed' },
-  { id: 't3', tech: 'Miles Rodriguez', techInitials: 'MR', ticket: '#2379', device: 'PS5', start: '9:20 AM', end: '10:45 AM', duration: '1h 25m', type: 'repair', status: 'completed' },
-  { id: 't4', tech: 'Sofia Martinez', techInitials: 'SM', ticket: '—', device: '—', start: '10:30 AM', end: '10:45 AM', duration: '15m', type: 'break', status: 'completed' },
-  { id: 't5', tech: 'Ava Chen', techInitials: 'AC', ticket: '#2375', device: 'Galaxy S23', start: '11:00 AM', end: '12:30 PM', duration: '1h 30m', type: 'repair', status: 'completed' },
-  { id: 't6', tech: 'Noah Smith', techInitials: 'NS', ticket: '—', device: '—', start: '10:30 AM', end: '11:00 AM', duration: '30m', type: 'admin', status: 'completed' },
-]
-
 const techStats = [
   { name: 'Ava', hours: 6.2, repairs: 4, color: '#a78bfa' },
   { name: 'Noah', hours: 5.8, repairs: 3, color: '#22c55e' },
@@ -84,13 +75,6 @@ const weeklyHours = [
   { day: 'Sun', hours: 0 },
 ]
 
-const summaryStats = [
-  { label: 'Total Hours Today', value: '21.5h', icon: <Clock className="w-5 h-5" />, color: 'purple' },
-  { label: 'Active Timers', value: '2', icon: <PlayCircle className="w-5 h-5" />, color: 'emerald' },
-  { label: 'Avg Repair Time', value: '1.4h', icon: <Timer className="w-5 h-5" />, color: 'blue' },
-  { label: 'Break Time', value: '45m', icon: <Coffee className="w-5 h-5" />, color: 'amber' },
-]
-
 export function TimeTrackingPage() {
   const [loading, setLoading] = useState(true)
   const [animationReady, setAnimationReady] = useState(false)
@@ -98,36 +82,53 @@ export function TimeTrackingPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [addOpen, setAddOpen] = useState(false)
   const [selectedEntry, setSelectedEntry] = useState<TimeEntry | null>(null)
-  const [entries, setEntries] = useState<TimeEntry[]>(sessions)
-  const [summary, setSummary] = useState({ totalHoursToday: 21.5, activeTimers: 2 })
+  const [entries, setEntries] = useState<TimeEntry[]>([])
+  const [summary, setSummary] = useState({ totalHoursToday: 0, activeTimers: 0, avgMinutesPerEntryToday: 0 })
   const [activity, setActivity] = useState<ActivityEvent[]>([])
 
   const fetchEntries = useCallback(async () => {
     try {
       const res = await fetch('/api/time-tracking')
-      if (!res.ok) return
-      const data = await res.json()
-      if (data.entries?.length > 0) {
-        const mapped: TimeEntry[] = data.entries.map((e: any) => ({
-          id: e.id,
-          tech: e.userName,
-          techInitials: e.userName.split(' ').map((n: string) => n[0]).join(''),
-          ticket: '—',
-          device: '—',
-          start: new Date(e.clockIn).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-          end: e.clockOut ? new Date(e.clockOut).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : null,
-          duration: e.durationMinutes ? `${Math.floor(e.durationMinutes / 60)}h ${e.durationMinutes % 60}m` : 'Running',
-          type: 'repair' as const,
-          status: e.status as any,
-        }))
-        setEntries(mapped)
-        setSummary({
-          totalHoursToday: data.summary.totalHoursToday,
-          activeTimers: data.summary.activeTimers,
-        })
+      if (!res.ok) {
+        setEntries([])
+        setSummary({ totalHoursToday: 0, activeTimers: 0, avgMinutesPerEntryToday: 0 })
+        return
       }
+      const data = await res.json()
+      const mapped: TimeEntry[] = Array.isArray(data.entries)
+        ? data.entries.map((e: any) => ({
+            id: e.id,
+            tech: e.userName,
+            techInitials: String(e.userName || 'U')
+              .split(' ')
+              .filter(Boolean)
+              .map((n: string) => n[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase(),
+            ticket: '—',
+            device: '—',
+            start: new Date(e.clockIn).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+            end: e.clockOut
+              ? new Date(e.clockOut).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+              : null,
+            duration:
+              typeof e.durationMinutes === 'number'
+                ? `${Math.floor(e.durationMinutes / 60)}h ${e.durationMinutes % 60}m`
+                : 'Running',
+            type: 'repair' as const,
+            status: e.status as any,
+          }))
+        : []
+      setEntries(mapped)
+      setSummary({
+        totalHoursToday: Number(data?.summary?.totalHoursToday ?? 0),
+        activeTimers: Number(data?.summary?.activeTimers ?? 0),
+        avgMinutesPerEntryToday: Number(data?.summary?.avgMinutesPerEntryToday ?? 0),
+      })
     } catch {
-      // Keep mock data
+      setEntries([])
+      setSummary({ totalHoursToday: 0, activeTimers: 0, avgMinutesPerEntryToday: 0 })
     }
   }, [])
 
@@ -186,6 +187,16 @@ export function TimeTrackingPage() {
     }
     return result
   }, [searchQuery, entries])
+
+  const summaryStats = useMemo(
+    () => [
+      { label: 'Total Hours Today', value: `${summary.totalHoursToday}h`, icon: <Clock className="w-5 h-5" />, color: 'purple' },
+      { label: 'Active Timers', value: String(summary.activeTimers), icon: <PlayCircle className="w-5 h-5" />, color: 'emerald' },
+      { label: 'Avg Session (today)', value: summary.avgMinutesPerEntryToday ? `${summary.avgMinutesPerEntryToday}m` : '—', icon: <Timer className="w-5 h-5" />, color: 'blue' },
+      { label: 'Break Time', value: '—', icon: <Coffee className="w-5 h-5" />, color: 'amber' },
+    ],
+    [summary.activeTimers, summary.avgMinutesPerEntryToday, summary.totalHoursToday]
+  )
 
   const getTypeStyles = (type: string) => {
     switch (type) {
@@ -343,6 +354,13 @@ export function TimeTrackingPage() {
                 </tr>
               </thead>
               <tbody>
+                {filteredSessions.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-5 py-10 text-center text-sm text-[var(--text-muted)]">
+                      No time entries yet. Clock in from the dashboard to start tracking.
+                    </td>
+                  </tr>
+                )}
                 {filteredSessions.map((s) => (
                   <tr
                     key={s.id}

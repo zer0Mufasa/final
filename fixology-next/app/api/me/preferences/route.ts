@@ -8,7 +8,62 @@ import crypto from 'crypto'
 
 type Prefs = Record<string, any>
 
-export async function GET() {
+type DemoState = {
+  shopOpen?: boolean
+  preferences?: Prefs
+  activity?: any[]
+}
+
+function readActor(req: NextRequest): { id: string; name: string } {
+  try {
+    const raw = req.cookies.get('fx_actor')?.value
+    if (!raw) return { id: 'demo', name: 'Demo User' }
+    const parsed = JSON.parse(decodeURIComponent(raw))
+    const id = typeof parsed?.id === 'string' ? parsed.id : 'demo'
+    const name = typeof parsed?.name === 'string' ? parsed.name : 'Demo User'
+    return { id, name }
+  } catch {
+    return { id: 'demo', name: 'Demo User' }
+  }
+}
+
+function readDemoState(req: NextRequest): DemoState {
+  try {
+    const raw = req.cookies.get('fx_demo_state')?.value
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === 'object' ? (parsed as DemoState) : {}
+  } catch {
+    return {}
+  }
+}
+
+function writeDemoState(res: NextResponse, next: DemoState) {
+  res.cookies.set({
+    name: 'fx_demo_state',
+    value: JSON.stringify(next),
+    path: '/',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 7,
+    httpOnly: false,
+  })
+}
+
+function isDemo(req: NextRequest) {
+  return req.cookies.get('fx_demo')?.value === '1'
+}
+
+export async function GET(request: NextRequest) {
+  // Demo mode: store prefs in a cookie-backed state object
+  if (isDemo(request)) {
+    const state = readDemoState(request)
+    const preferences: Prefs = {
+      ...(state.preferences || {}),
+      ...(typeof state.shopOpen === 'boolean' ? { shopOpen: state.shopOpen } : {}),
+    }
+    return NextResponse.json({ preferences })
+  }
+
   const context = await getShopContext()
   if (isContextError(context)) {
     return NextResponse.json({ error: context.error }, { status: context.status })
@@ -41,6 +96,45 @@ export async function GET() {
 }
 
 export async function PATCH(request: NextRequest) {
+  // Demo mode: persist to cookie and return success (lets dashboard toggles work without auth/DB)
+  if (isDemo(request)) {
+    const actor = readActor(request)
+    const patch = (await request.json().catch(() => null)) as Prefs | null
+    if (!patch || typeof patch !== 'object') {
+      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
+    }
+
+    const { shopOpen, ...rest } = patch as Prefs & { shopOpen?: boolean }
+    const state = readDemoState(request)
+
+    const nextActivity = Array.isArray(state.activity) ? state.activity.slice(0) : []
+    if (typeof shopOpen === 'boolean') {
+      nextActivity.unshift({
+        id: crypto.randomUUID(),
+        type: shopOpen ? 'shop_open' : 'shop_close',
+        userId: actor.id,
+        userName: actor.name,
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    const nextState: DemoState = {
+      ...state,
+      ...(typeof shopOpen === 'boolean' ? { shopOpen } : {}),
+      preferences: { ...(state.preferences || {}), ...rest, ...(typeof shopOpen === 'boolean' ? { shopOpen } : {}) },
+      activity: nextActivity.slice(0, 50),
+    }
+
+    const res = NextResponse.json({
+      preferences: {
+        ...(nextState.preferences || {}),
+        ...(typeof nextState.shopOpen === 'boolean' ? { shopOpen: nextState.shopOpen } : {}),
+      },
+    })
+    writeDemoState(res, nextState)
+    return res
+  }
+
   const context = await getShopContext()
   if (isContextError(context)) {
     return NextResponse.json({ error: context.error }, { status: context.status })
