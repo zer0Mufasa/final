@@ -1,7 +1,23 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
+import nextDynamic from 'next/dynamic'
 import { cookies } from 'next/headers'
-import { DashboardClientLayout } from './layout-client'
+
+// IMPORTANT:
+// On Vercel, we have seen production-only 500s on all dashboard routes.
+// The fastest way to harden this is to avoid server-importing the entire dashboard UI tree.
+// We render the unauthenticated gate server-side, but load the full dashboard shell client-side.
+const DashboardClientLayout = nextDynamic(
+  () => import('./layout-client').then((m) => m.DashboardClientLayout),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-screen bg-[#07070a] text-white">
+        <div className="mx-auto max-w-[900px] px-6 py-20 text-white/70">Loading your dashboard…</div>
+      </div>
+    ),
+  }
+)
 
 // Render a server-side gate when clearly unauthenticated, so the embedded browser
 // never gets stuck on an infinite client-side loader if hydration fails.
